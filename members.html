@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en" id="main-html">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Member Management - Soulwinning Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <script>tailwind.config = { darkMode: 'class' }</script>
+    <style>
+        .church-manage-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 24px;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            border-radius: 9999px;
+            border: 1px solid rgba(79, 70, 229, 0.2);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.1);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .dark .church-manage-pill {
+            background-color: rgba(79, 70, 229, 0.15);
+            border-color: rgba(79, 70, 229, 0.4);
+            color: #a5b4fc;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 dark:bg-[#0f172a] dark:text-slate-100 transition-colors duration-300">
+
+    <nav class="bg-white dark:bg-slate-900 border-b dark:border-slate-800 px-6 py-4 flex justify-between items-center sticky top-0 z-10">
+        <div class="flex items-center gap-2">
+            <button onclick="window.location.href='pastor.html'" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 transition-all mr-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-slate-600 dark:text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M15 19l-7-7 7-7" /></svg>
+            </button>
+            <div class="w-10 h-8 bg-indigo-600 rounded-lg flex items-center justify-center overflow-hidden">
+                <span class="font-bold text-white text-[10px] leading-none text-center">SWT</span>
+            </div>
+            <h1 class="text-lg brand-text"><span class="brand-word-1">Soulwinning</span><span class="brand-word-2">Tracker</span></h1>
+        </div>
+        <div class="flex items-center gap-2">
+            <button onclick="toggleDarkMode()" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 transition-all">
+                <svg id="sun-icon" class="w-5 h-5 hidden text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M3 12h2.25m.386-6.364l1.591 1.591M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" /></svg>
+                <svg id="moon-icon" class="w-5 h-5 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" /></svg>
+            </button>
+        </div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto p-6 pb-32">
+        <header class="mb-10 text-center">
+            <div class="badge-base badge-role mb-2 uppercase tracking-widest font-bold">Administration</div>
+            <h2 class="text-4xl font-extrabold tracking-tight mb-3">Member Manager</h2>
+            <p class="text-xs text-slate-400">Activate or deactivate access for church members.</p>
+        </header>
+
+        <div class="bg-white dark:bg-slate-900 border dark:border-slate-800 rounded-[2.5rem] p-6 shadow-sm mb-10 max-w-sm mx-auto text-center">
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-3 tracking-widest">Manage Church</label>
+            <select id="churchSelect" class="w-full bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 px-4 py-3 rounded-2xl text-xs font-bold mb-4 pr-10 dark:text-white">
+                <option value="" disabled selected>Choose a church...</option>
+            </select>
+            <button id="load-btn" onclick="fetchMembers()" class="w-full py-4 bg-indigo-600 text-white rounded-2xl text-[10px] font-bold uppercase active:scale-95 transition-all shadow-lg shadow-indigo-500/20">Load Member List</button>
+        </div>
+
+        <div id="management-area" class="hidden">
+            <div class="mb-6 text-center">
+                <span id="loaded-church-tag" class="church-manage-pill bg-white dark:bg-slate-900 text-indigo-700 opacity-0 -translate-y-2"></span>
+            </div>
+
+            <div class="mb-8 relative max-w-md mx-auto">
+                <input type="text" id="searchInput" onkeyup="filterMembers()" placeholder="Fuzzy search names..." class="w-full p-4 pl-12 bg-white dark:bg-slate-900 border dark:border-slate-800 rounded-2xl shadow-sm outline-none focus:ring-2 focus:ring-indigo-500 transition-all dark:text-white text-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 absolute left-4 top-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+            </div>
+
+            <section class="bg-white dark:bg-slate-900 rounded-[2.5rem] border dark:border-slate-800 overflow-hidden shadow-sm">
+                <div class="px-6 py-4 border-b bg-slate-50 dark:bg-slate-800/50 font-bold text-[10px] uppercase text-slate-400 text-center">Church Roster</div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="text-[10px] text-slate-400 uppercase border-b dark:border-slate-800">
+                            <tr>
+                                <th class="px-6 py-4">Member Info</th>
+                                <th class="px-6 py-4 text-center">Status</th>
+                                <th class="px-6 py-4 text-right">Details</th>
+                            </tr>
+                        </thead>
+                        <tbody id="member-list" class="divide-y dark:divide-slate-800 text-sm"></tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+
+        <div id="initial-message" class="text-center py-20 text-slate-400 italic">
+            Select a church to view and manage its member access.
+        </div>
+    </main>
+
+    <div id="member-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-6 hidden z-[120]">
+        <div class="bg-white dark:bg-slate-900 w-full max-w-sm rounded-[2.5rem] p-8 border dark:border-slate-800 shadow-2xl">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold dark:text-white">Account Access</h3>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600"><i class="bi bi-x-lg"></i></button>
+            </div>
+            
+            <div class="space-y-4 text-left mb-8">
+                <div>
+                    <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Full Name</label>
+                    <p id="det-name" class="text-sm font-bold dark:text-white">---</p>
+                </div>
+                <div>
+                    <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Email Address</label>
+                    <p id="det-email" class="text-sm text-slate-500">---</p>
+                </div>
+                <div>
+                    <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Account Role</label>
+                    <p id="det-role" class="text-[10px] font-black uppercase text-indigo-600">---</p>
+                </div>
+            </div>
+
+            <div class="flex gap-3">
+                <button onclick="closeModal()" class="flex-1 py-4 bg-slate-100 dark:bg-slate-800 text-slate-500 font-bold uppercase text-[10px] rounded-2xl">Close</button>
+                <button id="det-action-btn" class="flex-1 py-4 font-bold uppercase text-[10px] rounded-2xl transition-all active:scale-95">
+                    ---
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 bg-slate-900 dark:bg-indigo-600 text-white px-6 py-3 rounded-2xl shadow-2xl opacity-0 translate-y-10 transition-all duration-500 z-[150] pointer-events-none text-sm font-bold"></div>
+
+    <script type="module">
+        import { db, auth } from './firebase-config.js';
+        import { collection, query, where, getDocs, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        let allMembers = [];
+        let userProfile = null;
+
+        const initTheme = () => {
+            const isDark = localStorage.getItem('theme') === 'dark' || 
+                          (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            
+            const html = document.getElementById('main-html');
+            const sun = document.getElementById('sun-icon');
+            const moon = document.getElementById('moon-icon');
+        
+            if (isDark) {
+                html.classList.add('dark');
+                if (sun) sun.classList.remove('hidden');
+                if (moon) moon.classList.add('hidden');
+            } else {
+                html.classList.remove('dark');
+                if (sun) sun.classList.add('hidden');
+                if (moon) moon.classList.remove('hidden');
+            }
+        };
+        initTheme();
+
+        window.showToast = (msg) => {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.classList.remove('opacity-0', 'translate-y-10');
+            setTimeout(() => t.classList.add('opacity-0', 'translate-y-10'), 3000);
+        };
+
+        window.toggleDarkMode = () => { 
+            const html = document.getElementById('main-html');
+            const sun = document.getElementById('sun-icon');
+            const moon = document.getElementById('moon-icon');
+            const isDark = html.classList.toggle('dark'); 
+            
+            if (sun && moon) {
+                sun.classList.toggle('hidden', !isDark);
+                moon.classList.toggle('hidden', isDark);
+            }
+            localStorage.setItem('theme', isDark ? 'dark' : 'light'); 
+        };
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { window.location.replace('index.html'); return; }
+            const snap = await getDoc(doc(db, "profiles", user.uid));
+            if (!snap.exists() || snap.data().role !== 'pastor') { window.location.replace('index.html'); return; }
+            userProfile = snap.data();
+            await populateChurchDropdown();
+        });
+
+        async function populateChurchDropdown() {
+            const select = document.getElementById('churchSelect');
+            if (!userProfile.churchId) return;
+            select.innerHTML = '<option value="" disabled selected>Choose a church...</option>';
+            for (const id of userProfile.churchId) {
+                const cSnap = await getDoc(doc(db, "churches", id));
+                if (cSnap.exists()) {
+                    const opt = document.createElement('option');
+                    opt.value = id; opt.textContent = cSnap.data().name;
+                    select.appendChild(opt);
+                }
+            }
+        }
+
+        window.fetchMembers = async () => {
+            const select = document.getElementById('churchSelect');
+            const churchId = select.value;
+            const churchName = select.options[select.selectedIndex].text;
+            
+            if(!churchId) return showToast("Select a church first");
+
+            const btn = document.getElementById('load-btn');
+            btn.disabled = true; btn.innerText = "Searching...";
+
+            try {
+                const q = query(collection(db, "profiles"), where("churchId", "array-contains", churchId));
+                const snap = await getDocs(q);
+                allMembers = [];
+                snap.forEach(d => {
+                    if (d.id !== auth.currentUser.uid) allMembers.push({ id: d.id, ...d.data() });
+                });
+
+                document.getElementById('searchInput').value = "";
+                
+                // Animated Church Tag Update
+                const tag = document.getElementById('loaded-church-tag');
+                tag.innerHTML = `<span class="text-indigo-500"></span> ${churchName}`;
+                tag.classList.remove('opacity-0', '-translate-y-2');
+                tag.classList.add('opacity-1', 'translate-y-0');
+
+                document.getElementById('initial-message').classList.add('hidden');
+                document.getElementById('management-area').classList.remove('hidden');
+                renderList(allMembers);
+            } catch (e) { showToast("Error loading members"); }
+            finally { btn.disabled = false; btn.innerText = "Load Member List"; }
+        };
+
+        function renderList(members) {
+            const listBody = document.getElementById('member-list');
+            listBody.innerHTML = members.map(m => `
+                <tr id="user-row-${m.id}" class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                    <td class="px-6 py-4">
+                        <p class="font-bold dark:text-white leading-tight">${m.displayName}</p>
+                        <p class="text-[10px] text-slate-400">${m.email}</p>
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <span class="status-badge px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider ${m.status === 'active' ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30' : 'bg-rose-100 text-rose-600 dark:bg-rose-900/30'}">
+                            ${m.status || 'inactive'}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                        <button onclick='viewMemberDetails(${JSON.stringify(m).replace(/'/g, "&apos;")})' class="text-slate-400 hover:text-indigo-500 p-2 transition-colors">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('') || '<tr><td colspan="3" class="text-center py-10 text-slate-400">No matches found.</td></tr>';
+        }
+
+        window.viewMemberDetails = (m) => {
+            document.getElementById('det-name').innerText = m.displayName;
+            document.getElementById('det-email').innerText = m.email;
+            document.getElementById('det-role').innerText = m.role;
+            
+            const actionBtn = document.getElementById('det-action-btn');
+            const isActive = m.status === 'active';
+            
+            actionBtn.innerText = isActive ? 'Deactivate Account' : 'Activate Account';
+            actionBtn.className = `flex-1 py-4 font-bold uppercase text-[10px] rounded-2xl transition-all ${isActive ? 'bg-rose-50 text-rose-500 border border-rose-100' : 'bg-indigo-50 text-indigo-600 border border-indigo-100'}`;
+            
+            actionBtn.onclick = () => toggleStatus(m.id, m.status, m.displayName);
+            document.getElementById('member-modal').classList.remove('hidden');
+        };
+
+        window.toggleStatus = async (uid, currentStatus, name) => {
+            const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+            if (!confirm(`Change access for ${name} to ${newStatus.toUpperCase()}?`)) return;
+
+            try {
+                await updateDoc(doc(db, "profiles", uid), { status: newStatus });
+                const index = allMembers.findIndex(m => m.id === uid);
+                if (index !== -1) allMembers[index].status = newStatus;
+
+                filterMembers(); 
+                closeModal();
+                showToast(`${name} is now ${newStatus.toUpperCase()}`);
+            } catch (e) { showToast("Action failed"); }
+        };
+
+        window.filterMembers = () => {
+            const term = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = allMembers.filter(m => 
+                m.displayName.toLowerCase().includes(term) || 
+                m.email.toLowerCase().includes(term)
+            );
+            renderList(filtered);
+        };
+
+        window.closeModal = () => document.getElementById('member-modal').classList.add('hidden');
+    </script>
+</body>
+</html>

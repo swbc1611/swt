@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en" id="main-html">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Progress - Soulwinning Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <script>tailwind.config = { darkMode: 'class' }</script>
+    <style>
+        :root {
+            --rank-glow-color: #6366f1; 
+        }
+
+        @keyframes bible-pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 1; }
+        }
+        
+        @keyframes soft-glow-pulse {
+            0%, 100% { opacity: 0.5; filter: blur(30px); transform: translate(-50%, -50%) scale(1); }
+            50% { opacity: 0.9; filter: blur(50px); transform: translate(-50%, -50%) scale(1.15); }
+        }
+
+        .loading-bible { animation: bible-pulse 2s infinite ease-in-out; }
+
+        .avatar-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+        }
+
+        /* 1. OUTER GLOW */
+        .avatar-container::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 110%;
+            height: 110%;
+            background: var(--rank-glow-color);
+            border-radius: 5rem;
+            z-index: -1;
+            animation: soft-glow-pulse 4s infinite ease-in-out;
+            pointer-events: none;
+            transition: background 1s ease;
+        }
+
+        /* 2. DYNAMIC RANK-COLORED FRAME */
+        .divine-frame {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            border-radius: 4rem;
+            padding: 6px; 
+            background: linear-gradient(135deg, 
+                oklch(from var(--rank-glow-color) 0.9 c h) 0%, 
+                var(--rank-glow-color) 35%, 
+                oklch(from var(--rank-glow-color) 0.2 c h) 50%, 
+                var(--rank-glow-color) 65%, 
+                oklch(from var(--rank-glow-color) 0.9 c h) 100%);
+            z-index: 10;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transition: background 1s ease;
+        }
+
+        .avatar-viewport {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            border-radius: 3.6rem; 
+            overflow: hidden;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+        }
+
+        #avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+        }
+
+        /* 3. INTERNAL LIGHT BLEED */
+        .internal-glow-overlay {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at center, transparent 30%, var(--rank-glow-color) 110%);
+            mix-blend-mode: screen; 
+            opacity: 0.4;
+            z-index: 30;
+            pointer-events: none;
+            transition: background 1s ease;
+        }
+
+        .vignette {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle, transparent 50%, rgba(0,0,0,0.7) 120%);
+            z-index: 35;
+            pointer-events: none;
+        }
+
+        body::-webkit-scrollbar { display: none; }
+    </style>
+    <script>
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+</head>
+<body class="bg-slate-50 text-slate-900 dark:bg-[#0f172a] dark:text-slate-100 transition-colors duration-300">
+
+    <nav class="bg-white dark:bg-slate-900 border-b dark:border-slate-800 px-6 py-4 flex justify-between items-center sticky top-0 z-10">
+        <div class="flex items-center gap-2">
+            <button onclick="window.history.back()" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 transition-all mr-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-slate-600 dark:text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path d="M15 19l-7-7 7-7" />
+                </svg>
+            </button>
+            <div class="w-10 h-8 bg-indigo-600 rounded-lg flex items-center justify-center overflow-hidden">
+                <span class="font-bold text-white text-[10px] leading-none text-center">SWT</span>
+            </div>
+            <h1 class="text-lg brand-text"><span class="brand-word-1">Soulwinning</span><span class="brand-word-2">Tracker</span></h1>
+        </div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto p-4 md:p-8 text-center flex flex-col items-center min-h-[90vh] justify-center">
+        
+        <header class="mb-10 w-full">
+            <div id="role-display" class="badge-base badge-role mb-2 uppercase tracking-widest font-bold mx-auto">...</div>
+            <h2 id="user-display-name" class="text-3xl md:text-4xl font-extrabold tracking-tight mb-3 px-4">...</h2>
+            <div id="church-list-tags" class="flex flex-wrap justify-center gap-2 mt-2"></div>
+        </header>
+
+        <div class="relative w-full max-w-[min(80vw,480px)] aspect-square mb-12">
+            <div class="avatar-container">
+                <div class="divine-frame">
+                    <div class="avatar-viewport">
+                        <img id="avatar-img" src="" alt="Rank Avatar" class="w-full h-full object-cover transition-opacity duration-700 opacity-0 z-10">
+                        <div class="internal-glow-overlay"></div>
+                        <div class="vignette"></div>
+
+                        <div id="bible-loader" class="absolute inset-0 flex flex-col items-center justify-center bg-black z-50 transition-opacity duration-500">
+                            <i class="bi bi-book-half text-5xl text-indigo-500 loading-bible"></i>
+                            <p class="text-[10px] font-black uppercase tracking-widest mt-4 text-indigo-500/60">Loading...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-10">
+            <h3 id="rank-lvl-name" class="text-2xl font-black italic uppercase tracking-tighter">...</h3>
+            <div id="rank-line" class="w-12 h-1 mx-auto mt-1 rounded-full opacity-30"></div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 border dark:border-slate-800 rounded-[2.5rem] md:rounded-[3rem] p-8 md:p-10 shadow-sm mb-12 w-full max-w-sm">
+            <div class="flex justify-between items-center mb-4 px-2">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Crowns</span>
+                <span class="text-xs font-black text-indigo-600"><span id="xp-current">0</span> / <span id="xp-next">100</span></span>
+            </div>
+            <div class="h-4 md:h-5 w-full bg-slate-100 dark:bg-slate-800 rounded-full border dark:border-slate-700 p-1 relative overflow-hidden">
+                <div id="xp-fill" class="h-full bg-gradient-to-r from-indigo-600 to-emerald-400 rounded-full transition-all duration-1000" style="width: 0%"></div>
+            </div>
+            <p class="text-[9px] text-slate-400 mt-4 italic px-2">"And let us not be weary in well doing..."</p>
+        </div>
+    </main>
+
+    <script type="module">
+        import { auth, db } from './firebase-config.js';
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { doc, getDoc, collection, query, where, sum, getAggregateFromServer } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const RANKS = [
+            { id: 1, title: "Novice",     color: "#64748b" }, 
+            { id: 2, title: "Apprentice", color: "#10b981" }, 
+            { id: 3, title: "Warrior",    color: "#ef4444" }, 
+            { id: 4, title: "Knight",     color: "#6366f1" }, 
+            { id: 5, title: "Paladin",    color: "#fbbf24" }  
+        ];
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { window.location.replace("index.html"); return; }
+            
+            // Check session storage first, else fetch profile
+            const cachedData = sessionStorage.getItem('userContext');
+            let profile;
+            
+            if (cachedData) {
+                profile = JSON.parse(cachedData);
+            } else {
+                const profileSnap = await getDoc(doc(db, "profiles", user.uid));
+                if (!profileSnap.exists()) return;
+                profile = profileSnap.data();
+            }
+
+            document.getElementById('user-display-name').innerText = profile.displayName;
+            document.getElementById('role-display').innerText = profile.role.toUpperCase();
+
+            // RENDER CHURCH TAGS
+            const tagContainer = document.getElementById('church-list-tags');
+            let tagsHtml = "";
+            
+            // If church names are already in the context, use them, otherwise fetch
+            if (profile.churchNames) {
+                Object.values(profile.churchNames).forEach(name => {
+                    tagsHtml += `<span class="badge-base badge-church">${name}</span>`;
+                });
+            } else {
+                for (const code of (profile.churchId || [])) {
+                    const d = await getDoc(doc(db, "churches", code));
+                    if (d.exists()) {
+                        tagsHtml += `<span class="badge-base badge-church">${d.data().name}</span>`;
+                    }
+                }
+            }
+            tagContainer.innerHTML = tagsHtml || `<span class="text-slate-500 text-[10px]">No Church Assigned</span>`;
+
+            // STATS CALCULATION
+            const q = query(collection(db, "salvations"), where("userId", "==", user.uid));
+            const aggSnap = await getAggregateFromServer(q, { total: sum('count') });
+            calculateProgression(aggSnap.data().total || 0, profile.gender || 'male');
+        });
+
+        function calculateProgression(totalSouls, gender) {
+            let soulsLeft = totalSouls;
+            let currentIdx = 0;
+            const staircase = [100, 150, 200, 250, 999999]; 
+
+            for (let i = 0; i < staircase.length; i++) {
+                if (soulsLeft >= staircase[i]) {
+                    soulsLeft -= staircase[i];
+                    currentIdx = i + 1;
+                } else {
+                    const nextReq = staircase[i];
+                    document.getElementById('xp-current').innerText = soulsLeft;
+                    document.getElementById('xp-next').innerText = nextReq;
+                    document.getElementById('xp-fill').style.width = `${(soulsLeft / nextReq) * 100}%`;
+                    break;
+                }
+            }
+
+            const rank = RANKS[Math.min(currentIdx, RANKS.length - 1)];
+            document.documentElement.style.setProperty('--rank-glow-color', rank.color);
+            document.getElementById('rank-lvl-name').innerText = rank.title;
+            document.getElementById('rank-lvl-name').style.color = rank.color;
+            document.getElementById('rank-line').style.backgroundColor = rank.color;
+
+            updateAvatarImage(rank.id, gender);
+        }
+
+        function updateAvatarImage(rankId, gender) {
+            const img = document.getElementById('avatar-img');
+            const loader = document.getElementById('bible-loader');
+            img.src = `${gender === 'female' ? 'f' : 'm'}${rankId}.webp`;
+            img.onload = () => {
+                loader.classList.add('opacity-0');
+                setTimeout(() => loader.classList.add('hidden'), 500);
+                img.classList.remove('opacity-0');
+            };
+        }
+    </script>
+</body>
+</html>
