@@ -32,7 +32,14 @@
     <main class="max-w-4xl mx-auto p-6 pb-40 text-center">
         <header class="mb-10">
             <div id="role-display" class="badge-base badge-role mb-2 uppercase tracking-widest font-bold">MEMBER</div>
-            <h2 id="user-display-name" class="text-4xl font-extrabold tracking-tight mb-3">...</h2>
+            
+            <div class="flex items-center justify-center gap-2 mb-3">
+                <h2 id="user-display-name" class="text-4xl font-extrabold tracking-tight">...</h2>
+                <button onclick="openNameModal()" class="text-slate-400 hover:text-indigo-600 transition-all">
+                    <i class="bi bi-pencil-square text-xl"></i>
+                </button>
+            </div>
+
             <div id="church-list-tags" class="flex flex-wrap justify-center gap-2 mt-2"></div>
             
             <div class="mt-10 max-w-sm mx-auto space-y-8">
@@ -59,6 +66,22 @@
                         </button>
                     </div>
                 </div>
+
+                <div>
+                    <label class="block text-[12px] font-bold text-slate-400 uppercase mb-3 tracking-widest">Tools</label>
+                    <div class="p-8 bg-white dark:bg-slate-900 border dark:border-slate-800 rounded-[3rem] shadow-sm flex flex-col gap-4">
+                        <div class="flex items-center gap-2">
+                            <button onclick="goToGuide()" class="flex-1 flex items-center justify-center gap-2 py-4 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase transition-all shadow-lg shadow-indigo-500/30 active:scale-95">
+                                <i class="bi bi-book-half text-sm"></i>
+                                Soulwinning Guide
+                            </button>
+                            <button onclick="openGuideSettings()" class="w-12 h-12 flex items-center justify-center bg-slate-100 dark:bg-slate-800/50 text-slate-400 rounded-2xl hover:text-indigo-500 transition-all">
+                                <i class="bi bi-gear-fill"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </header>
     </main>
 
@@ -68,6 +91,29 @@
                 <i class="bi bi-plus-lg text-3xl"></i>
                 <span class="absolute inset-0 rounded-full bg-indigo-500 animate-ping opacity-20"></span>
             </button>
+        </div>
+    </div>
+
+    <div id="nameModal" class="hidden fixed inset-0 z-[150] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+        <div class="bg-white dark:bg-slate-900 border dark:border-slate-800 w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl text-center">
+            <h2 class="text-xl font-bold dark:text-white mb-2">Edit Display Name</h2>
+            <input id="newNameInput" type="text" placeholder="Your Name" maxlength="20" class="w-full p-4 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-2xl outline-none text-sm dark:text-white mb-4">
+            <div class="flex gap-2">
+                <button onclick="closeNameModal()" class="flex-1 py-3 text-slate-500 font-bold text-xs uppercase tracking-widest">Cancel</button>
+                <button id="saveNameBtn" onclick="saveDisplayName()" class="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="guideSettingsModal" class="hidden fixed inset-0 z-[150] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+        <div class="bg-white dark:bg-slate-900 border dark:border-slate-800 w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl text-center">
+            <h2 class="text-xl font-bold dark:text-white mb-2">Guide Settings</h2>
+            <p class="text-[10px] text-slate-400 mb-6 uppercase tracking-widest">Paste your Google Sheets URL</p>
+            <input id="guideUrlInput" type="text" placeholder="https://docs.google.com/spreadsheets/d/..." class="w-full p-4 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-2xl outline-none text-[10px] dark:text-white mb-4">
+            <div class="flex gap-2">
+                <button onclick="closeGuideSettings()" class="flex-1 py-3 text-slate-500 font-bold text-xs uppercase tracking-widest">Cancel</button>
+                <button id="saveGuideBtn" onclick="saveGuideUrl()" class="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg">Save URL</button>
+            </div>
         </div>
     </div>
 
@@ -147,7 +193,7 @@
                 if (userProfile.role !== 'member') { window.location.replace("pastor.html"); return; }
 
                 let churchNames = {};
-                for(const code of userProfile.churchId) {
+                for(const code of (userProfile.churchId || [])) {
                     const d = await getDoc(doc(db, "churches", code));
                     if(d.exists()) churchNames[code] = d.data().name;
                 }
@@ -158,20 +204,65 @@
         });
 
         function renderProfileUI(profile, namesMap = null) {
-            document.getElementById('user-display-name').innerText = profile.displayName;
+            document.getElementById('user-display-name').innerText = profile.displayName || "Soulwinner";
             document.getElementById('role-display').innerText = profile.role.toUpperCase();
             const tagContainer = document.getElementById('church-list-tags');
             const dataToUse = namesMap || profile.churchNames;
             let tagsHtml = "";
             if (dataToUse && Object.keys(dataToUse).length > 0) {
                 Object.values(dataToUse).forEach(name => {
-                    tagsHtml += `<span class="badge-base badge-church">${name}</span>`;
+                    tagsHtml += `<span class="bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 px-3 py-1 rounded-full text-[10px] font-bold uppercase">${name}</span>`;
                 });
             } else {
                 tagsHtml = `<span class="text-slate-500 text-[10px]">No Church Assigned</span>`;
             }
             tagContainer.innerHTML = tagsHtml;
         }
+
+        // --- NAME MODAL LOGIC ---
+        window.openNameModal = () => {
+            document.getElementById('newNameInput').value = userProfile.displayName || "";
+            document.getElementById('nameModal').classList.remove('hidden');
+        };
+        window.closeNameModal = () => document.getElementById('nameModal').classList.add('hidden');
+        window.saveDisplayName = async () => {
+            const newName = document.getElementById('newNameInput').value.trim();
+            if (!newName) return showToast("Name required.");
+            const btn = document.getElementById('saveNameBtn');
+            btn.innerText = "SAVING..."; btn.disabled = true;
+            try {
+                await updateDoc(doc(db, "profiles", auth.currentUser.uid), { displayName: newName });
+                userProfile.displayName = newName;
+                document.getElementById('user-display-name').innerText = newName;
+                showToast("Name updated!");
+                closeNameModal();
+            } catch (e) { showToast("Error updating name."); }
+            finally { btn.innerText = "SAVE"; btn.disabled = false; }
+        };
+
+        // --- GUIDE LOGIC ---
+        window.openGuideSettings = () => {
+            document.getElementById('guideUrlInput').value = userProfile.guideUrl || "";
+            document.getElementById('guideSettingsModal').classList.remove('hidden');
+        };
+        window.closeGuideSettings = () => document.getElementById('guideSettingsModal').classList.add('hidden');
+        window.saveGuideUrl = async () => {
+            const url = document.getElementById('guideUrlInput').value.trim();
+            if (url && !url.includes("docs.google.com")) return showToast("Invalid Google Sheets URL.");
+            const btn = document.getElementById('saveGuideBtn');
+            btn.innerText = "SAVING..."; btn.disabled = true;
+            try {
+                await updateDoc(doc(db, "profiles", auth.currentUser.uid), { guideUrl: url });
+                userProfile.guideUrl = url;
+                showToast("Guide URL saved!");
+                closeGuideSettings();
+            } catch (e) { showToast("Error saving URL."); }
+            finally { btn.innerText = "SAVE URL"; btn.disabled = false; }
+        };
+        window.goToGuide = () => {
+            if (!userProfile?.guideUrl) return showToast("No guides saved yet.");
+            window.location.href = "guide.html";
+        };
 
         window.toggleDarkMode = () => { 
             const isDark = document.getElementById('main-html').classList.toggle('dark'); 
@@ -204,17 +295,10 @@
 
         window.handleDataSubmit = async () => {
             const type = document.getElementById('soulType').value;
-    
-            // Simple validation
-            if (!type) {
-                showToast("Please select a soulwinning type.");
-                return;
-            }
-        
+            if (!type) return showToast("Please select a soulwinning type.");
             const btn = document.getElementById('submit-btn'); 
             btn.innerText = "Saving..."; 
             btn.disabled = true;
-            
             try {
                 const uid = auth.currentUser.uid;
                 const churchId = userProfile.churchId[0];
@@ -224,12 +308,12 @@
 
                 await addDoc(collection(db, "salvations"), {
                     count: Number(document.getElementById('soulCount').value),
-                    type: document.getElementById('soulType').value,
+                    type,
                     note: document.getElementById('soulNote').value,
                     eventDate: eventDateStr,
                     userId: uid,
                     userEmail: auth.currentUser.email,
-                    churchId: churchId,
+                    churchId,
                     timestamp: serverTimestamp()
                 });
 
@@ -246,13 +330,9 @@
         window.openModal = () => { 
             document.getElementById('modal').classList.remove('hidden'); 
             document.getElementById('soulCount').value = 1; 
-
-            // Reset the dropdown to the placeholder every time it opens
             document.getElementById('soulType').value = ""; 
-            
             document.getElementById('soulDateTime').value = new Date(Date.now() - new Date().getTimezoneOffset()*60000).toISOString().slice(0, 16); 
-            document.getElementById('soulNote').value = ""; // Also good to clear notes
-            
+            document.getElementById('soulNote').value = ""; 
         };
         window.openPassModal = () => document.getElementById('pass-modal').classList.remove('hidden');
         window.closePassModal = () => document.getElementById('pass-modal').classList.add('hidden');
