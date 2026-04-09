@@ -131,23 +131,32 @@
             onAuthStateChanged, 
             sendPasswordResetEmail, 
             signOut,
-            sendEmailVerification 
+            sendEmailVerification,
+            applyActionCode 
         } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { doc, getDoc, setDoc, serverTimestamp, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // --- 1. SWITCHBOARD ROUTER ---
-        // Catch users coming from Firebase Auth emails (Reset/Verify)
         const urlParams = new URLSearchParams(window.location.search);
         const mode = urlParams.get('mode'); 
         const actionCode = urlParams.get('oobCode'); 
 
         if (mode && actionCode) {
             if (mode === 'resetPassword') {
-                // Instantly redirect to your specific reset page
                 window.location.replace(`reset-password.html?oobCode=${actionCode}`);
             } else if (mode === 'verifyEmail') {
-                // Stay on index.html, the onAuthStateChanged will detect the verification automatically
                 console.log("Processing email verification link...");
+                applyActionCode(auth, actionCode)
+                    .then(() => {
+                        showToast("Email verified! Finalizing...");
+                        if (auth.currentUser) {
+                            auth.currentUser.reload();
+                        }
+                    })
+                    .catch((error) => {
+                        showToast("Verification link invalid or expired.");
+                        console.error(error);
+                    });
             }
         }
 
@@ -174,20 +183,22 @@
             }
         };
 
-       // REDIRECT LISTENER / GATEKEEPER
+        // REDIRECT LISTENER / GATEKEEPER
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // 1. Force the reload
+                // 1. Force reload to get fresh server status
                 await user.reload();
-        
-                // 2. CRITICAL: Check 'auth.currentUser' NOT 'user'
-                // 'user' is the old snapshot. 'auth.currentUser' is the updated object.
+
+                // 2. Check auth.currentUser (the refreshed object)
                 if (!auth.currentUser.emailVerified) {
                     document.getElementById('verifyEmailModal').classList.remove('hidden');
                     return;
                 }
-        
-                // 3. If verified, proceed with Firestore check
+
+                // Hide modal if they just became verified
+                document.getElementById('verifyEmailModal').classList.add('hidden');
+
+                // 3. Firestore Checks
                 const docSnap = await getDoc(doc(db, "profiles", user.uid));
                 if (docSnap.exists()) {
                     const userData = docSnap.data();
@@ -245,45 +256,35 @@
 
                     const codeCollection = role === 'pastor' ? 'pastor_invites' : 'churches';
                     const codeSnap = await getDoc(doc(db, codeCollection, inviteCode));
-
-                    if (!codeSnap.exists()) throw new Error("Invalid code. Access denied.");
+                    if (!codeSnap.exists()) throw new Error("Invalid code.");
 
                     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                    const user = userCredential.user;
+                    await sendEmailVerification(userCredential.user);
 
-                    // Send verification email
-                    await sendEmailVerification(user);
-
-                    const initialChurchId = (role === 'pastor') ? [] : [inviteCode];
-
-                    await setDoc(doc(db, "profiles", user.uid), {
+                    await setDoc(doc(db, "profiles", userCredential.user.uid), {
                         displayName: email.split('@')[0],
                         email: email,
                         role: role,
                         gender: gender,
                         status: 'active',
-                        churchId: initialChurchId,
+                        churchId: (role === 'pastor') ? [] : [inviteCode],
                         createdAt: serverTimestamp()
                     });
 
                     if (role === 'pastor') {
                         try {
-                            await new Promise(r => setTimeout(r, 1200)); 
                             await deleteDoc(doc(db, "pastor_invites", inviteCode));
-                        } catch (e) { console.error("Cleanup failed:", e.message); }
+                        } catch (e) { console.error("Cleanup error", e); }
                     }
 
-                    showToast("Account created! Check your email.");
+                    showToast("Account created! Verify email.");
                     document.getElementById('verifyEmailModal').classList.remove('hidden');
 
                 } else {
-                    // Sign In logic
                     const userCredential = await signInWithEmailAndPassword(auth, email, password);
-                    
-                    // Reload user to catch verification status
                     await userCredential.user.reload();
                     
-                    if (!userCredential.user.emailVerified) {
+                    if (!auth.currentUser.emailVerified) {
                         document.getElementById('verifyEmailModal').classList.remove('hidden');
                         isProcessing = false;
                         btn.innerText = "Continue"; btn.disabled = false;
@@ -293,15 +294,13 @@
                 console.error(err);
                 isProcessing = false;
                 btn.innerText = "Continue"; btn.disabled = false;
-                if (err.code === 'auth/email-already-in-use') showToast("Email already exists.");
-                else if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found') showToast("Invalid login credentials.");
-                else showToast(err.message);
+                showToast(err.message);
             }
         };
 
         window.forgotPassword = async () => {
-            const email = document.getElementById('email').value;
-            if (!email) return showToast("Enter your email first.");
+            const email = document.getElementById('email').value.trim();
+            if (!email) return showToast("Enter your email.");
             try {
                 await sendPasswordResetEmail(auth, email);
                 showToast("Reset link sent.");
@@ -317,14 +316,11 @@
         };
 
         document.getElementById('resendBtn').addEventListener('click', async () => {
-            const user = auth.currentUser;
-            if (user) {
+            if (auth.currentUser) {
                 try {
-                    await sendEmailVerification(user);
+                    await sendEmailVerification(auth.currentUser);
                     showToast("Verification email resent!");
-                } catch (err) {
-                    showToast("Too many requests. Try again later.");
-                }
+                } catch (err) { showToast("Wait a moment before resending."); }
             }
         });
 
