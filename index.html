@@ -100,6 +100,14 @@
         <p class="mt-8 text-[10px] text-slate-400 uppercase font-bold tracking-[0.2em]">Soulwinning Baptist Church Ministry Tool</p>
     </div>
 
+    <div id="processingModal" class="hidden fixed inset-0 z-[120] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 text-center">
+        <div class="bg-white dark:bg-slate-900 border dark:border-slate-800 w-full max-w-sm rounded-[2.5rem] p-10 shadow-2xl">
+            <div class="animate-spin inline-block w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full mb-6"></div>
+            <h2 class="text-xl font-bold dark:text-white mb-2">Finalizing Account</h2>
+            <p class="text-sm text-slate-400 font-medium italic">Confirming your email address...</p>
+        </div>
+    </div>
+
     <div id="verifyEmailModal" class="hidden fixed inset-0 z-[110] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 text-center">
         <div class="bg-white dark:bg-slate-900 border dark:border-slate-800 w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl">
             <div class="w-16 h-16 bg-yellow-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -145,15 +153,19 @@
             if (mode === 'resetPassword') {
                 window.location.replace(`reset-password.html?oobCode=${actionCode}`);
             } else if (mode === 'verifyEmail') {
-                console.log("Processing email verification link...");
+                const procModal = document.getElementById('processingModal');
+                procModal.classList.remove('hidden');
+
                 applyActionCode(auth, actionCode)
-                    .then(() => {
-                        showToast("Email verified! Finalizing...");
+                    .then(async () => {
                         if (auth.currentUser) {
-                            auth.currentUser.reload();
+                            await auth.currentUser.reload();
                         }
+                        procModal.classList.add('hidden');
+                        showToast("Email verified successfully!");
                     })
                     .catch((error) => {
+                        procModal.classList.add('hidden');
                         showToast("Verification link invalid or expired.");
                         console.error(error);
                     });
@@ -186,7 +198,7 @@
         // REDIRECT LISTENER / GATEKEEPER
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // 1. Force reload to get fresh server status
+                // 1. Force the reload to get fresh server status
                 await user.reload();
 
                 // 2. Check auth.currentUser (the refreshed object)
@@ -195,8 +207,9 @@
                     return;
                 }
 
-                // Hide modal if they just became verified
+                // Hide modals if verified
                 document.getElementById('verifyEmailModal').classList.add('hidden');
+                document.getElementById('processingModal').classList.add('hidden');
 
                 // 3. Firestore Checks
                 const docSnap = await getDoc(doc(db, "profiles", user.uid));
