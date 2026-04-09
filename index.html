@@ -174,16 +174,20 @@
             }
         };
 
-        // REDIRECT LISTENER / GATEKEEPER
+       // REDIRECT LISTENER / GATEKEEPER
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // Check verification first
+                // 1. Force the reload
                 await user.reload();
-                if (!user.emailVerified) {
+        
+                // 2. CRITICAL: Check 'auth.currentUser' NOT 'user'
+                // 'user' is the old snapshot. 'auth.currentUser' is the updated object.
+                if (!auth.currentUser.emailVerified) {
                     document.getElementById('verifyEmailModal').classList.remove('hidden');
                     return;
                 }
-
+        
+                // 3. If verified, proceed with Firestore check
                 const docSnap = await getDoc(doc(db, "profiles", user.uid));
                 if (docSnap.exists()) {
                     const userData = docSnap.data();
