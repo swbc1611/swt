@@ -18,8 +18,8 @@
 
     <nav class="bg-white dark:bg-slate-900 border-b dark:border-slate-800 px-6 py-4 flex justify-between items-center sticky top-0 z-10">
         <div class="flex items-center gap-4">
-            <button onclick="window.location.replace('index.html')" class="p-2 -ml-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-indigo-500 transition-all">
-                <i class="bi bi-arrow-left text-xl"></i>
+            <button onclick="window.history.back()" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 transition-all mr-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-slate-600 dark:text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M15 19l-7-7 7-7" /></svg>
             </button>
             <div class="flex items-center gap-2">
                 <div class="w-10 h-8 bg-indigo-600 rounded-lg flex items-center justify-center overflow-hidden">
@@ -153,13 +153,17 @@
             updateProgress();
         }
 
-        window.changeStep = (dir) => {
+       window.changeStep = (dir) => {
             if (currentIndex + dir >= 0 && currentIndex + dir < guideData.length) {
                 currentIndex += dir;
                 renderCard();
             } else if (currentIndex + dir === guideData.length) {
-                // If it's the last step and user clicks Finish
-                window.location.replace("index.html");
+                // User clicked "Finish" on the last step
+                if (window.history.length > 1) {
+                    window.history.back();
+                } else {
+                    window.location.replace("index.html"); // Fallback if no history exists
+                }
             }
         };
 
