@@ -446,16 +446,51 @@
         window.handleDataSubmit = async () => {
             const type = document.getElementById('soulType').value;
             if (!type) return showToast("Select type.");
-            const btn = document.getElementById('submit-btn'); btn.disabled = true;
+        
+            // 1. SAFETY CHECK: Ensure user is linked to a church
+            if (!userProfile?.churchId || userProfile.churchId.length === 0) {
+                showToast("No church linked. Please join/add one first.");
+                return;
+            }
+        
+            const btn = document.getElementById('submit-btn'); 
+            btn.disabled = true;
+            btn.innerText = "Saving...";
+        
             try {
-                const uid = auth.currentUser.uid; const churchId = userProfile.churchId[0];
+                const uid = auth.currentUser.uid; 
+                const churchId = userProfile.churchId[0]; // Uses the primary church
                 const eventDateStr = document.getElementById('soulDateTime').value;
-                const dateId = eventDateStr.split('T')[0]; const monthId = dateId.substring(0, 7);
-                await addDoc(collection(db, "salvations"), { count: Number(document.getElementById('soulCount').value), type, note: document.getElementById('soulNote').value, eventDate: eventDateStr, userId: uid, userEmail: auth.currentUser.email, churchId, timestamp: serverTimestamp() });
+                const dateId = eventDateStr.split('T')[0]; 
+                const monthId = dateId.substring(0, 7);
+        
+                // 2. LOG THE SALVATION
+                await addDoc(collection(db, "salvations"), { 
+                    count: Number(document.getElementById('soulCount').value), 
+                    type, 
+                    note: document.getElementById('soulNote').value, 
+                    eventDate: eventDateStr, 
+                    userId: uid, 
+                    userEmail: auth.currentUser.email, 
+                    churchId, 
+                    timestamp: serverTimestamp() 
+                });
+        
+                // 3. UPDATE CHURCH STATS
                 await setDoc(doc(db, `churches/${churchId}/daily_stats`, dateId), { members: arrayUnion(uid) }, { merge: true });
                 await setDoc(doc(db, `churches/${churchId}/monthly_stats`, monthId), { members: arrayUnion(uid) }, { merge: true });
-                closeModal(); showToast("Record Saved."); if (!document.getElementById('stats-container').classList.contains('hidden')) loadStats();
-            } catch(e) { showToast("Error saving"); } finally { btn.disabled = false; }
+        
+                closeModal(); 
+                showToast("Record Saved."); 
+                
+                
+            } catch(e) { 
+                console.error("Firestore Save Error:", e); // This helps you debug in the browser
+                showToast("Error saving. Check connection/permissions."); 
+            } finally { 
+                btn.disabled = false; 
+                btn.innerText = "Submit";
+            }
         };
 
         window.openChurchManager = () => {
