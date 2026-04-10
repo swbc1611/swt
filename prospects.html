@@ -39,7 +39,6 @@
             <h1 class="text-lg font-black tracking-tight hidden sm:block leading-none">
                 <span class="text-slate-800 dark:text-white">Soulwinning</span><span class="text-indigo-600">Tracker</span>
             </h1>
-                        
         </div>
         
         <button onclick="toggleDarkMode()" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 transition-all">
@@ -102,6 +101,8 @@
         </div>
     </main>
 
+    <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 bg-slate-900 dark:bg-indigo-600 text-white px-6 py-3 rounded-2xl shadow-2xl opacity-0 translate-y-10 transition-all duration-500 z-[150] pointer-events-none text-sm font-bold border border-white/10"></div>
+
     <script type="module">
         import { auth } from './firebase-config.js';
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -109,6 +110,17 @@
         const PSK = "sweeterthanhoney1611";
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw5n8q3W6JDSoAXQ6x_Z7ePQjJMkOP3QYZW-O7fCnkxexlAcCDfuiwBCjII4rng-q6CNA/exec";
         let globalDisplayName = "Unknown User";
+
+        window.showToast = (msg) => {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.classList.remove('opacity-0', 'translate-y-10');
+            t.classList.add('opacity-100', 'translate-y-0');
+            setTimeout(() => {
+                t.classList.remove('opacity-100', 'translate-y-0');
+                t.classList.add('opacity-0', 'translate-y-10');
+            }, 3000);
+        };
 
         window.toggleDarkMode = () => {
             const isDark = document.getElementById('main-html').classList.toggle('dark');
@@ -118,7 +130,6 @@
         };
         if(localStorage.getItem('theme') === 'dark') toggleDarkMode();
 
-        // PULLING IDENTITY FROM CACHE (matches history.html logic)
         onAuthStateChanged(auth, (user) => {
             if (!user) return window.location.replace("index.html");
 
@@ -157,11 +168,16 @@
                     mode: 'no-cors',
                     body: JSON.stringify(payload)
                 });
-                alert("Success! Prospect has been recorded.");
+                
+                showToast("Prospect recorded successfully! ✓");
+                
                 document.getElementById('prospect-form').reset();
-                window.history.back();
+                setTimeout(() => {
+                    window.history.back();
+                }, 1500);
+
             } catch (err) {
-                alert("Submission failed. Please check your connection.");
+                showToast("Submission failed. Check connection.");
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = originalText;
