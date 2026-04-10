@@ -17,11 +17,16 @@
 <body class="bg-slate-50 text-slate-900 dark:bg-[#0f172a] dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-300">
 
     <nav class="bg-white dark:bg-slate-900 border-b dark:border-slate-800 px-6 py-4 flex justify-between items-center sticky top-0 z-10">
-        <div class="flex items-center gap-2">
-            <div class="w-10 h-8 bg-indigo-600 rounded-lg flex items-center justify-center overflow-hidden">
-                <span class="font-bold text-white text-[10px] leading-none text-center">SWT</span>
+        <div class="flex items-center gap-4">
+            <button onclick="window.location.replace('index.html')" class="p-2 -ml-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-indigo-500 transition-all">
+                <i class="bi bi-arrow-left text-xl"></i>
+            </button>
+            <div class="flex items-center gap-2">
+                <div class="w-10 h-8 bg-indigo-600 rounded-lg flex items-center justify-center overflow-hidden">
+                    <span class="font-bold text-white text-[10px] leading-none text-center">SWT</span>
+                </div>
+                <h1 class="text-lg brand-text hidden sm:block"><span class="brand-word-1">Soulwinning</span><span class="brand-word-2">Tracker</span></h1>
             </div>
-            <h1 class="text-lg brand-text"><span class="brand-word-1">Soulwinning</span><span class="brand-word-2">Tracker</span></h1>
         </div>
         <div class="flex items-center gap-4">
             <span id="step-counter" class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Step 0 of 0</span>
@@ -120,7 +125,6 @@
                 renderCard();
             } catch (err) {
                 console.error(err);
-                alert("Error loading sheet. Ensure it is public.");
                 window.location.replace("index.html");
             }
         }
@@ -134,8 +138,12 @@
             document.getElementById('step-counter').innerText = `Step ${currentIndex + 1} of ${guideData.length}`;
             
             document.getElementById('prev-btn').disabled = currentIndex === 0;
-            document.getElementById('next-btn').innerHTML = (currentIndex === guideData.length - 1) ? 
-                'Finish <i class="bi bi-check-lg ml-1"></i>' : 'Next Step <i class="bi bi-chevron-right ml-1"></i>';
+            
+            if (currentIndex === guideData.length - 1) {
+                document.getElementById('next-btn').innerHTML = 'Finish <i class="bi bi-check-lg ml-1"></i>';
+            } else {
+                document.getElementById('next-btn').innerHTML = 'Next Step <i class="bi bi-chevron-right ml-1"></i>';
+            }
 
             updateProgress();
         }
@@ -145,6 +153,7 @@
                 currentIndex += dir;
                 renderCard();
             } else if (currentIndex + dir === guideData.length) {
+                // If it's the last step and user clicks Finish
                 window.location.replace("index.html");
             }
         };
