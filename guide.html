@@ -70,10 +70,15 @@
             </div>
 
             <div class="flex gap-4 pt-4">
-                <button id="prev-btn" onclick="changeStep(-1)" class="flex-1 py-4 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded-xl font-bold uppercase text-xs tracking-widest transition-all active:scale-95 disabled:opacity-30">
+                <button id="prev-btn" onclick="changeStep(-1)" 
+                    class="flex-1 py-4 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded-xl font-bold uppercase text-xs tracking-widest transition-all 
+                    hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95 disabled:opacity-30 disabled:pointer-events-none">
                     Back
                 </button>
-                <button id="next-btn" onclick="changeStep(1)" class="flex-[2] py-4 bg-indigo-600 text-white rounded-xl font-black uppercase text-xs tracking-widest shadow-lg shadow-indigo-500/20 transition-all hover:bg-indigo-700 active:scale-95">
+                
+                <button id="next-btn" onclick="changeStep(1)" 
+                    class="flex-[2] py-4 bg-indigo-600 text-white rounded-xl font-black uppercase text-xs tracking-widest transition-all 
+                    hover:bg-indigo-700 hover:shadow-[0_0_20px_rgba(99,102,241,0.4)] active:scale-95 shadow-lg shadow-indigo-500/20">
                     Next Step <i class="bi bi-chevron-right ml-1"></i>
                 </button>
             </div>
