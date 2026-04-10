@@ -513,9 +513,59 @@
             } catch(e) { showToast("Error"); }
         };
 
+        // --- IMPROVED PRESET & CUSTOM HIGHLIGHTING ---
+        window.setActivePreset = (p) => {
+            currentPreset = p;
+            
+            // 1. Reset Custom Inputs (Remove highlights and clear values)
+            const dateInput = document.getElementById('customDate');
+            const monthInput = document.getElementById('customMonth');
+            dateInput.value = ""; 
+            monthInput.value = "";
+            [dateInput, monthInput].forEach(input => {
+                input.classList.remove('border-indigo-500', 'ring-2', 'ring-indigo-500/50', 'bg-indigo-500/10');
+                input.classList.add('border-slate-700');
+            });
+        
+            // 2. Reset All Preset Buttons
+            document.querySelectorAll('.preset-btn').forEach(btn => {
+                btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-lg', 'shadow-indigo-500/50');
+                btn.classList.add('bg-slate-100', 'dark:bg-slate-800/50', 'text-slate-500', 'dark:text-slate-400');
+            });
+        
+            // 3. Highlight the Active Preset
+            const activeBtn = document.getElementById(`btn-${p}`);
+            if (activeBtn) {
+                activeBtn.classList.remove('bg-slate-100', 'dark:bg-slate-800/50', 'text-slate-500', 'dark:text-slate-400');
+                activeBtn.classList.add('bg-indigo-600', 'text-white', 'shadow-lg', 'shadow-indigo-500/50');
+            }
+        };
+        
+        window.handleCustomInput = (type) => {
+            currentPreset = null;
+            const dateInput = document.getElementById('customDate');
+            const monthInput = document.getElementById('customMonth');
+        
+            // 1. Remove highlight from all Preset Buttons
+            document.querySelectorAll('.preset-btn').forEach(btn => {
+                btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-lg', 'shadow-indigo-500/50');
+                btn.classList.add('bg-slate-100', 'dark:bg-slate-800/50', 'text-slate-500');
+            });
+        
+            // 2. Toggle highlights based on which custom input is used
+            if (type === 'date') {
+                // Highlight Date, Clear Month
+                dateInput.classList.add('border-indigo-500', 'ring-2', 'ring-indigo-500/50', 'bg-indigo-500/10');
+                monthInput.value = "";
+                monthInput.classList.remove('border-indigo-500', 'ring-2', 'ring-indigo-500/50', 'bg-indigo-500/10');
+            } else {
+                // Highlight Month, Clear Date
+                monthInput.classList.add('border-indigo-500', 'ring-2', 'ring-indigo-500/50', 'bg-indigo-500/10');
+                dateInput.value = "";
+                dateInput.classList.remove('border-indigo-500', 'ring-2', 'ring-indigo-500/50', 'bg-indigo-500/10');
+            }
+        };
         window.handleLogout = () => signOut(auth).then(() => window.location.replace("index.html"));
-        window.setActivePreset = (p) => { currentPreset = p; document.querySelectorAll('.preset-btn').forEach(b => { b.classList.remove('bg-indigo-600', 'text-white'); b.classList.add('bg-slate-100', 'dark:bg-slate-800/50', 'text-slate-500'); }); document.getElementById(`btn-${p}`).classList.add('bg-indigo-600', 'text-white'); };
-        window.handleCustomInput = (t) => { currentPreset = null; document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('bg-indigo-600', 'text-white')); };
         window.closeChurchManager = () => document.getElementById('church-modal').classList.add('hidden');
         window.closeModal = () => document.getElementById('modal').classList.add('hidden');
         window.openModal = () => { document.getElementById('modal').classList.remove('hidden'); document.getElementById('soulDateTime').value = new Date(Date.now() - new Date().getTimezoneOffset()*60000).toISOString().slice(0, 16); };
