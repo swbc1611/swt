@@ -12,13 +12,18 @@
         .step-active { height: 4px; background: #6366f1; transition: width 0.3s ease; }
         .step-inactive { height: 4px; background: #1e293b; }
         .guide-card { border: 1px solid rgba(255,255,255,0.05); }
+
+        /* Custom Scrollbar for Verse Box */
+        #verse-scroll-area::-webkit-scrollbar { width: 4px; }
+        #verse-scroll-area::-webkit-scrollbar-thumb { background: #6366f1; border-radius: 10px; }
+        #verse-scroll-area { scrollbar-width: thin; scrollbar-color: #6366f1 transparent; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 dark:bg-[#0f172a] dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-300">
 
     <nav class="bg-white dark:bg-slate-900 border-b dark:border-slate-800 px-6 py-4 flex justify-between items-center sticky top-0 z-10">
         <div class="flex items-center gap-4">
-            <button onclick="window.history.back()" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 transition-all mr-2">
+            <button onclick="window.history.back()" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 active:scale-90 transition-all mr-2">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-slate-600 dark:text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M15 19l-7-7 7-7" /></svg>
             </button>
             <div class="flex items-center gap-2">
@@ -34,8 +39,7 @@
     </nav>
 
     <div class="w-full max-w-4xl mx-auto px-6 pt-6">
-        <div id="progress-bar-container" class="flex gap-2">
-            </div>
+        <div id="progress-bar-container" class="flex gap-2"></div>
     </div>
 
     <main class="flex-1 flex items-center justify-center p-6">
@@ -52,9 +56,11 @@
 
             <div class="relative p-6 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border-l-4 border-indigo-500">
                 <i class="bi bi-quote absolute top-2 right-4 text-3xl text-slate-200 dark:text-slate-700"></i>
-                <p id="card-verses" class="text-lg md:text-xl font-medium italic text-slate-600 dark:text-slate-300 relative z-10 leading-relaxed">
-                    Scripture text goes here.
-                </p>
+                <div id="verse-scroll-area" class="max-height-[200px] overflow-y-auto pr-2">
+                    <div id="card-verses" class="text-lg md:text-xl font-medium italic text-slate-600 dark:text-slate-300 relative z-10 leading-relaxed">
+                        Scripture text goes here.
+                    </div>
+                </div>
             </div>
 
             <div class="p-5 bg-indigo-50 dark:bg-indigo-900/10 border border-indigo-100 dark:border-indigo-900/30 rounded-2xl flex items-start gap-4">
@@ -78,7 +84,7 @@
                 
                 <button id="next-btn" onclick="changeStep(1)" 
                     class="flex-[2] py-4 bg-indigo-600 text-white rounded-xl font-black uppercase text-xs tracking-widest transition-all 
-                    hover:bg-indigo-700 hover:shadow-[0_0_20px_rgba(99,102,241,0.4)] active:scale-95 shadow-lg shadow-indigo-500/20">
+                    hover:bg-indigo-700 hover:shadow-[0_8px_20px_rgba(99,102,241,0.3)] active:scale-95 shadow-lg shadow-indigo-500/20">
                     Next Step <i class="bi bi-chevron-right ml-1"></i>
                 </button>
             </div>
@@ -136,9 +142,21 @@
 
         function renderCard() {
             const data = guideData[currentIndex];
+            const verseContainer = document.getElementById('card-verses');
+            
             document.getElementById('current-order').innerText = data.order || (currentIndex + 1);
             document.getElementById('card-title').innerText = data.title;
-            document.getElementById('card-verses').innerText = data.verses || "";
+            
+            // DELIMITER LOGIC (|)
+            if (data.verses && data.verses.includes('|')) {
+                const verseArray = data.verses.split('|');
+                verseContainer.innerHTML = verseArray.map(v => 
+                    `<div class="mb-4 last:mb-0 border-l-2 border-indigo-500/30 pl-4 py-1">${v.trim()}</div>`
+                ).join('');
+            } else {
+                verseContainer.innerText = data.verses || "";
+            }
+
             document.getElementById('card-guidance').innerText = data.guidance || "Continue to next step.";
             document.getElementById('step-counter').innerText = `Step ${currentIndex + 1} of ${guideData.length}`;
             
@@ -150,19 +168,20 @@
                 document.getElementById('next-btn').innerHTML = 'Next Step <i class="bi bi-chevron-right ml-1"></i>';
             }
 
+            // Scroll verse container back to top on new card
+            document.getElementById('verse-scroll-area').scrollTop = 0;
             updateProgress();
         }
 
-       window.changeStep = (dir) => {
+        window.changeStep = (dir) => {
             if (currentIndex + dir >= 0 && currentIndex + dir < guideData.length) {
                 currentIndex += dir;
                 renderCard();
             } else if (currentIndex + dir === guideData.length) {
-                // User clicked "Finish" on the last step
                 if (window.history.length > 1) {
                     window.history.back();
                 } else {
-                    window.location.replace("index.html"); // Fallback if no history exists
+                    window.location.replace("index.html");
                 }
             }
         };
