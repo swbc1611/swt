@@ -300,16 +300,34 @@
         window.saveDisplayName = async () => {
             const newName = document.getElementById('newNameInput').value.trim();
             if (!newName) return showToast("Name required.");
+            
             const btn = document.getElementById('saveNameBtn');
             btn.innerText = "SAVING..."; btn.disabled = true;
+            
             try {
+                // 1. Update Firestore (Source of Truth)
                 await updateDoc(doc(db, "profiles", auth.currentUser.uid), { displayName: newName });
+                
+                // 2. Update local variable
                 userProfile.displayName = newName;
+                
+                // 3. Update the Session Cache (Cross-page Sync)
+                // This ensures that when the Pastor clicks "Record Prospect", 
+                // the form immediately sees the new name.
+                sessionStorage.setItem('userContext', JSON.stringify(userProfile));
+                
+                // 4. Update UI
                 document.getElementById('user-display-name').innerText = newName;
-                showToast("Name updated!");
+                
+                showToast("Name updated! ✓");
                 closeNameModal();
-            } catch (e) { showToast("Error updating name."); }
-            finally { btn.innerText = "SAVE"; btn.disabled = false; }
+            } catch (e) { 
+                showToast("Error updating name."); 
+            }
+            finally { 
+                btn.innerText = "SAVE"; 
+                btn.disabled = false; 
+            }
         };
 
         // --- GUIDE LOGIC ---
