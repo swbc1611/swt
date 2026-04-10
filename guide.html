@@ -13,22 +13,18 @@
         
         /* Tactical Directional Animations */
         @keyframes slideUpFade {
-            from { opacity: 0; transform: translateY(40px); }
+            from { opacity: 0; transform: translateY(30px); }
             to { opacity: 1; transform: translateY(0); }
         }
         @keyframes slideDownFade {
-            from { opacity: 0; transform: translateY(-40px); }
+            from { opacity: 0; transform: translateY(-30px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .animate-next { animation: slideUpFade 1.0s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        .animate-back { animation: slideDownFade 1.0s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-
-        #verse-scroll-area::-webkit-scrollbar { width: 3px; }
-        #verse-scroll-area::-webkit-scrollbar-thumb { background: #6366f1; border-radius: 10px; }
-        #verse-scroll-area { scrollbar-width: thin; scrollbar-color: #6366f1 transparent; }
+        .animate-next { animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-back { animation: slideDownFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-900 dark:bg-[#0f172a] dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-300 overflow-hidden">
+<body class="bg-slate-50 text-slate-900 dark:bg-[#0f172a] dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-300">
 
     <nav class="bg-white dark:bg-slate-900 border-b dark:border-slate-800 px-6 py-4 flex justify-between items-center sticky top-0 z-[50]">
         <div class="flex items-center gap-2">
@@ -47,44 +43,46 @@
         </button>
     </nav>
 
-    <div class="w-full max-w-lg mx-auto px-6 pt-8 text-center relative z-[40]">
+    <div class="w-full max-w-lg mx-auto px-6 pt-10 text-center relative z-[40]">
         <span id="step-counter" class="inline-block mb-3 text-[10px] font-black text-indigo-500 uppercase tracking-[0.3em]">Step 0 of 0</span>
         <div id="progress-bar-container" class="flex gap-1.5 justify-center"></div>
     </div>
 
-    <main class="flex-1 flex items-center justify-center p-6 relative z-10">
-        <div id="guide-card" class="guide-card w-full max-w-xl bg-white dark:bg-slate-900 rounded-[2rem] p-8 md:p-10 shadow-2xl hidden flex flex-col gap-6">
+    <main class="flex-1 flex items-start justify-center p-6 py-12 relative z-10">
+        <div id="guide-card" class="guide-card w-full max-w-xl bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 md:p-12 shadow-2xl hidden flex flex-col gap-8">
             
             <div class="flex items-center gap-4">
-                <div class="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20 shrink-0">
-                    <span id="current-order" class="text-white font-black text-xl">1</span>
+                <div class="w-14 h-14 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-500/20 shrink-0">
+                    <span id="current-order" class="text-white font-black text-2xl">1</span>
                 </div>
-                <h2 id="card-title" class="text-xl md:text-3xl font-black uppercase tracking-tight text-slate-800 dark:text-white leading-tight">Loading...</h2>
+                <h2 id="card-title" class="text-2xl md:text-4xl font-black uppercase tracking-tight text-slate-800 dark:text-white leading-tight">Loading...</h2>
             </div>
 
-            <div class="relative p-6 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border-l-4 border-indigo-500">
-                <div id="verse-scroll-area" class="max-h-[200px] overflow-y-auto pr-2">
-                    <div id="card-verses" class="text-md md:text-lg font-medium italic text-slate-600 dark:text-slate-300 leading-relaxed"></div>
-                </div>
+            <div class="relative p-7 bg-slate-50 dark:bg-slate-800/40 rounded-3xl border-l-4 border-indigo-500">
+                <div id="card-verses" class="text-lg md:text-xl font-medium italic text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-line">
+                    </div>
             </div>
 
-            <div class="p-4 bg-indigo-50/50 dark:bg-indigo-900/10 border border-indigo-100 dark:border-indigo-900/20 rounded-2xl flex items-center gap-4">
+            <div class="p-5 bg-indigo-50/50 dark:bg-indigo-900/10 border border-indigo-100 dark:border-indigo-900/20 rounded-2xl flex items-center gap-4">
                 <div class="p-2 bg-indigo-600 rounded-lg shrink-0">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                 </div>
-                <p id="card-guidance" class="text-[10px] md:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide"></p>
+                <div>
+                    <p class="text-[9px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest mb-0.5">Guidance</p>
+                    <p id="card-guidance" class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide"></p>
+                </div>
             </div>
 
-            <div class="flex gap-4 pt-2">
+            <div class="flex gap-4 pt-4">
                 <button id="prev-btn" onclick="changeStep(-1)" 
-                    class="flex-1 py-4 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded-xl font-bold uppercase text-[10px] tracking-widest transition-all 
+                    class="flex-1 py-4 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded-2xl font-bold uppercase text-[10px] tracking-widest transition-all 
                     hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95 disabled:opacity-0 pointer-events-none flex items-center justify-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M15 19l-7-7 7-7" /></svg>
                     Back
                 </button>
                 
                 <button id="next-btn" onclick="changeStep(1)" 
-                    class="flex-[2] py-4 bg-indigo-600 text-white rounded-xl font-black uppercase text-[10px] tracking-widest transition-all 
+                    class="flex-[2] py-4 bg-indigo-600 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all 
                     hover:bg-indigo-700 hover:shadow-[0_8px_25px_rgba(99,102,241,0.4)] active:scale-95 shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-2">
                     <span id="next-text">Next Step</span>
                     <svg id="next-svg" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M9 5l7 7-7 7" /></svg>
@@ -92,7 +90,7 @@
             </div>
         </div>
 
-        <div id="loading-state" class="text-center">
+        <div id="loading-state" class="text-center py-20">
             <div class="animate-spin inline-block w-8 h-8 border-[3px] border-indigo-500 border-t-transparent rounded-full mb-4"></div>
             <p class="text-[9px] font-bold text-slate-400 uppercase tracking-[0.3em]">Preparing Guide</p>
         </div>
@@ -110,16 +108,16 @@
             const isDark = localStorage.getItem('theme') === 'dark';
             if (isDark) {
                 document.getElementById('main-html').classList.add('dark');
-                document.getElementById('sun-icon').classList.remove('hidden');
-                document.getElementById('moon-icon').classList.add('hidden');
+                document.getElementById('sun-icon')?.classList.remove('hidden');
+                document.getElementById('moon-icon')?.classList.add('hidden');
             }
         };
         initTheme();
 
         window.toggleDarkMode = () => {
             const isDark = document.getElementById('main-html').classList.toggle('dark');
-            document.getElementById('sun-icon').classList.toggle('hidden', !isDark);
-            document.getElementById('moon-icon').classList.toggle('hidden', isDark);
+            document.getElementById('sun-icon')?.classList.toggle('hidden', !isDark);
+            document.getElementById('moon-icon')?.classList.toggle('hidden', isDark);
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
         };
 
@@ -149,7 +147,7 @@
             const card = document.getElementById('guide-card');
             const data = guideData[currentIndex];
             
-            // Animation reset and trigger
+            // Re-trigger animation
             card.classList.remove('animate-next', 'animate-back');
             void card.offsetWidth; 
             card.classList.add(direction === 'next' ? 'animate-next' : 'animate-back');
@@ -159,7 +157,7 @@
             
             const verseContainer = document.getElementById('card-verses');
             if (data.verses && data.verses.includes('|')) {
-                verseContainer.innerHTML = data.verses.split('|').map(v => `<div class="mb-3 last:mb-0 border-l-2 border-indigo-500/30 pl-3 py-0.5">${v.trim()}</div>`).join('');
+                verseContainer.innerHTML = data.verses.split('|').map(v => `<div class="mb-5 last:mb-0 border-l-2 border-indigo-500/20 pl-4 py-1">${v.trim()}</div>`).join('');
             } else {
                 verseContainer.innerText = data.verses || "";
             }
@@ -168,7 +166,6 @@
             document.getElementById('step-counter').innerText = `Step ${currentIndex + 1} of ${guideData.length}`;
             
             const prevBtn = document.getElementById('prev-btn');
-            prevBtn.disabled = currentIndex === 0;
             prevBtn.classList.toggle('opacity-0', currentIndex === 0);
             prevBtn.classList.toggle('pointer-events-none', currentIndex === 0);
             
@@ -184,7 +181,6 @@
                 nextSvg.innerHTML = '<path d="M9 5l7 7-7 7" />';
             }
 
-            document.getElementById('verse-scroll-area').scrollTop = 0;
             updateProgress();
         }
 
