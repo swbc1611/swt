@@ -90,11 +90,11 @@
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 p-10 bg-white dark:bg-slate-900 border dark:border-slate-800 rounded-[3rem] shadow-sm">
                 <div class="text-center">
-                    <p class="text-[10px] font-bold text-slate-400 uppercase mb-2 tracking-widest">Global Salvations</p>
+                    <p id="soulsLabel" class="text-[10px] font-bold text-slate-400 uppercase mb-2 tracking-widest">Global Salvations</p>
                     <span id="totalSouls" class="text-6xl font-black text-indigo-600">0</span>
                 </div>
                 <div class="text-center border-t sm:border-t-0 sm:border-l dark:border-slate-800">
-                    <p class="text-[10px] font-bold text-slate-400 uppercase mb-2 tracking-widest">Active Members</p>
+                    <p id="activeLabel" class="text-[10px] font-bold text-slate-400 uppercase mb-2 tracking-widest">Active Members</p>
                     <span id="totalSW" class="text-6xl font-black text-indigo-600">0</span>
                 </div>
             </div>
@@ -208,13 +208,30 @@
         };
 
         window.loadStats = async () => {
-            const selCh = document.getElementById('churchFilter').value;
+            const filterEl = document.getElementById('churchFilter');
+            const selCh = filterEl.value;
+            const selChName = filterEl.options[filterEl.selectedIndex].text;
+            
             const cDate = document.getElementById('customDate').value;
             const cMonth = document.getElementById('customMonth').value;
             const label = document.getElementById('reportDateLabel');
+            
+            // UI elements for reactive labels
+            const soulsLabel = document.getElementById('soulsLabel');
+            const activeLabel = document.getElementById('activeLabel');
+
             document.getElementById('stats-container').classList.remove('hidden');
             document.getElementById('totalSouls').innerText = "...";
             document.getElementById('totalSW').innerText = "...";
+
+            // --- REACTIVE LABEL LOGIC ---
+            if (selCh === 'all') {
+                soulsLabel.innerText = "Global Salvations";
+                activeLabel.innerText = "Active Members";
+            } else {
+                soulsLabel.innerText = `${selChName} Salvations`;
+                activeLabel.innerText = `${selChName} Members`;
+            }
 
             try {
                 const now = new Date();
@@ -266,7 +283,6 @@
             } catch (e) { console.error(e); showToast("❌ Error generating report."); }
         };
 
-        // --- INVITE MANAGEMENT LOGIC ---
         window.openAdminManager = () => {
             document.getElementById('admin-modal').classList.remove('hidden');
             onSnapshot(collection(db, "pastor_invites"), (snap) => {
@@ -305,7 +321,6 @@
             );
         };
 
-        // --- UNIVERSAL CONFIRM MODAL LOGIC ---
         window.openConfirmModal = (title, body, onConfirm) => {
             document.getElementById('confirm-title').innerText = title;
             document.getElementById('confirm-body').innerText = body;
