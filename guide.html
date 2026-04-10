@@ -8,84 +8,80 @@
     <link rel="stylesheet" href="style.css">
     <script>tailwind.config = { darkMode: 'class' }</script>
     <style>
-        /* FULLSCREEN LOCK */
-        body, html { height: 100%; overflow: hidden; }
+        /* VIEWPORT LOCK */
+        body, html { height: 100%; overflow: hidden; position: fixed; width: 100%; }
         
         .step-active { height: 4px; background: #6366f1; transition: all 0.3s ease; box-shadow: 0 0 10px rgba(99,102,241,0.5); }
         .step-inactive { height: 4px; background: #1e293b; }
         
-        /* CARD STACK ANIMATIONS */
-        @keyframes slideInRight {
-            from { transform: translateX(100%) rotate(5deg); opacity: 0; }
-            to { transform: translateX(0) rotate(0deg); opacity: 1; }
+        /* THE STACKED DECK ANIMATION */
+        @keyframes cardNext {
+            from { transform: translateY(40px) scale(0.95); opacity: 0; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
         }
-        @keyframes slideOutLeft {
-            to { transform: translateX(-120%) rotate(-10deg); opacity: 0; }
+        @keyframes cardBack {
+            from { transform: translateY(-40px) scale(0.95); opacity: 0; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
         }
-        
-        .card-enter { animation: slideInRight 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        .card-exit { animation: slideOutLeft 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-next { animation: cardNext 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-back { animation: cardBack 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
-        .verse-card {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            height: 100%;
-            width: 100%;
-            padding: 2rem;
-        }
+        /* CUSTOM SCROLLBAR FOR INNER CONTENT */
+        .custom-scroll::-webkit-scrollbar { width: 4px; }
+        .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #6366f1; border-radius: 10px; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-900 dark:bg-[#0f172a] dark:text-slate-100 flex flex-col transition-colors duration-300">
+<body class="bg-slate-50 text-slate-900 dark:bg-[#0f172a] dark:text-slate-100 flex flex-col transition-colors duration-300 font-sans">
 
-    <nav class="bg-white dark:bg-slate-900 border-b dark:border-slate-800 px-6 py-4 flex justify-between items-center z-[50]">
+    <nav class="bg-white dark:bg-slate-900 border-b dark:border-slate-800 px-6 py-4 flex justify-between items-center z-50">
         <div class="flex items-center gap-2">
-            <button onclick="window.history.back()" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 active:scale-90 transition-all mr-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-slate-600 dark:text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M15 19l-7-7 7-7" /></svg>
+            <button onclick="window.history.back()" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 active:scale-90 transition-all">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M15 19l-7-7 7-7" /></svg>
             </button>
-            <div class="w-10 h-8 bg-indigo-600 rounded-lg flex items-center justify-center overflow-hidden">
-                <span class="font-bold text-white text-[10px] leading-none text-center">SWT</span>
-            </div>
         </div>
         <div class="flex flex-col items-center">
-            <span id="step-counter" class="text-[9px] font-black text-indigo-500 uppercase tracking-[0.2em]">Step 0 of 0</span>
+            <span id="step-counter" class="text-[10px] font-black text-indigo-500 uppercase tracking-widest">Step 0 of 0</span>
             <div id="progress-bar-container" class="flex gap-1 justify-center w-32 mt-1"></div>
         </div>
-        <button onclick="toggleDarkMode()" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 transition-all">
+        <button onclick="toggleDarkMode()" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800">
             <svg id="sun-icon" class="w-5 h-5 hidden text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M3 12h2.25m.386-6.364l1.591 1.591M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" /></svg>
             <svg id="moon-icon" class="w-5 h-5 text-slate-600 dark:text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" /></svg>
         </button>
     </nav>
 
-    <main class="flex-1 relative flex items-center justify-center overflow-hidden">
-        <div id="deck-viewport" class="w-full h-full max-w-2xl mx-auto relative px-6 py-10 flex flex-col justify-between">
+    <main class="flex-1 relative flex items-center justify-center p-4">
+        <div id="guide-card" class="w-full h-full max-w-xl bg-white dark:bg-slate-900 rounded-[3rem] shadow-2xl ring-1 ring-black/5 dark:ring-white/10 flex flex-col overflow-hidden hidden">
             
-            <div id="card-holder" class="relative flex-1 w-full bg-white dark:bg-slate-900 rounded-[3.5rem] shadow-2xl ring-1 ring-black/5 dark:ring-white/10 overflow-hidden">
-                <div id="verse-content" class="verse-card">
-                    <h2 id="card-title" class="text-indigo-500 font-black uppercase tracking-widest text-xs mb-6">...</h2>
-                    <div id="card-verses" class="font-bold italic text-slate-800 dark:text-white leading-tight w-full"></div>
+            <div class="p-8 pb-0 flex items-center gap-4">
+                <div class="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center shrink-0 shadow-lg shadow-indigo-500/20">
+                    <span id="current-order" class="text-white font-black text-xl">1</span>
                 </div>
+                <h2 id="card-title" class="text-xl font-black uppercase tracking-tight text-slate-800 dark:text-white leading-tight">...</h2>
             </div>
 
-            <div class="mt-8 flex flex-col gap-4">
-                <div id="guidance-box" class="px-6 py-3 bg-indigo-500/10 rounded-2xl text-center">
-                    <p id="card-guidance" class="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wide"></p>
+            <div id="scroll-area" class="flex-1 overflow-y-auto custom-scroll px-8 py-6 flex flex-col justify-center">
+                <div id="card-verses" class="font-bold italic text-black dark:text-white leading-tight"></div>
+            </div>
+
+            <div class="p-8 pt-0 bg-gradient-to-t from-white dark:from-slate-900 via-white dark:via-slate-900 to-transparent">
+                <div class="mb-6 p-4 bg-indigo-500/10 rounded-2xl border border-indigo-500/20 flex items-center gap-3">
+                    <div class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></div>
+                    <p id="card-guidance" class="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest"></p>
                 </div>
-                
+
                 <div class="flex gap-3">
-                    <button id="prev-btn" onclick="handleNavigation(-1)" class="flex-1 py-5 bg-slate-200 dark:bg-slate-800 text-slate-500 rounded-[2rem] font-black uppercase text-[10px] tracking-widest active:scale-95 transition-all">Back</button>
-                    <button id="next-btn" onclick="handleNavigation(1)" class="flex-[2] py-5 bg-indigo-600 text-white rounded-[2rem] font-black uppercase text-[10px] tracking-widest active:scale-95 shadow-xl shadow-indigo-500/30 transition-all">
-                        <span id="next-text">Next Verse</span>
+                    <button id="prev-btn" onclick="changeStep(-1)" class="flex-1 py-5 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-2xl font-black uppercase text-[10px] tracking-widest active:scale-95 transition-all">Back</button>
+                    <button id="next-btn" onclick="changeStep(1)" class="flex-[2] py-5 bg-indigo-600 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-xl shadow-indigo-500/30 active:scale-95 transition-all">
+                        <span id="next-text">Next Step</span>
                     </button>
                 </div>
             </div>
         </div>
 
-        <div id="loading-state" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-50 dark:bg-[#0f172a] z-[100]">
+        <div id="loading-state" class="absolute inset-0 flex flex-col items-center justify-center">
             <div class="animate-spin w-8 h-8 border-[3px] border-indigo-500 border-t-transparent rounded-full mb-4"></div>
-            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Generating Deck</p>
+            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Waking Guide</p>
         </div>
     </main>
 
@@ -94,8 +90,8 @@
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        let fullDeck = []; // Every individual verse becomes a 'card'
-        let currentCardIndex = 0;
+        let guideData = [];
+        let currentIndex = 0;
 
         const initTheme = () => {
             if (localStorage.getItem('theme') === 'dark') {
@@ -111,7 +107,7 @@
             document.getElementById('sun-icon')?.classList.toggle('hidden', !isDark);
             document.getElementById('moon-icon')?.classList.toggle('hidden', isDark);
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
-            setTimeout(fitText, 50); // Re-fit on theme change to ensure layout calc is right
+            setTimeout(fitText, 50);
         };
 
         onAuthStateChanged(auth, async (user) => {
@@ -128,101 +124,92 @@
                 const csvText = await response.text();
                 const rows = csvText.split('\n').map(row => row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(cell => cell.replace(/"/g, '').trim()));
                 rows.shift();
+                guideData = rows.map(r => ({ order: r[0], title: r[1], verses: r[2], guidance: r[4] })).filter(item => item.title);
                 
-                // --- DECK GENERATION LOGIC ---
-                // We split every '|' verse into its own card so the user skims through verses 1 by 1.
-                const rawData = rows.map(r => ({ title: r[1], verses: r[2], guidance: r[4] })).filter(item => item.title);
-                
-                fullDeck = [];
-                rawData.forEach((step, stepIdx) => {
-                    const verseList = step.verses.split('|');
-                    verseList.forEach((v, vIdx) => {
-                        fullDeck.push({
-                            stepNum: stepIdx + 1,
-                            totalSteps: rawData.length,
-                            title: step.title,
-                            verse: v.trim(),
-                            guidance: step.guidance || "Continue reading..."
-                        });
-                    });
-                });
-
                 document.getElementById('loading-state').remove();
-                buildProgress(rawData.length);
+                document.getElementById('guide-card').classList.remove('hidden');
+                buildProgress();
                 renderCard();
             } catch (err) { window.location.replace("index.html"); }
         }
 
         function renderCard(direction = 'next') {
-            const cardHolder = document.getElementById('card-holder');
-            const data = fullDeck[currentCardIndex];
+            const card = document.getElementById('guide-card');
+            const data = guideData[currentIndex];
 
-            // Animation
-            cardHolder.classList.remove('card-enter');
-            void cardHolder.offsetWidth;
-            cardHolder.classList.add('card-enter');
+            // Animate Card
+            card.classList.remove('animate-next', 'animate-back');
+            void card.offsetWidth;
+            card.classList.add(direction === 'next' ? 'animate-next' : 'animate-back');
 
-            // Data Injection
+            document.getElementById('current-order').innerText = data.order || (currentIndex + 1);
             document.getElementById('card-title').innerText = data.title;
-            document.getElementById('card-verses').innerText = data.verse;
-            document.getElementById('card-guidance').innerText = data.guidance;
-            document.getElementById('step-counter').innerText = `Step ${data.stepNum} of ${data.totalSteps}`;
+            
+            const vContainer = document.getElementById('card-verses');
+            if (data.verses && data.verses.includes('|')) {
+                vContainer.innerHTML = data.verses.split('|').map(v => `<div class="mb-8 last:mb-0 border-l-4 border-indigo-500 pl-6 py-2">${v.trim()}</div>`).join('');
+            } else {
+                vContainer.innerText = data.verses || "";
+            }
 
-            // Buttons
-            document.getElementById('prev-btn').classList.toggle('opacity-0', currentCardIndex === 0);
-            document.getElementById('next-text').innerText = (currentCardIndex === fullDeck.length - 1) ? "Finish" : "Next Verse";
+            document.getElementById('card-guidance').innerText = data.guidance || "Continue to next step.";
+            document.getElementById('step-counter').innerText = `Step ${currentIndex + 1} of ${guideData.length}`;
+            
+            document.getElementById('prev-btn').classList.toggle('opacity-0', currentIndex === 0);
+            document.getElementById('next-text').innerText = (currentIndex === guideData.length - 1) ? 'Finish' : 'Next Step';
 
-            updateProgress(data.stepNum - 1);
+            updateProgress();
             fitText();
+            document.getElementById('scroll-area').scrollTop = 0;
         }
 
         function fitText() {
             const el = document.getElementById('card-verses');
-            const container = document.getElementById('verse-content');
-            const maxHeight = container.offsetHeight * 0.6; // Use 60% of card height for text
-            let size = 60; // Start huge
-            
+            const area = document.getElementById('scroll-area');
+            const maxHeight = area.offsetHeight * 0.8; // Target filling 80% of view
+            let size = 42; 
+
             el.style.fontSize = size + "px";
-            while (el.scrollHeight > maxHeight && size > 16) {
+            // Reduce font size if the total height exceeds target, but keep a readable floor
+            while (el.scrollHeight > maxHeight && size > 18) {
                 size -= 2;
                 el.style.fontSize = size + "px";
             }
         }
 
-        window.handleNavigation = (dir) => {
-            if (currentCardIndex + dir >= 0 && currentCardIndex + dir < fullDeck.length) {
-                currentCardIndex += dir;
-                renderCard();
-            } else if (currentCardIndex + dir === fullDeck.length) {
+        window.changeStep = (dir) => {
+            if (currentIndex + dir >= 0 && currentIndex + dir < guideData.length) {
+                currentIndex += dir;
+                renderCard(dir > 0 ? 'next' : 'back');
+            } else if (currentIndex + dir === guideData.length) {
                 window.history.back();
             }
         };
 
-        function buildProgress(count) {
+        function buildProgress() {
             const container = document.getElementById('progress-bar-container');
             container.innerHTML = '';
-            for(let i=0; i<count; i++) {
+            guideData.forEach((_, i) => {
                 const step = document.createElement('div');
                 step.className = 'flex-1 step-inactive rounded-full';
                 step.id = `bar-${i}`;
                 container.appendChild(step);
-            }
+            });
         }
 
-        function updateProgress(stepIdx) {
-            const bars = document.querySelectorAll('#progress-bar-container div');
-            bars.forEach((bar, i) => {
-                if (i <= stepIdx) {
+        function updateProgress() {
+            guideData.forEach((_, i) => {
+                const bar = document.getElementById(`bar-${i}`);
+                if (i <= currentIndex) {
                     bar.className = 'flex-1 step-active rounded-full';
-                    bar.style.background = (i === stepIdx) ? '#6366f1' : '#312e81';
+                    bar.style.background = (i === currentIndex) ? '#6366f1' : '#312e81';
                 } else {
-                    bar.className = 'flex-1 step-inactive rounded-full';
+                    bar.className = 'flex-1 step-active step-inactive rounded-full';
                     bar.style.background = '';
                 }
             });
         }
 
-        // Re-calculate font size if window is resized (e.g. keyboard pops up)
         window.addEventListener('resize', fitText);
     </script>
 </body>
