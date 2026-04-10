@@ -88,13 +88,13 @@
                 <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center mb-1">Results for</label>
                 <h3 id="reportDateLabel" class="text-indigo-500 font-bold text-sm uppercase tracking-wider">...</h3>
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 p-10 bg-white dark:bg-slate-900 border dark:border-slate-800 rounded-[3rem] shadow-sm">
+            <div class="flex flex-col gap-12 p-12 bg-white dark:bg-slate-900 border dark:border-slate-800 rounded-[3rem] shadow-sm max-w-sm mx-auto">
                 <div class="text-center">
                     <p id="soulsLabel" class="text-[10px] font-bold text-slate-400 uppercase mb-2 tracking-widest">Global Salvations</p>
                     <span id="totalSouls" class="text-6xl font-black text-indigo-600">0</span>
                 </div>
-                <div class="text-center border-t sm:border-t-0 sm:border-l dark:border-slate-800">
-                    <p id="activeLabel" class="text-[10px] font-bold text-slate-400 uppercase mb-2 tracking-widest">Active Members</p>
+                <div class="text-center border-t dark:border-slate-800 pt-10">
+                    <p id="activeLabel" class="text-[10px] font-bold text-slate-400 uppercase mb-2 tracking-widest">Participating Members</p>
                     <span id="totalSW" class="text-6xl font-black text-indigo-600">0</span>
                 </div>
             </div>
@@ -207,16 +207,14 @@
             else document.getElementById('customDate').value = "";
         };
 
+        // --- UPDATED STATS LOGIC: Pastor-Style Date Formatting ---
         window.loadStats = async () => {
             const filterEl = document.getElementById('churchFilter');
             const selCh = filterEl.value;
             const selChName = filterEl.options[filterEl.selectedIndex].text;
-            
             const cDate = document.getElementById('customDate').value;
             const cMonth = document.getElementById('customMonth').value;
             const label = document.getElementById('reportDateLabel');
-            
-            // UI elements for reactive labels
             const soulsLabel = document.getElementById('soulsLabel');
             const activeLabel = document.getElementById('activeLabel');
 
@@ -224,18 +222,18 @@
             document.getElementById('totalSouls').innerText = "...";
             document.getElementById('totalSW').innerText = "...";
 
-            // --- REACTIVE LABEL LOGIC ---
             if (selCh === 'all') {
                 soulsLabel.innerText = "Global Salvations";
-                activeLabel.innerText = "Active Members";
+                activeLabel.innerText = "Participating Members";
             } else {
                 soulsLabel.innerText = `${selChName} Salvations`;
-                activeLabel.innerText = `${selChName} Members`;
+                activeLabel.innerText = "Participating Members";
             }
 
             try {
                 const now = new Date();
                 let startLimit = ""; let endLimit = ""; let bucketPaths = [];
+
                 if (cDate) {
                     startLimit = cDate + "T00:00"; endLimit = cDate + "T23:59";
                     label.innerText = new Date(cDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
@@ -246,18 +244,26 @@
                     bucketPaths.push(`monthly_stats/${cMonth}`);
                 } else if (currentPreset === 'today') {
                     const str = now.toISOString().split('T')[0];
-                    startLimit = str + "T00:00"; label.innerText = "Today";
+                    startLimit = str + "T00:00"; 
+                    label.innerText = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
                     bucketPaths.push(`daily_stats/${str}`);
                 } else if (currentPreset === 'week') {
-                    const sW = new Date(now); sW.setDate(now.getDate() - now.getDay());
-                    startLimit = sW.toISOString().split('T')[0] + "T00:00"; label.innerText = "This Week";
+                    const start = new Date(now); start.setDate(now.getDate() - now.getDay());
+                    const end = new Date(start); end.setDate(start.getDate() + 6);
+                    startLimit = start.toISOString().split('T')[0] + "T00:00";
+                    endLimit = end.toISOString().split('T')[0] + "T23:59";
+                    
+                    const fmt = { month: 'short', day: 'numeric' };
+                    label.innerText = `${start.toLocaleDateString('en-US', fmt)} - ${end.toLocaleDateString('en-US', fmt)}`;
+                    
                     for(let i=0; i<7; i++) {
-                        const d = new Date(sW); d.setDate(sW.getDate() + i);
+                        const d = new Date(start); d.setDate(start.getDate() + i);
                         bucketPaths.push(`daily_stats/${d.toISOString().split('T')[0]}`);
                     }
                 } else if (currentPreset === 'month') {
                     const str = now.toISOString().split('T')[0].substring(0, 7);
-                    startLimit = str + "-01T00:00"; label.innerText = "This Month";
+                    startLimit = str + "-01T00:00"; 
+                    label.innerText = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
                     bucketPaths.push(`monthly_stats/${str}`);
                 }
 
@@ -332,12 +338,10 @@
         };
 
         window.closeConfirmModal = () => document.getElementById('confirm-modal').classList.add('hidden');
-
         window.toggleDarkMode = () => { 
             const isDark = document.getElementById('main-html').classList.toggle('dark'); 
             localStorage.setItem('theme', isDark ? 'dark' : 'light'); 
         };
-
         window.handleLogout = () => signOut(auth).then(() => window.location.replace("index.html"));
     </script>
 </body>
