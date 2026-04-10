@@ -108,7 +108,9 @@
 
         const PSK = "sweeterthanhoney1611";
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw5n8q3W6JDSoAXQ6x_Z7ePQjJMkOP3QYZW-O7fCnkxexlAcCDfuiwBCjII4rng-q6CNA/exec";
+        
         let globalDisplayName = "Unknown User";
+        let globalChurchName = "No Church"; 
 
         window.showToast = (msg) => {
             const t = document.getElementById('toast');
@@ -136,6 +138,11 @@
             if (cachedData) {
                 const profile = JSON.parse(cachedData);
                 globalDisplayName = profile.displayName || user.displayName || user.email;
+                
+                // Extraction of Church Name for Column G
+                if (profile.churchNames) {
+                    globalChurchName = Object.values(profile.churchNames)[0] || "General";
+                }
             } else {
                 globalDisplayName = user.displayName || user.email || "Soulwinner";
             }
@@ -158,7 +165,8 @@
                 contact: document.getElementById('p-phone').value,
                 swDate: document.getElementById('p-date').value,
                 swLocation: document.getElementById('p-location').value,
-                soulwinner: globalDisplayName 
+                soulwinner: globalDisplayName,
+                church: globalChurchName 
             };
 
             try {
@@ -168,7 +176,7 @@
                     body: JSON.stringify(payload)
                 });
                 
-                showToast("Prospect recorded successfully! ✓");
+                showToast(`Success! Recorded for ${globalChurchName} ✓`);
                 
                 document.getElementById('prospect-form').reset();
                 setTimeout(() => {
