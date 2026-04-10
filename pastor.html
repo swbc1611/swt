@@ -46,8 +46,6 @@
                 <div>
                     <label class="block text-[12px] font-bold text-slate-400 uppercase mb-3 tracking-widest">Personal</label>
                     <div class="p-8 bg-white dark:bg-slate-900 border dark:border-slate-800 rounded-[3rem] shadow-sm flex flex-col gap-4">
-                                            
-
                         <button onclick="window.location.href='prospects.html'" class="w-full flex items-center justify-center gap-3 py-5 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase transition-all shadow-lg shadow-indigo-500/30 active:scale-95">
                             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
@@ -56,7 +54,7 @@
                         </button>
 
                         <button onclick="window.location.href='history.html'" class="w-full flex items-center justify-center gap-2 py-4 bg-indigo-600 text-white rounded-2xl text-[10px] font-bold uppercase transition-all shadow-lg shadow-indigo-500/30 active:scale-95">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
                             My History
                         </button>
 
@@ -88,8 +86,8 @@
                                 Soulwinning Guide
                             </button>
                             <button onclick="openGuideSettings()" class="w-12 h-12 flex items-center justify-center bg-slate-100 dark:bg-slate-800/50 text-slate-400 transition-all border border-indigo-500/30 
-               ring-1 ring-indigo-500/20 shadow-[0_0_15px_rgba(99,102,241,0.1)] 
-               active:scale-95 rounded-2xl hover:text-indigo-500">
+                               ring-1 ring-indigo-500/20 shadow-[0_0_15px_rgba(99,102,241,0.1)] 
+                               active:scale-95 rounded-2xl hover:text-indigo-500">
                                 <i class="bi bi-gear-fill"></i>
                             </button>
                         </div>
@@ -305,20 +303,13 @@
             btn.innerText = "SAVING..."; btn.disabled = true;
             
             try {
-                // 1. Update Firestore (Source of Truth)
                 await updateDoc(doc(db, "profiles", auth.currentUser.uid), { displayName: newName });
-                
-                // 2. Update local variable
                 userProfile.displayName = newName;
                 
-                // 3. Update the Session Cache (Cross-page Sync)
-                // This ensures that when the Pastor clicks "Record Prospect", 
-                // the form immediately sees the new name.
+                // CRITICAL SYNC: Ensure other pages (like prospects) see the update immediately
                 sessionStorage.setItem('userContext', JSON.stringify(userProfile));
                 
-                // 4. Update UI
                 document.getElementById('user-display-name').innerText = newName;
-                
                 showToast("Name updated! ✓");
                 closeNameModal();
             } catch (e) { 
@@ -358,14 +349,24 @@
         onAuthStateChanged(auth, async (user) => {
             if (!user) { sessionStorage.clear(); window.location.replace("index.html"); return; }
             try {
-                const snap = await getDoc(doc(db, "profiles", user.uid));
-                if (!snap.exists()) { window.location.replace("index.html"); return; }
-                const data = snap.data();
-                if (data.role !== 'pastor') { window.location.replace("index.html"); return; }
-                userProfile = data;
-                if (userProfile.status === 'inactive') { await signOut(auth); window.location.replace("index.html"); return; }
-                document.getElementById('user-display-name').innerText = userProfile.displayName || "Pastor";
-                await refreshUI();
+                // 1. Check cache first to avoid unnecessary read
+                const cachedData = sessionStorage.getItem('userContext');
+                if (cachedData) {
+                    userProfile = JSON.parse(cachedData);
+                    document.getElementById('user-display-name').innerText = userProfile.displayName || "Pastor";
+                    await renderChurchUI(); 
+                } else {
+                    // 2. If no cache, fetch fresh
+                    const snap = await getDoc(doc(db, "profiles", user.uid));
+                    if (!snap.exists()) { window.location.replace("index.html"); return; }
+                    
+                    userProfile = snap.data();
+                    if (userProfile.role !== 'pastor') { window.location.replace("index.html"); return; }
+                    if (userProfile.status === 'inactive') { await signOut(auth); window.location.replace("index.html"); return; }
+                    
+                    document.getElementById('user-display-name').innerText = userProfile.displayName || "Pastor";
+                    await refreshUI(); // Fetches church names and saves to session
+                }
                 setActivePreset('month'); 
             } catch (e) { console.error("Auth Guard Error:", e); }
         });
@@ -374,9 +375,11 @@
             const filter = document.getElementById('churchFilter');
             const tagContainer = document.getElementById('church-list-tags');
             if(!filter || !tagContainer) return;
+            
             filter.innerHTML = '<option value="all">All My Churches</option>';
             churchNames = {};
             let tagsHtml = "";
+            
             for(const code of (userProfile.churchId || [])) {
                 const d = await getDoc(doc(db, "churches", code));
                 if(d.exists()) {
@@ -387,9 +390,30 @@
                 }
             }
             tagContainer.innerHTML = tagsHtml;
+
+            // 3. PACKAGE & HANDOFF: Critical for prospects.html
+            userProfile.churchNames = churchNames; 
+            sessionStorage.setItem('userContext', JSON.stringify(userProfile));
         }
 
-        // --- STATS LOGIC (Remaining unchanged as requested) ---
+        // Helper to render from existing data in object
+        async function renderChurchUI() {
+            const filter = document.getElementById('churchFilter');
+            const tagContainer = document.getElementById('church-list-tags');
+            if(!filter || !tagContainer || !userProfile.churchNames) return;
+
+            churchNames = userProfile.churchNames;
+            let tagsHtml = "";
+            filter.innerHTML = '<option value="all">All My Churches</option>';
+            
+            Object.entries(churchNames).forEach(([code, name]) => {
+                tagsHtml += `<span class="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 px-3 py-1 rounded-full text-[10px] font-bold uppercase">${name}</span>`;
+                filter.innerHTML += `<option value="${code}">${name}</option>`;
+            });
+            tagContainer.innerHTML = tagsHtml;
+        }
+
+        // --- STATS LOGIC ---
         window.loadStats = async () => {
             if (!userProfile || !userProfile.churchId || userProfile.churchId.length === 0) return showToast("No churches linked."); 
             const selCh = document.getElementById('churchFilter').value;
@@ -468,25 +492,19 @@
         window.handleDataSubmit = async () => {
             const type = document.getElementById('soulType').value;
             if (!type) return showToast("Select type.");
-        
-            // 1. SAFETY CHECK: Ensure user is linked to a church
             if (!userProfile?.churchId || userProfile.churchId.length === 0) {
-                showToast("No church linked. Please join/add one first.");
+                showToast("No church linked.");
                 return;
             }
-        
             const btn = document.getElementById('submit-btn'); 
             btn.disabled = true;
             btn.innerText = "Saving...";
-        
             try {
                 const uid = auth.currentUser.uid; 
-                const churchId = userProfile.churchId[0]; // Uses the primary church
+                const churchId = userProfile.churchId[0];
                 const eventDateStr = document.getElementById('soulDateTime').value;
                 const dateId = eventDateStr.split('T')[0]; 
                 const monthId = dateId.substring(0, 7);
-        
-                // 2. LOG THE SALVATION
                 await addDoc(collection(db, "salvations"), { 
                     count: Number(document.getElementById('soulCount').value), 
                     type, 
@@ -497,18 +515,13 @@
                     churchId, 
                     timestamp: serverTimestamp() 
                 });
-        
-                // 3. UPDATE CHURCH STATS
                 await setDoc(doc(db, `churches/${churchId}/daily_stats`, dateId), { members: arrayUnion(uid) }, { merge: true });
                 await setDoc(doc(db, `churches/${churchId}/monthly_stats`, monthId), { members: arrayUnion(uid) }, { merge: true });
-        
                 closeModal(); 
                 showToast("Record Saved."); 
-                
-                
             } catch(e) { 
-                console.error("Firestore Save Error:", e); // This helps you debug in the browser
-                showToast("Error saving. Check connection/permissions."); 
+                console.error("Firestore Save Error:", e);
+                showToast("Error saving."); 
             } finally { 
                 btn.disabled = false; 
                 btn.innerText = "Submit";
@@ -535,11 +548,9 @@
             } catch(e) { showToast("Error"); }
         };
 
-        // --- IMPROVED PRESET & CUSTOM HIGHLIGHTING ---
+        // --- PRESET LOGIC ---
         window.setActivePreset = (p) => {
             currentPreset = p;
-            
-            // 1. Reset Custom Inputs (Remove highlights and clear values)
             const dateInput = document.getElementById('customDate');
             const monthInput = document.getElementById('customMonth');
             dateInput.value = ""; 
@@ -548,14 +559,10 @@
                 input.classList.remove('border-indigo-500', 'ring-2', 'ring-indigo-500/50', 'bg-indigo-500/10');
                 input.classList.add('border-slate-700');
             });
-        
-            // 2. Reset All Preset Buttons
             document.querySelectorAll('.preset-btn').forEach(btn => {
                 btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-lg', 'shadow-indigo-500/50');
                 btn.classList.add('bg-slate-100', 'dark:bg-slate-800/50', 'text-slate-500', 'dark:text-slate-400');
             });
-        
-            // 3. Highlight the Active Preset
             const activeBtn = document.getElementById(`btn-${p}`);
             if (activeBtn) {
                 activeBtn.classList.remove('bg-slate-100', 'dark:bg-slate-800/50', 'text-slate-500', 'dark:text-slate-400');
@@ -567,27 +574,21 @@
             currentPreset = null;
             const dateInput = document.getElementById('customDate');
             const monthInput = document.getElementById('customMonth');
-        
-            // 1. Remove highlight from all Preset Buttons
             document.querySelectorAll('.preset-btn').forEach(btn => {
                 btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-lg', 'shadow-indigo-500/50');
                 btn.classList.add('bg-slate-100', 'dark:bg-slate-800/50', 'text-slate-500');
             });
-        
-            // 2. Toggle highlights based on which custom input is used
             if (type === 'date') {
-                // Highlight Date, Clear Month
                 dateInput.classList.add('border-indigo-500', 'ring-2', 'ring-indigo-500/50', 'bg-indigo-500/10');
                 monthInput.value = "";
                 monthInput.classList.remove('border-indigo-500', 'ring-2', 'ring-indigo-500/50', 'bg-indigo-500/10');
             } else {
-                // Highlight Month, Clear Date
                 monthInput.classList.add('border-indigo-500', 'ring-2', 'ring-indigo-500/50', 'bg-indigo-500/10');
                 dateInput.value = "";
                 dateInput.classList.remove('border-indigo-500', 'ring-2', 'ring-indigo-500/50', 'bg-indigo-500/10');
             }
         };
-        window.handleLogout = () => signOut(auth).then(() => window.location.replace("index.html"));
+        window.handleLogout = () => { sessionStorage.clear(); signOut(auth).then(() => window.location.replace("index.html")); };
         window.closeChurchManager = () => document.getElementById('church-modal').classList.add('hidden');
         window.closeModal = () => document.getElementById('modal').classList.add('hidden');
         window.openModal = () => { document.getElementById('modal').classList.remove('hidden'); document.getElementById('soulDateTime').value = new Date(Date.now() - new Date().getTimezoneOffset()*60000).toISOString().slice(0, 16); };
