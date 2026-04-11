@@ -8,23 +8,31 @@
     <link rel="stylesheet" href="style.css">
     <script>tailwind.config = { darkMode: 'class' }</script>
     <style>
-        /* VIEWPORT LOCK: Fixed height to prevent vertical scrolling */
-        body, html { height: 100vh; overflow: hidden; position: fixed; width: 100%; }
+        /* VIEWPORT LOCK: Using dvh for accurate mobile height minus browser bars */
+        body, html { 
+            height: 100vh; 
+            height: 100dvh; 
+            overflow: hidden; 
+            position: fixed; 
+            width: 100%; 
+        }
         
-        /* SMALL PHONE COMPACTNESS: Shrinks UI if screen height is under 750px */
-        @media (max-height: 750px) {
+        /* AGGRESSIVE COMPACT UI FOR SMALL DEVICES */
+        @media (max-height: 740px) {
             nav { padding-top: 0.5rem !important; padding-bottom: 0.5rem !important; }
             .step-header { margin-bottom: 0.25rem !important; }
-            .progress-spacing { mb-4 !important; }
-            .guidance-spacing { mt-2 !important; mb-2 !important; }
+            .progress-spacing { margin-bottom: 0.75rem !important; }
+            #verse-card { padding: 1.25rem !important; border-l-width: 8px !important; }
+            .guidance-spacing { margin-top: 0.5rem !important; margin-bottom: 0.5rem !important; }
             footer { padding-top: 1rem !important; padding-bottom: 1rem !important; }
+            #verse-pagination { margin-bottom: 0.5rem !important; }
         }
 
         .step-active { height: 4px; background: #6366f1; transition: all 0.3s ease; box-shadow: 0 0 10px rgba(99,102,241,0.5); }
         .step-inactive { height: 4px; background: #1e293b; }
         
         /* NUMBERED VERSE PAGINATION */
-        .v-pagination { width: 30px; height: 30px; border-radius: 8px; font-size: 10px; font-weight: 900; transition: all 0.2s; cursor: pointer; }
+        .v-pagination { width: 32px; height: 32px; border-radius: 8px; font-size: 11px; font-weight: 900; transition: all 0.2s; cursor: pointer; }
         .v-active { background: #6366f1; color: white; transform: scale(1.1); box-shadow: 0 4px 12px rgba(99,102,241,0.3); }
         .v-inactive { background: #1e293b; color: #64748b; border: 1px solid rgba(255,255,255,0.05); }
 
@@ -34,6 +42,7 @@
         }
         .animate-verse { animation: verseFade 0.3s ease-out forwards; }
 
+        /* CRISPER FONT STACK */
         #card-verses {
             font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
             letter-spacing: -0.01em;
@@ -59,28 +68,28 @@
         </button>
     </nav>
 
-    <main class="flex-1 flex flex-col items-center p-4 overflow-hidden">
+    <main class="flex-1 flex flex-col items-center px-4 md:px-6 overflow-hidden">
         
-        <div class="step-header w-full max-w-4xl mx-auto text-center shrink-0 py-2">
+        <div class="step-header w-full max-w-4xl mx-auto text-center shrink-0 pt-2 pb-1">
             <span id="step-counter" class="inline-block mb-1 text-[9px] font-black text-indigo-500 uppercase tracking-[0.3em]">Step 0 of 0</span>
-            <div id="progress-bar-container" class="progress-spacing flex gap-1 justify-center mb-6"></div>
+            <div id="progress-bar-container" class="progress-spacing flex gap-1 justify-center mb-4"></div>
             
-            <div class="flex flex-col items-center gap-2">
-                <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20 shrink-0">
+            <div class="flex items-center justify-center gap-3">
+                <div class="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20 shrink-0">
                     <span id="current-order" class="text-white font-black text-lg leading-none">1</span>
                 </div>
-                <h2 id="card-title" class="text-xl md:text-3xl font-black uppercase tracking-tight leading-tight text-slate-800 dark:text-white max-w-lg">...</h2>
+                <h2 id="card-title" class="text-lg md:text-3xl font-black uppercase tracking-tight leading-tight text-slate-800 dark:text-white text-left">...</h2>
             </div>
         </div>
 
-        <div class="flex-1 w-full flex items-center justify-center overflow-hidden py-4 min-h-0">
+        <div id="verse-container" class="flex-1 w-full flex items-center justify-center overflow-hidden py-3 min-h-0">
             <div id="verse-card" class="w-full h-full max-w-4xl bg-white dark:bg-slate-900 rounded-[2.5rem] md:rounded-[3.5rem] p-8 md:p-12 border-l-[12px] border-indigo-600 shadow-2xl flex items-center justify-center relative ring-1 ring-black/5 dark:ring-white/5 overflow-hidden">
                 <p id="card-verses" class="font-bold italic text-slate-800 dark:text-white leading-tight text-center w-full whitespace-pre-line"></p>
             </div>
         </div>
 
-        <div class="guidance-spacing w-full max-w-4xl mx-auto shrink-0 flex flex-col items-center py-2">
-            <div id="verse-pagination" class="flex gap-2 mb-4"></div>
+        <div class="guidance-spacing w-full max-w-4xl mx-auto shrink-0 flex flex-col items-center py-1">
+            <div id="verse-pagination" class="flex gap-3 mb-4"></div>
 
             <div class="text-center max-w-md mb-1">
                 <div class="inline-flex items-center gap-2 mb-0.5">
@@ -115,8 +124,7 @@
         let verseSubIndex = 0;
 
         const initTheme = () => {
-            const isDark = localStorage.getItem('theme') === 'dark';
-            if (isDark) {
+            if (localStorage.getItem('theme') === 'dark') {
                 document.getElementById('main-html').classList.add('dark');
                 document.getElementById('sun-icon')?.classList.remove('hidden');
                 document.getElementById('moon-icon')?.classList.add('hidden');
@@ -147,7 +155,6 @@
                 const rows = csvText.split('\n').map(row => row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(cell => cell.replace(/"/g, '').trim()));
                 rows.shift();
                 guideData = rows.map(r => ({ order: r[0], title: r[1], verses: r[2], guidance: r[4] })).filter(item => item.title);
-                
                 document.getElementById('loading-state').remove();
                 buildProgress();
                 renderStep();
@@ -163,7 +170,7 @@
             document.getElementById('card-guidance').innerText = data.guidance || "Continue to next step.";
             document.getElementById('step-counter').innerText = `Step ${currentIndex + 1} of ${guideData.length}`;
 
-            // Build Verse Pagination (Numbered)
+            // Build NumberedPagination
             const pag = document.getElementById('verse-pagination');
             pag.innerHTML = '';
             if(verses.length > 1) {
@@ -195,6 +202,11 @@
                 btn.className = `v-pagination flex items-center justify-center ${i === verseSubIndex ? 'v-active' : 'v-inactive'}`;
             });
 
+            // HIDE BACK BUTTON ON STEP 1
+            const pBtn = document.getElementById('prev-btn');
+            pBtn.classList.toggle('invisible', currentIndex === 0);
+            pBtn.classList.toggle('pointer-events-none', currentIndex === 0);
+
             document.getElementById('next-text').innerText = (currentIndex === guideData.length - 1) ? 'Finish' : 'Next Step';
             fitText();
         }
@@ -202,8 +214,6 @@
         function fitText() {
             const el = document.getElementById('card-verses');
             const card = document.getElementById('verse-card');
-            
-            // Available space minus generous internal padding
             const maxHeight = card.offsetHeight - 60; 
             let size = 80; 
 
