@@ -592,10 +592,24 @@
             }
         };
 
+        window.openModal = () => { 
+            document.getElementById('modal').classList.remove('hidden'); 
+            
+            // Set default datetime to now
+            document.getElementById('soulDateTime').value = new Date(Date.now() - new Date().getTimezoneOffset()*60000).toISOString().slice(0, 16); 
+            
+            // SURGICAL FIX: Reset Soulwinning Type to forced selection
+            const typeSelect = document.getElementById('soulType');
+            typeSelect.value = ""; // Resets to the "Select Type..." placeholder
+            
+            // Optional: Reset count to 1 and clear notes for a fresh entry
+            document.getElementById('soulCount').value = 1;
+            document.getElementById('soulNote').value = "";
+        };
+        
         window.handleLogout = () => { sessionStorage.clear(); signOut(auth).then(() => window.location.replace("index.html")); };
         window.closeChurchManager = () => document.getElementById('church-modal').classList.add('hidden');
-        window.closeModal = () => document.getElementById('modal').classList.add('hidden');
-        window.openModal = () => { document.getElementById('modal').classList.remove('hidden'); document.getElementById('soulDateTime').value = new Date(Date.now() - new Date().getTimezoneOffset()*60000).toISOString().slice(0, 16); };
+        window.closeModal = () => document.getElementById('modal').classList.add('hidden');        
         window.increment = () => document.getElementById('soulCount').value++;
         window.decrement = () => { if(document.getElementById('soulCount').value > 1) document.getElementById('soulCount').value--; };
     </script>
