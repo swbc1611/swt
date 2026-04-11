@@ -90,7 +90,7 @@
                 </div>
             </div>
 
-            <section class="bg-white dark:bg-slate-900 rounded-[2.5rem] border dark:border-slate-800 overflow-hidden shadow-sm text-left mb-10">
+            <section class="bg-white dark:bg-slate-900 rounded-3xl border dark:border-slate-800 overflow-hidden shadow-sm text-left mb-10">
                 <div class="px-6 py-4 border-b dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold text-[10px] uppercase text-slate-400 text-center">Results</div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left">
@@ -325,12 +325,19 @@
             document.getElementById('results-area').classList.remove('hidden');
 
             try {
+                // SURGICAL CHANGE: Totals and Logs are now type-sensitive
                 if (isNewSearch) {
                     let totalConstraints = [
                         where("userId", "==", user.uid),
                         where("eventDate", ">=", startStr),
                         where("eventDate", "<=", endStr)
                     ];
+                    
+                    // NEW: Inject Type sensitivity into aggregate query
+                    if (currentType !== 'all') {
+                        totalConstraints.push(where("type", "==", currentType));
+                    }
+
                     const aggQuery = query(collection(db, "salvations"), ...totalConstraints);
                     const aggSnap = await getAggregateFromServer(aggQuery, { souls: sum('count'), reports: count() });
                     document.getElementById('stat-reports').innerText = aggSnap.data().reports;
@@ -412,7 +419,7 @@
             document.getElementById('details-modal').classList.add('hidden');
         };
 
-        // SURGICAL CHANGE: deleteEntry updated to be type-sensitive
+        // SURGICAL UPDATE: Type-Sensitive Deletion Logic
         window.deleteEntry = async (id, eventDate, type) => {
             if (!confirm("Permanently delete this record?")) return;
             try {
@@ -420,26 +427,21 @@
                 const churchId = userProfile.churchId[0];
                 const dateId = eventDate.split('T')[0];
                 const monthId = dateId.substring(0, 7);
-                
                 const valToRemove = parseInt(document.getElementById('det-count').innerText) || 0;
 
                 // 1. Delete actual record
                 await deleteDoc(doc(db, "salvations", id));
 
-                // UI feedback
+                // 2. UI Update
                 const soulsLabel = document.getElementById('stat-souls');
                 const logsLabel = document.getElementById('stat-reports');
                 if(soulsLabel) soulsLabel.innerText = Math.max(0, parseInt(soulsLabel.innerText) - valToRemove);
                 if(logsLabel) logsLabel.innerText = Math.max(0, parseInt(logsLabel.innerText) - 1);
 
                 const row = document.getElementById(`row-${id}`);
-                if (row) {
-                    row.style.opacity = '0';
-                    setTimeout(() => row.remove(), 300);
-                }
+                if (row) { row.style.opacity = '0'; setTimeout(() => row.remove(), 300); }
 
-                // 2. TYPE-SENSITIVE CLEANUP
-                // Check if user has ANY other records of THIS TYPE remaining on this day
+                // 3. SURGICAL CLEANUP: Check for remaining records of this TYPE
                 const typeCheckQ = query(
                     collection(db, "salvations"), 
                     where("userId", "==", uid), 
@@ -451,7 +453,7 @@
                 const typeSnap = await getAggregateFromServer(typeCheckQ, { remaining: count() });
 
                 if (typeSnap.data().remaining === 0) {
-                    // No more records for this specific type - remove from the specific bucket
+                    // No more records for this type - remove from the specific bucket
                     const typeKey = `${type}_members`;
                     const statsUpdate = {};
                     statsUpdate[typeKey] = arrayRemove(uid);
