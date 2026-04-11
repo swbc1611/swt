@@ -116,7 +116,7 @@
                             <div class="flex gap-2">
                                 <button id="btn-today" onclick="setActivePreset('today')" class="preset-btn flex-1 py-3 bg-slate-100 dark:bg-slate-800/50 border border-transparent rounded-2xl text-[10px] font-bold uppercase transition-all duration-200 active:scale-95 shadow-sm text-slate-500 dark:text-slate-400">Today</button>
                                 <button id="btn-week" onclick="setActivePreset('week')" class="preset-btn flex-1 py-3 bg-slate-100 dark:bg-slate-800/50 border border-transparent rounded-2xl text-[10px] font-bold uppercase transition-all duration-200 active:scale-95 shadow-sm text-slate-500 dark:text-slate-400">Week</button>
-                                <button id="btn-month" onclick="setActivePreset('month')" class="preset-btn flex-1 py-3 bg-slate-100 dark:bg-slate-800/50 border border-transparent rounded-2xl text-[10px] font-bold uppercase transition-all duration-200 active:scale-95 shadow-sm text-slate-500 dark:text-slate-400">Month</button>
+                                <button id="btn-month" onclick="setActivePreset('month')" class="preset-btn flex-1 py-3 bg-indigo-600 text-white border border-transparent rounded-2xl text-[10px] font-bold uppercase transition-all duration-200 active:scale-95 shadow-sm text-slate-500 dark:text-slate-400">Month</button>
                             </div>
                         </div>
 
@@ -268,7 +268,7 @@
         let userProfile = null; 
         let churchNames = {};
         let currentPreset = 'month';
-        // SURGICAL ADDITION: Type Selection State
+        // SURGICAL ADDITION: Type Filter State
         let currentType = 'all';
 
         const initTheme = () => {
@@ -345,7 +345,7 @@
             window.location.href = "guide.html";
         };
 
-        // SURGICAL ADDITION: Type Selection UI Logic (Style Preserved)
+        // SURGICAL ADDITION: Type Selection UI Logic
         window.setActiveType = (type) => {
             currentType = type;
             document.querySelectorAll('.type-btn').forEach(btn => {
@@ -376,7 +376,7 @@
                     await refreshUI();
                 }
                 setActivePreset('month');
-                setActiveType('all'); // Initialize Filter
+                setActiveType('all');
             } catch (e) { console.error("Auth Guard Error:", e); }
         });
 
@@ -415,7 +415,7 @@
             tagContainer.innerHTML = tagsHtml;
         }
 
-        // SURGICAL UPDATE: Type-Aware Stats Logic
+        // SURGICAL UPDATE: Type-Aware loadStats
         window.loadStats = async () => {
             if (!userProfile || !userProfile.churchId || userProfile.churchId.length === 0) return showToast("No churches linked."); 
             const selCh = document.getElementById('churchFilter').value;
@@ -428,7 +428,6 @@
             const now = new Date();
             const churchIds = (selCh === 'all') ? userProfile.churchId : [selCh];
             
-            // Build base constraints
             let constraints = [where("churchId", "in", churchIds)];
             if (currentType !== 'all') constraints.push(where("type", "==", currentType));
 
@@ -478,9 +477,7 @@
                                 (data.Regular_members || []).forEach(id => uniqueUIDs.add(id));
                                 (data.School_members || []).forEach(id => uniqueUIDs.add(id));
                                 (data.Event_members || []).forEach(id => uniqueUIDs.add(id));
-                            } else {
-                                (data[`${currentType}_members`] || []).forEach(id => uniqueUIDs.add(id));
-                            }
+                            } else (data[`${currentType}_members`] || []).forEach(id => uniqueUIDs.add(id));
                         }
                     }
                 }
@@ -506,7 +503,7 @@
             } catch (error) { showToast("Update failed."); }
         };
 
-        // SURGICAL UPDATE: Type-Sensitive Submission to Buckets
+        // SURGICAL UPDATE: Type-Sensitive Submission
         window.handleDataSubmit = async () => {
             const type = document.getElementById('soulType').value;
             if (!type) return showToast("Select type.");
@@ -526,7 +523,6 @@
                     churchId, timestamp: serverTimestamp() 
                 });
                 
-                // SURGICAL CHANGE: Save User ID into specific bucket field
                 const statsUpdate = {};
                 statsUpdate[`${type}_members`] = arrayUnion(uid);
                 await setDoc(doc(db, `churches/${churchId}/daily_stats`, dateId), statsUpdate, { merge: true });
