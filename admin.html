@@ -78,11 +78,11 @@
                             <div class="grid grid-cols-2 gap-3">
                                 <div class="flex flex-col gap-1.5">
                                     <label for="customDate" class="text-[8px] font-extrabold text-slate-400 uppercase text-center">Specific Day</label>
-                                    <input type="date" id="customDate" oninput="handleCustomInput('date')" class="bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 p-3 rounded-xl text-[10px] font-bold dark:text-white outline-none">
+                                    <input type="date" id="customDate" oninput="handleCustomInput('date')" class="bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 p-3 rounded-xl text-[10px] font-bold dark:text-white outline-none transition-all duration-300">
                                 </div>
                                 <div class="flex flex-col gap-1.5">
                                     <label for="customMonth" class="text-[8px] font-extrabold text-slate-400 uppercase text-center">Whole Month</label>
-                                    <input type="month" id="customMonth" oninput="handleCustomInput('month')" class="bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 p-3 rounded-xl text-[10px] font-bold dark:text-white outline-none">
+                                    <input type="month" id="customMonth" oninput="handleCustomInput('month')" class="bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 p-3 rounded-xl text-[10px] font-bold dark:text-white outline-none transition-all duration-300">
                                 </div>
                             </div>
                         </div>
@@ -127,7 +127,7 @@
 
     <div id="confirm-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-6 hidden z-[200]">
         <div class="bg-white dark:bg-slate-900 w-full max-w-xs rounded-[2.5rem] p-8 border dark:border-slate-800 shadow-2xl text-center">
-            <div class="w-16 h-16 bg-red-100 dark:bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div class="w-16 h-16 bg-red-100 dark:bg-red-50/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
             </div>
             <h3 id="confirm-title" class="text-lg font-bold mb-2 dark:text-white">Confirm Action</h3>
@@ -148,7 +148,6 @@
 
         let userProfile = null;
         let currentPreset = 'month';
-        // SURGICAL ADDITION: Type Filter State
         let currentType = 'all';
 
         const initTheme = () => {
@@ -162,12 +161,12 @@
 
         window.showToast = (msg) => {
             const t = document.getElementById('toast');
+            if(!t) return;
             t.innerText = msg;
             t.classList.remove('opacity-0', 'translate-y-10');
             setTimeout(() => t.classList.add('opacity-0', 'translate-y-10'), 3000);
         };
 
-        // SURGICAL ADDITION: Type Selection Logic
         window.setActiveType = (type) => {
             currentType = type;
             document.querySelectorAll('.type-btn').forEach(btn => {
@@ -216,8 +215,14 @@
 
         window.setActivePreset = (p) => {
             currentPreset = p;
-            document.getElementById('customDate').value = "";
-            document.getElementById('customMonth').value = "";
+            const dateInput = document.getElementById('customDate');
+            const monthInput = document.getElementById('customMonth');
+            dateInput.value = ""; 
+            monthInput.value = "";
+            [dateInput, monthInput].forEach(input => {
+                input.classList.remove('border-indigo-500', 'ring-2', 'ring-indigo-500/50', 'bg-indigo-500/10');
+            });
+
             document.querySelectorAll('.preset-btn').forEach(btn => {
                 btn.className = "preset-btn flex-1 py-3 bg-slate-100 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 border border-transparent rounded-2xl text-[10px] font-bold uppercase transition-all duration-200 active:scale-95";
             });
@@ -227,14 +232,24 @@
 
         window.handleCustomInput = (type) => {
             currentPreset = null;
+            const dateInput = document.getElementById('customDate');
+            const monthInput = document.getElementById('customMonth');
+
             document.querySelectorAll('.preset-btn').forEach(btn => {
                 btn.className = "preset-btn flex-1 py-3 bg-slate-100 dark:bg-slate-800/50 text-slate-500 border border-transparent rounded-2xl text-[10px] font-bold uppercase";
             });
-            if (type === 'date') document.getElementById('customMonth').value = "";
-            else document.getElementById('customDate').value = "";
+
+            if (type === 'date') {
+                dateInput.classList.add('border-indigo-500', 'ring-2', 'ring-indigo-500/50', 'bg-indigo-500/10');
+                monthInput.value = "";
+                monthInput.classList.remove('border-indigo-500', 'ring-2', 'ring-indigo-500/50', 'bg-indigo-500/10');
+            } else {
+                monthInput.classList.add('border-indigo-500', 'ring-2', 'ring-indigo-500/50', 'bg-indigo-500/10');
+                dateInput.value = "";
+                dateInput.classList.remove('border-indigo-500', 'ring-2', 'ring-indigo-500/50', 'bg-indigo-500/10');
+            }
         };
 
-        // --- UPDATED STATS LOGIC: Type Sensitivity Integrated ---
         window.loadStats = async () => {
             const filterEl = document.getElementById('churchFilter');
             const selCh = filterEl.value;
@@ -293,7 +308,6 @@
                     bucketPaths.push(`monthly_stats/${str}`);
                 }
 
-                // 1. TOTAL SALVATIONS (Aggregrate scan with Type filter)
                 let soulConstraints = [where("eventDate", ">=", startLimit), where("eventDate", "<=", endLimit)];
                 if (selCh !== 'all') soulConstraints.push(where("churchId", "==", selCh));
                 if (currentType !== 'all') soulConstraints.push(where("type", "==", currentType));
@@ -301,7 +315,6 @@
                 const soulSnap = await getAggregateFromServer(query(collection(db, "salvations"), ...soulConstraints), { total: sum('count') });
                 document.getElementById('totalSouls').innerText = soulSnap.data().total || "0";
 
-                // 2. PARTICIPATING MEMBERS (Optimized Bucket Approach)
                 let uniqueUIDs = new Set();
                 let churchesToScan = [];
                 
@@ -332,7 +345,6 @@
             } catch (e) { console.error(e); showToast("❌ Error generating report."); }
         };
 
-        // --- INVITE MANAGEMENT LOGIC ---
         window.openAdminManager = () => {
             document.getElementById('admin-modal').classList.remove('hidden');
             onSnapshot(collection(db, "pastor_invites"), (snap) => {
@@ -371,7 +383,6 @@
             );
         };
 
-        // --- UNIVERSAL CONFIRM MODAL LOGIC ---
         window.openConfirmModal = (title, body, onConfirm) => {
             document.getElementById('confirm-title').innerText = title;
             document.getElementById('confirm-body').innerText = body;
