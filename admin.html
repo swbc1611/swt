@@ -98,14 +98,27 @@
                 <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center mb-1">Results for</label>
                 <h3 id="reportDateLabel" class="text-indigo-500 font-bold text-sm uppercase tracking-wider">...</h3>
             </div>
-            <div class="flex flex-col gap-12 p-12 bg-white dark:bg-slate-900 border dark:border-slate-800 rounded-[3rem] shadow-sm max-w-sm mx-auto">
-                <div class="text-center">
-                    <p id="soulsLabel" class="text-[10px] font-bold text-slate-400 uppercase mb-2 tracking-widest">Global Salvations</p>
-                    <span id="totalSouls" class="text-6xl font-black text-indigo-600">0</span>
-                </div>
-                <div class="text-center border-t dark:border-slate-800 pt-10">
-                    <p id="activeLabel" class="text-[10px] font-bold text-slate-400 uppercase mb-2 tracking-widest">Participating Members</p>
-                    <span id="totalSW" class="text-6xl font-black text-indigo-600">0</span>
+            
+            <div class="bg-white dark:bg-slate-900 border dark:border-slate-800 rounded-[2rem] shadow-sm max-w-lg mx-auto overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-[10px] uppercase font-bold tracking-widest text-slate-400">
+                        <thead class="bg-slate-50 dark:bg-slate-800/50 border-b dark:border-slate-800">
+                            <tr>
+                                <th class="px-6 py-4 text-left">Type</th>
+                                <th class="px-6 py-4 text-center text-indigo-600">Total</th>
+                                <th class="px-6 py-4 text-center">Participants</th>
+                            </tr>
+                        </thead>
+                        <tbody id="matrix-body" class="divide-y dark:divide-slate-800 text-slate-600 dark:text-slate-300">
+                            </tbody>
+                        <tfoot class="bg-indigo-50 dark:bg-indigo-900/20 border-t-2 border-indigo-500/20">
+                            <tr class="text-indigo-600 dark:text-indigo-400">
+                                <td class="px-6 py-4 text-left">Grand Total</td>
+                                <td id="matrix-grand-souls" class="px-6 py-4 text-center text-lg font-black">0</td>
+                                <td id="matrix-grand-sw" class="px-6 py-4 text-center text-lg font-black">0</td>
+                            </tr>
+                        </tfoot>
+                    </table>
                 </div>
             </div>
         </div>
@@ -253,24 +266,13 @@
         window.loadStats = async () => {
             const filterEl = document.getElementById('churchFilter');
             const selCh = filterEl.value;
-            const selChName = filterEl.options[filterEl.selectedIndex].text;
             const cDate = document.getElementById('customDate').value;
             const cMonth = document.getElementById('customMonth').value;
             const label = document.getElementById('reportDateLabel');
-            const soulsLabel = document.getElementById('soulsLabel');
-            const activeLabel = document.getElementById('activeLabel');
+            const matrixBody = document.getElementById('matrix-body');
 
             document.getElementById('stats-container').classList.remove('hidden');
-            document.getElementById('totalSouls').innerText = "...";
-            document.getElementById('totalSW').innerText = "...";
-
-            if (selCh === 'all') {
-                soulsLabel.innerText = "Global Salvations";
-                activeLabel.innerText = "Participating Members";
-            } else {
-                soulsLabel.innerText = `${selChName} Salvations`;
-                activeLabel.innerText = "Participating Members";
-            }
+            matrixBody.innerHTML = '<tr><td colspan="3" class="py-8 italic text-slate-400">Loading Report...</td></tr>';
 
             try {
                 const now = new Date();
@@ -293,8 +295,7 @@
                 } else if (currentPreset === 'week') {
                     const start = new Date(now); start.setDate(now.getDate() - now.getDay());
                     const end = new Date(start); end.setDate(start.getDate() + 6);
-                    startLimit = getLocalDateStr(start) + "T00:00";
-                    endLimit = getLocalDateStr(end) + "T23:59";
+                    startLimit = getLocalDateStr(start) + "T00:00"; endLimit = getLocalDateStr(end) + "T23:59";
                     const fmt = { month: 'short', day: 'numeric' };
                     label.innerText = `${start.toLocaleDateString('en-US', fmt)} - ${end.toLocaleDateString('en-US', fmt)}`;
                     for(let i=0; i<7; i++) {
@@ -308,16 +309,22 @@
                     bucketPaths.push(`monthly_stats/${str}`);
                 }
 
-                let soulConstraints = [where("eventDate", ">=", startLimit), where("eventDate", "<=", endLimit)];
-                if (selCh !== 'all') soulConstraints.push(where("churchId", "==", selCh));
-                if (currentType !== 'all') soulConstraints.push(where("type", "==", currentType));
+                // 1. Fetch Totals for all visible types
+                const types = currentType === 'all' ? ['Regular', 'School', 'Event'] : [currentType];
+                const totals = {};
+                const participants = {};
+                const globalUnique = new Set();
 
-                const soulSnap = await getAggregateFromServer(query(collection(db, "salvations"), ...soulConstraints), { total: sum('count') });
-                document.getElementById('totalSouls').innerText = soulSnap.data().total || "0";
+                for (const t of types) {
+                    let qConstraints = [where("eventDate", ">=", startLimit), where("eventDate", "<=", endLimit), where("type", "==", t)];
+                    if (selCh !== 'all') qConstraints.push(where("churchId", "==", selCh));
+                    const snap = await getAggregateFromServer(query(collection(db, "salvations"), ...qConstraints), { total: sum('count') });
+                    totals[t] = snap.data().total || 0;
+                    participants[t] = new Set();
+                }
 
-                let uniqueUIDs = new Set();
+                // 2. Fetch Participant sets from buckets
                 let churchesToScan = [];
-                
                 if (selCh === 'all') {
                     const churchListSnap = await getDocs(collection(db, "churches"));
                     churchListSnap.forEach(d => churchesToScan.push(d.id));
@@ -330,18 +337,32 @@
                         const bSnap = await getDoc(doc(db, `churches/${chId}/${path}`));
                         if (bSnap.exists()) {
                             const data = bSnap.data();
-                            if (currentType === 'all') {
-                                (data.Regular_members || []).forEach(id => uniqueUIDs.add(id));
-                                (data.School_members || []).forEach(id => uniqueUIDs.add(id));
-                                (data.Event_members || []).forEach(id => uniqueUIDs.add(id));
-                            } else {
-                                (data[`${currentType}_members`] || []).forEach(id => uniqueUIDs.add(id));
+                            for (const t of types) {
+                                (data[`${t}_members`] || []).forEach(id => {
+                                    participants[t].add(id);
+                                    globalUnique.add(id);
+                                });
                             }
                         }
                     }
                 }
-                
-                document.getElementById('totalSW').innerText = uniqueUIDs.size;
+
+                // 3. Render Matrix
+                let html = "";
+                let grandSouls = 0;
+                for (const t of types) {
+                    grandSouls += totals[t];
+                    html += `
+                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                            <td class="px-6 py-4 text-left font-extrabold text-slate-500">${t}</td>
+                            <td class="px-6 py-4 text-center font-black text-indigo-600 text-lg">${totals[t]}</td>
+                            <td class="px-6 py-4 text-center font-black text-slate-600 dark:text-slate-200 text-lg">${participants[t].size}</td>
+                        </tr>`;
+                }
+                matrixBody.innerHTML = html;
+                document.getElementById('matrix-grand-souls').innerText = grandSouls;
+                document.getElementById('matrix-grand-sw').innerText = globalUnique.size;
+
             } catch (e) { console.error(e); showToast("❌ Error generating report."); }
         };
 
