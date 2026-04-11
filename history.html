@@ -286,10 +286,8 @@
             tagContainer.innerHTML = tagsHtml || `<span class="text-slate-500 text-[10px]">No Church Assigned</span>`;
         }
 
-        // --- PAGINATION LOGIC ---
-        
         window.loadHistory = async () => {
-            lastDoc = null; // Reset for new search
+            lastDoc = null; 
             document.getElementById('history-list').innerHTML = '<tr><td colspan="5" class="text-center py-10 text-slate-400 italic">Fetching records...</td></tr>';
             await fetchNextBatch(true);
         };
@@ -365,7 +363,6 @@
                     const data = snapDoc.data();
                     if (currentType !== 'all' && data.type !== currentType) return;
 
-                    // ADDED ID to TR and formatted details call
                     rowsHtml += `
                         <tr id="row-${snapDoc.id}" class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
                             <td class="px-6 py-4 text-xs font-medium text-slate-500">${data.eventDate.split('T')[0]}</td>
@@ -405,7 +402,8 @@
             document.getElementById('det-note').innerText = data.note || "No notes provided.";
             
             const delBtn = document.getElementById('det-delete-btn');
-            delBtn.onclick = () => deleteEntry(data.id, data.eventDate);
+            // SURGICAL CHANGE: Passing 'type' to the deleteEntry function
+            delBtn.onclick = () => deleteEntry(data.id, data.eventDate, data.type); 
             
             document.getElementById('details-modal').classList.remove('hidden');
         };
@@ -414,7 +412,8 @@
             document.getElementById('details-modal').classList.add('hidden');
         };
 
-        window.deleteEntry = async (id, eventDate) => {
+        // SURGICAL CHANGE: deleteEntry updated to be type-sensitive
+        window.deleteEntry = async (id, eventDate, type) => {
             if (!confirm("Permanently delete this record?")) return;
             try {
                 const uid = auth.currentUser.uid;
@@ -422,48 +421,53 @@
                 const dateId = eventDate.split('T')[0];
                 const monthId = dateId.substring(0, 7);
                 
-                // Get the count BEFORE deleting to update UI
                 const valToRemove = parseInt(document.getElementById('det-count').innerText) || 0;
 
+                // 1. Delete actual record
                 await deleteDoc(doc(db, "salvations", id));
 
-                // UI-FIRST UPDATE: Subtract values manually instead of re-fetching
+                // UI feedback
                 const soulsLabel = document.getElementById('stat-souls');
                 const logsLabel = document.getElementById('stat-reports');
-                
-                soulsLabel.innerText = Math.max(0, parseInt(soulsLabel.innerText) - valToRemove);
-                logsLabel.innerText = Math.max(0, parseInt(logsLabel.innerText) - 1);
+                if(soulsLabel) soulsLabel.innerText = Math.max(0, parseInt(soulsLabel.innerText) - valToRemove);
+                if(logsLabel) logsLabel.innerText = Math.max(0, parseInt(logsLabel.innerText) - 1);
 
                 const row = document.getElementById(`row-${id}`);
                 if (row) {
                     row.style.opacity = '0';
-                    row.style.transition = 'opacity 0.3s ease';
                     setTimeout(() => row.remove(), 300);
                 }
 
-                try {
-                    const dailyQ = query(collection(db, "salvations"), where("userId", "==", uid), where("eventDate", ">=", dateId + "T00:00"), where("eventDate", "<=", dateId + "T23:59"));
-                    const dailySnap = await getDocs(dailyQ);
-                    if (dailySnap.empty) { 
-                        await updateDoc(doc(db, `churches/${churchId}/daily_stats`, dateId), { members: arrayRemove(uid) }).catch(() => {}); 
-                    }
-                    const monthlyQ = query(collection(db, "salvations"), where("userId", "==", uid), where("eventDate", ">=", monthId + "-01T00:00"), where("eventDate", "<=", monthId + "-31T23:59"));
-                    const monthlySnap = await getDocs(monthlyQ);
-                    if (monthlySnap.empty) { 
-                        await updateDoc(doc(db, `churches/${churchId}/monthly_stats`, monthId), { members: arrayRemove(uid) }).catch(() => {}); 
-                    }
-                } catch (cleanupErr) { console.warn(cleanupErr.message); }
+                // 2. TYPE-SENSITIVE CLEANUP
+                // Check if user has ANY other records of THIS TYPE remaining on this day
+                const typeCheckQ = query(
+                    collection(db, "salvations"), 
+                    where("userId", "==", uid), 
+                    where("eventDate", ">=", dateId + "T00:00"), 
+                    where("eventDate", "<=", dateId + "T23:59"),
+                    where("type", "==", type)
+                );
+                
+                const typeSnap = await getAggregateFromServer(typeCheckQ, { remaining: count() });
+
+                if (typeSnap.data().remaining === 0) {
+                    // No more records for this specific type - remove from the specific bucket
+                    const typeKey = `${type}_members`;
+                    const statsUpdate = {};
+                    statsUpdate[typeKey] = arrayRemove(uid);
+                    
+                    await updateDoc(doc(db, `churches/${churchId}/daily_stats`, dateId), statsUpdate).catch(() => {});
+                    await updateDoc(doc(db, `churches/${churchId}/monthly_stats`, monthId), statsUpdate).catch(() => {});
+                }
 
                 closeDetailsModal();
                 showToast("Record deleted.");
-                // REMOVED loadHistory() to save reads!
-            } catch (e) { 
+            } catch (e) {
                 console.error(e);
                 showToast("Delete failed."); 
             }
         };
 
-        // Attach global functions
         window.fetchNextBatch = fetchNextBatch;
     </script>
 </body>
