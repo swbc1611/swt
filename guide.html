@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="style.css">
     <script>tailwind.config = { darkMode: 'class' }</script>
     <style>
-        /* VIEWPORT LOCK: dvh for precision mobile height */
+        /* VIEWPORT LOCK: dvh for accurate mobile height minus browser bars */
         body, html { 
             height: 100vh; 
             height: 100dvh; 
@@ -18,8 +18,8 @@
         }
         
         /* DYNAMIC FOOTER ANIMATION */
-        #prev-btn, #next-btn { transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
-        .btn-collapse { width: 0 !important; opacity: 0 !important; margin: 0 !important; padding: 0 !important; pointer-events: none; overflow: hidden; }
+        #prev-btn, #next-btn { transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-collapse { width: 0 !important; opacity: 0 !important; margin: 0 !important; padding: 0 !important; pointer-events: none; overflow: hidden; white-space: nowrap; }
 
         /* AGGRESSIVE COMPACT UI FOR SMALL DEVICES */
         @media (max-height: 740px) {
@@ -27,9 +27,7 @@
             .step-header { pt-5 !important; margin-bottom: 0.25rem !important; }
             .progress-spacing { margin-bottom: 0.5rem !important; }
             #verse-card { padding: 1.5rem !important; border-l-width: 8px !important; }
-            .guidance-spacing { mt-1 !important; mb-1 !important; }
             footer { padding-top: 1rem !important; padding-bottom: 1rem !important; }
-            #verse-pagination { margin-bottom: 0.5rem !important; }
         }
 
         .step-active { height: 4px; background: #6366f1; transition: all 0.3s ease; box-shadow: 0 0 10px rgba(99,102,241,0.5); }
@@ -67,7 +65,6 @@
     </nav>
 
     <main class="flex-1 flex flex-col items-center px-4 md:px-6 overflow-hidden">
-        
         <div class="step-header w-full max-w-4xl mx-auto text-center shrink-0 pt-5 pb-1">
             <span id="step-counter" class="inline-block mb-1 text-[9px] font-black text-indigo-500 uppercase tracking-[0.3em]">Step 0 of 0</span>
             <div id="progress-bar-container" class="progress-spacing flex gap-1 justify-center mb-6"></div>
@@ -81,29 +78,33 @@
         </div>
 
         <div id="verse-container" class="flex-1 w-full flex items-center justify-center overflow-hidden py-3 px-6 min-h-0">
-            <div id="verse-card" class="w-full h-full max-h-[85%] max-w-4xl bg-white dark:bg-slate-900 rounded-[2.5rem] md:rounded-[3.5rem] p-8 border-l-[12px] border-indigo-600 shadow-lg flex items-center justify-center relative ring-1 ring-black/5 dark:ring-white/5 overflow-hidden">
+            <div id="verse-card" class="w-full h-full max-h-[85%] max-w-4xl bg-white dark:bg-slate-900 rounded-[2.5rem] md:rounded-[3.5rem] p-8 border-l-[12px] border-indigo-600 shadow-md ring-1 ring-black/5 dark:ring-white/10 flex items-center justify-center relative overflow-hidden">
                 <p id="card-verses" class="font-bold italic text-slate-800 dark:text-white leading-tight text-center w-full whitespace-pre-line"></p>
             </div>
         </div>
 
         <div class="guidance-spacing w-full max-w-4xl mx-auto shrink-0 flex flex-col items-center pt-1 pb-1">
             <div id="verse-pagination" class="flex gap-3 mb-4"></div>
-
             <div class="text-center max-w-md mb-1">
                 <div class="inline-flex items-center gap-2 mb-0.5">
                     <div class="w-1.5 h-1.5 rounded-full bg-indigo-500"></div>
                     <span class="text-[8px] font-black text-indigo-500 uppercase tracking-widest">Guidance</span>
                 </div>
-                <p id="card-guidance" class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase leading-relaxed"></p>
+                <p id="card-guidance" class="text-md font-bold text-slate-500 dark:text-slate-400 uppercase leading-relaxed"></p>
             </div>
         </div>
     </main>
 
     <footer class="bg-white dark:bg-slate-900 border-t dark:border-slate-800 px-6 py-5 z-50 shrink-0">
         <div class="flex flex-row items-stretch gap-0 max-w-lg mx-auto">
-            <button id="prev-btn" onclick="changeStep(-1)" class="w-1/3 py-4 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-2xl font-black uppercase text-[10px] tracking-widest mr-4 overflow-hidden">Back</button>
+            <button id="prev-btn" onclick="changeStep(-1)" class="flex-1 py-4 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-2xl font-black uppercase text-[10px] tracking-widest active:scale-95 transition-all">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M15 19l-7-7 7-7" /></svg>
+                Prev
+            </button>
+            <div id="btn-spacer" class="w-4 transition-all duration-500"></div>
             <button id="next-btn" onclick="changeStep(1)" class="flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-xl shadow-indigo-500/30 active:scale-95 transition-all">
-                <span id="next-text">Next Step</span>
+                Next Step
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M9 5l7 7-7 7" /></svg>
             </button>
         </div>
     </footer>
@@ -195,14 +196,25 @@
                 btn.className = `v-pagination flex items-center justify-center ${i === verseSubIndex ? 'v-active' : 'v-inactive'}`;
             });
 
+            // LOGIC: DUAL COLLAPSE SYSTEM
             const pBtn = document.getElementById('prev-btn');
+            const nBtn = document.getElementById('next-btn');
+            const spacer = document.getElementById('btn-spacer');
+
             if (currentIndex === 0) {
                 pBtn.classList.add('btn-collapse');
+                nBtn.classList.remove('btn-collapse');
+                spacer.classList.add('btn-collapse');
+            } else if (currentIndex === guideData.length - 1) {
+                nBtn.classList.add('btn-collapse');
+                pBtn.classList.remove('btn-collapse');
+                spacer.classList.add('btn-collapse');
             } else {
                 pBtn.classList.remove('btn-collapse');
+                nBtn.classList.remove('btn-collapse');
+                spacer.classList.remove('btn-collapse');
             }
 
-            document.getElementById('next-text').innerText = (currentIndex === guideData.length - 1) ? 'Finish' : 'Next Step';
             fitText();
         }
 
@@ -223,8 +235,6 @@
                 currentIndex += dir;
                 verseSubIndex = 0; 
                 renderStep();
-            } else if (currentIndex + dir === guideData.length) {
-                window.history.back();
             }
         };
 
