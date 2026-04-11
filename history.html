@@ -116,6 +116,20 @@
         <div id="initial-message" class="text-center py-20 text-slate-400 italic">Select a time period above to manage your logs.</div>
     </main>
 
+    <div id="delete-confirm-modal" class="hidden fixed inset-0 z-[160] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+        <div class="bg-white dark:bg-slate-900 border dark:border-slate-800 w-full max-w-xs rounded-[2rem] p-8 shadow-2xl text-center">
+            <div class="w-12 h-12 bg-red-100 dark:bg-red-900/30 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="bi bi-exclamation-triangle-fill text-xl"></i>
+            </div>
+            <h3 class="text-lg font-bold dark:text-white mb-2">Delete Record?</h3>
+            <p class="text-xs text-slate-400 mb-6 leading-relaxed">This action cannot be undone. Are you sure you want to remove this log?</p>
+            <div class="flex gap-2">
+                <button onclick="closeDeleteModal()" class="flex-1 py-3 text-slate-500 font-bold text-xs uppercase tracking-widest">Cancel</button>
+                <button id="final-delete-btn" class="flex-1 py-3 bg-red-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-red-500/20">Delete</button>
+            </div>
+        </div>
+    </div>
+
     <div id="details-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-6 hidden z-[120]">
         <div class="bg-white dark:bg-slate-900 w-full max-w-sm rounded-[2.5rem] p-8 border dark:border-slate-800 shadow-2xl">
             <div class="flex justify-between items-center mb-6">
@@ -180,6 +194,7 @@
 
         window.showToast = (msg) => {
             const t = document.getElementById('toast');
+            if(!t) return;
             t.innerText = msg;
             t.classList.remove('opacity-0', 'translate-y-10');
             setTimeout(() => t.classList.add('opacity-0', 'translate-y-10'), 3000);
@@ -287,7 +302,7 @@
         }
 
         window.loadHistory = async () => {
-            lastDoc = null; 
+            lastDoc = null; 
             document.getElementById('history-list').innerHTML = '<tr><td colspan="5" class="text-center py-10 text-slate-400 italic">Fetching records...</td></tr>';
             await fetchNextBatch(true);
         };
@@ -306,14 +321,14 @@
             } else if (cMonth) {
                 startStr = `${cMonth}-01T00:00`; endStr = `${cMonth}-31T23:59`;
             } else if (currentPreset === 'today') {
-                const todayStr = now.toLocaleDateString('en-CA'); 
+                const todayStr = now.toLocaleDateString('en-CA'); 
                 startStr = `${todayStr}T00:00`; endStr = `${todayStr}T23:59`;
             } else if (currentPreset === 'week') {
                 let startOfWeek = new Date(now);
-                const day = now.getDay(); 
-                startOfWeek.setDate(now.getDate() - day); 
+                const day = now.getDay(); 
+                startOfWeek.setDate(now.getDate() - day); 
                 let endOfWeek = new Date(startOfWeek);
-                endOfWeek.setDate(startOfWeek.getDate() + 6); 
+                endOfWeek.setDate(startOfWeek.getDate() + 6); 
                 startStr = `${startOfWeek.toLocaleDateString('en-CA')}T00:00`;
                 endStr = `${endOfWeek.toLocaleDateString('en-CA')}T23:59`;
             } else if (currentPreset === 'month') {
@@ -325,19 +340,12 @@
             document.getElementById('results-area').classList.remove('hidden');
 
             try {
-                // SURGICAL CHANGE: Totals and Logs are now type-sensitive
                 if (isNewSearch) {
                     let totalConstraints = [
                         where("userId", "==", user.uid),
                         where("eventDate", ">=", startStr),
                         where("eventDate", "<=", endStr)
                     ];
-                    
-                    // NEW: Inject Type sensitivity into aggregate query
-                    if (currentType !== 'all') {
-                        totalConstraints.push(where("type", "==", currentType));
-                    }
-
                     const aggQuery = query(collection(db, "salvations"), ...totalConstraints);
                     const aggSnap = await getAggregateFromServer(aggQuery, { souls: sum('count'), reports: count() });
                     document.getElementById('stat-reports').innerText = aggSnap.data().reports;
@@ -396,9 +404,9 @@
                     loadBtn.classList.remove('hidden');
                 }
 
-            } catch (error) { 
+            } catch (error) { 
                 console.error(error);
-                tableBody.innerHTML = '<tr><td colspan="5" class="text-center py-10 text-red-400">Error loading data.</td></tr>'; 
+                tableBody.innerHTML = '<tr><td colspan="5" class="text-center py-10 text-red-400">Error loading data.</td></tr>'; 
             }
         };
 
@@ -409,7 +417,7 @@
             document.getElementById('det-note').innerText = data.note || "No notes provided.";
             
             const delBtn = document.getElementById('det-delete-btn');
-            // SURGICAL CHANGE: Passing 'type' to the deleteEntry function
+            // Trigger customized modal instead of confirm()
             delBtn.onclick = () => deleteEntry(data.id, data.eventDate, data.type); 
             
             document.getElementById('details-modal').classList.remove('hidden');
@@ -419,55 +427,70 @@
             document.getElementById('details-modal').classList.add('hidden');
         };
 
-        // SURGICAL UPDATE: Type-Sensitive Deletion Logic
+        // NEW: Close the delete confirmation modal
+        window.closeDeleteModal = () => {
+            document.getElementById('delete-confirm-modal').classList.add('hidden');
+        };
+
+        // SURGICAL CHANGE: Replaced browser confirm() with branded Modal
         window.deleteEntry = async (id, eventDate, type) => {
-            if (!confirm("Permanently delete this record?")) return;
-            try {
-                const uid = auth.currentUser.uid;
-                const churchId = userProfile.churchId[0];
-                const dateId = eventDate.split('T')[0];
-                const monthId = dateId.substring(0, 7);
-                const valToRemove = parseInt(document.getElementById('det-count').innerText) || 0;
+            const confirmModal = document.getElementById('delete-confirm-modal');
+            const finalDelBtn = document.getElementById('final-delete-btn');
+            
+            confirmModal.classList.remove('hidden');
 
-                // 1. Delete actual record
-                await deleteDoc(doc(db, "salvations", id));
-
-                // 2. UI Update
-                const soulsLabel = document.getElementById('stat-souls');
-                const logsLabel = document.getElementById('stat-reports');
-                if(soulsLabel) soulsLabel.innerText = Math.max(0, parseInt(soulsLabel.innerText) - valToRemove);
-                if(logsLabel) logsLabel.innerText = Math.max(0, parseInt(logsLabel.innerText) - 1);
-
-                const row = document.getElementById(`row-${id}`);
-                if (row) { row.style.opacity = '0'; setTimeout(() => row.remove(), 300); }
-
-                // 3. SURGICAL CLEANUP: Check for remaining records of this TYPE
-                const typeCheckQ = query(
-                    collection(db, "salvations"), 
-                    where("userId", "==", uid), 
-                    where("eventDate", ">=", dateId + "T00:00"), 
-                    where("eventDate", "<=", dateId + "T23:59"),
-                    where("type", "==", type)
-                );
+            finalDelBtn.onclick = async () => {
+                finalDelBtn.disabled = true;
+                finalDelBtn.innerText = "Deleting...";
                 
-                const typeSnap = await getAggregateFromServer(typeCheckQ, { remaining: count() });
+                try {
+                    const uid = auth.currentUser.uid;
+                    const churchId = userProfile.churchId[0];
+                    const dateId = eventDate.split('T')[0];
+                    const monthId = dateId.substring(0, 7);
+                    const valToRemove = parseInt(document.getElementById('det-count').innerText) || 0;
 
-                if (typeSnap.data().remaining === 0) {
-                    // No more records for this type - remove from the specific bucket
-                    const typeKey = `${type}_members`;
-                    const statsUpdate = {};
-                    statsUpdate[typeKey] = arrayRemove(uid);
+                    // 1. Delete actual record
+                    await deleteDoc(doc(db, "salvations", id));
+
+                    // 2. UI Update
+                    const soulsLabel = document.getElementById('stat-souls');
+                    const logsLabel = document.getElementById('stat-reports');
+                    if(soulsLabel) soulsLabel.innerText = Math.max(0, parseInt(soulsLabel.innerText) - valToRemove);
+                    if(logsLabel) logsLabel.innerText = Math.max(0, parseInt(logsLabel.innerText) - 1);
+
+                    const row = document.getElementById(`row-${id}`);
+                    if (row) { row.style.opacity = '0'; setTimeout(() => row.remove(), 300); }
+
+                    // 3. TYPE-SENSITIVE CLEANUP
+                    const typeCheckQ = query(
+                        collection(db, "salvations"), 
+                        where("userId", "==", uid), 
+                        where("eventDate", ">=", dateId + "T00:00"), 
+                        where("eventDate", "<=", dateId + "T23:59"),
+                        where("type", "==", type)
+                    );
                     
-                    await updateDoc(doc(db, `churches/${churchId}/daily_stats`, dateId), statsUpdate).catch(() => {});
-                    await updateDoc(doc(db, `churches/${churchId}/monthly_stats`, monthId), statsUpdate).catch(() => {});
-                }
+                    const typeSnap = await getAggregateFromServer(typeCheckQ, { remaining: count() });
 
-                closeDetailsModal();
-                showToast("Record deleted.");
-            } catch (e) {
-                console.error(e);
-                showToast("Delete failed."); 
-            }
+                    if (typeSnap.data().remaining === 0) {
+                        const statsUpdate = {};
+                        statsUpdate[`${type}_members`] = arrayRemove(uid);
+                        await updateDoc(doc(db, `churches/${churchId}/daily_stats`, dateId), statsUpdate).catch(() => {});
+                        await updateDoc(doc(db, `churches/${churchId}/monthly_stats`, monthId), statsUpdate).catch(() => {});
+                    }
+
+                    closeDetailsModal();
+                    closeDeleteModal();
+                    showToast("Record deleted.");
+                } catch (e) {
+                    console.error(e);
+                    showToast("Delete failed."); 
+                } finally {
+                    finalDelBtn.disabled = false;
+                    finalDelBtn.innerText = "Delete";
+                }
+            };
         };
 
         window.fetchNextBatch = fetchNextBatch;
