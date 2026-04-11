@@ -21,18 +21,20 @@
         #prev-btn { transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
         #next-btn { transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
         
-        /* Hides and collapses width for the expansion effect */
+        /* Expansion effect logic */
         .btn-collapse { width: 0 !important; opacity: 0 !important; margin: 0 !important; padding: 0 !important; pointer-events: none; overflow: hidden; }
 
         /* AGGRESSIVE COMPACT UI FOR SMALL DEVICES */
         @media (max-height: 740px) {
             nav { padding-top: 0.5rem !important; padding-bottom: 0.5rem !important; }
-            .step-header { margin-bottom: 0.25rem !important; }
+            /* SHIFT DOWN: Header positioning for small screens */
+            .step-header { pt-4 !important; margin-bottom: 0.25rem !important; }
             .progress-spacing { margin-bottom: 0.5rem !important; }
             #verse-card { padding: 1.5rem !important; border-l-width: 8px !important; }
-            .guidance-spacing { margin-top: 0.25rem !important; margin-bottom: 0.25rem !important; }
+            /* SHIFT UP: Guidance/Pagination positioning for small screens */
+            .guidance-spacing { mt-1 !important; mb-1 !important; }
             footer { padding-top: 1rem !important; padding-bottom: 1rem !important; }
-            #verse-pagination { margin-bottom: 0.25rem !important; }
+            #verse-pagination { margin-bottom: 0.5rem !important; }
         }
 
         .step-active { height: 4px; background: #6366f1; transition: all 0.3s ease; box-shadow: 0 0 10px rgba(99,102,241,0.5); }
@@ -72,7 +74,7 @@
 
     <main class="flex-1 flex flex-col items-center px-4 md:px-6 overflow-hidden">
         
-        <div class="step-header w-full max-w-4xl mx-auto text-center shrink-0 pt-4 pb-1">
+        <div class="step-header w-full max-w-4xl mx-auto text-center shrink-0 pt-8 pb-1">
             <span id="step-counter" class="inline-block mb-1 text-[9px] font-black text-indigo-500 uppercase tracking-[0.3em]">Step 0 of 0</span>
             <div id="progress-bar-container" class="progress-spacing flex gap-1 justify-center mb-4"></div>
             
