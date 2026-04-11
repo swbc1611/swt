@@ -281,11 +281,22 @@
         let currentPreset = 'month';
         let currentType = 'all';
 
+        // Replace your existing initTheme and toggleDarkMode with this block
         const initTheme = () => {
             const isDark = localStorage.getItem('theme') === 'dark';
             const html = document.getElementById('main-html');
-            if (isDark) html.classList.add('dark');
-            else html.classList.remove('dark');
+            const sun = document.getElementById('sun-icon');
+            const moon = document.getElementById('moon-icon');
+            
+            if (isDark) {
+                html.classList.add('dark');
+                sun.classList.remove('hidden');
+                moon.classList.add('hidden');
+            } else {
+                html.classList.remove('dark');
+                sun.classList.add('hidden');
+                moon.classList.remove('hidden');
+            }
         };
         initTheme();
 
@@ -299,10 +310,18 @@
 
         window.toggleDarkMode = () => {
             const html = document.getElementById('main-html');
+            const sun = document.getElementById('sun-icon');
+            const moon = document.getElementById('moon-icon');
+            
             const isDark = html.classList.toggle('dark');
+            
+            // SURGICAL FIX: Toggle Icon Visibility
+            sun.classList.toggle('hidden', !isDark);
+            moon.classList.toggle('hidden', isDark);
+            
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
         };
-
+        
         // --- NAME & GUIDE MODALS remain unchanged ---
         window.openNameModal = () => {
             document.getElementById('newNameInput').value = userProfile.displayName || "";
