@@ -268,7 +268,7 @@
         let userProfile = null; 
         let churchNames = {};
         let currentPreset = 'month';
-        // SURGICAL ADDITION: Type Filter State
+        // SURGICAL ADDITION: Type Selection State
         let currentType = 'all';
 
         const initTheme = () => {
@@ -299,6 +299,7 @@
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
         };
 
+        // --- NAME MODAL LOGIC ---
         window.openNameModal = () => {
             document.getElementById('newNameInput').value = userProfile.displayName || "";
             document.getElementById('nameModal').classList.remove('hidden');
@@ -320,6 +321,7 @@
             finally { btn.innerText = "SAVE"; btn.disabled = false; }
         };
 
+        // --- GUIDE LOGIC ---
         window.openGuideSettings = () => {
             document.getElementById('guideUrlInput').value = userProfile.guideUrl || "";
             document.getElementById('guideSettingsModal').classList.remove('hidden');
@@ -343,7 +345,7 @@
             window.location.href = "guide.html";
         };
 
-        // SURGICAL ADDITION: Type Selection Helper
+        // SURGICAL ADDITION: Type Selection UI Logic (Style Preserved)
         window.setActiveType = (type) => {
             currentType = type;
             document.querySelectorAll('.type-btn').forEach(btn => {
@@ -355,6 +357,7 @@
             activeBtn.classList.add('bg-indigo-600', 'text-white', 'shadow-lg', 'shadow-indigo-500/20');
         };
 
+        // --- AUTH & DATA ---
         onAuthStateChanged(auth, async (user) => {
             if (!user) { sessionStorage.clear(); window.location.replace("index.html"); return; }
             try {
@@ -373,7 +376,7 @@
                     await refreshUI();
                 }
                 setActivePreset('month');
-                setActiveType('all');
+                setActiveType('all'); // Initialize Filter
             } catch (e) { console.error("Auth Guard Error:", e); }
         });
 
@@ -412,7 +415,7 @@
             tagContainer.innerHTML = tagsHtml;
         }
 
-        // SURGICAL ADDITION: Type-Sensitive loadStats
+        // SURGICAL UPDATE: Type-Aware Stats Logic
         window.loadStats = async () => {
             if (!userProfile || !userProfile.churchId || userProfile.churchId.length === 0) return showToast("No churches linked."); 
             const selCh = document.getElementById('churchFilter').value;
@@ -472,12 +475,10 @@
                         if (bSnap.exists()) {
                             const data = bSnap.data();
                             if (currentType === 'all') {
-                                // Combined count across all type buckets
                                 (data.Regular_members || []).forEach(id => uniqueUIDs.add(id));
                                 (data.School_members || []).forEach(id => uniqueUIDs.add(id));
                                 (data.Event_members || []).forEach(id => uniqueUIDs.add(id));
                             } else {
-                                // Specific type bucket
                                 (data[`${currentType}_members`] || []).forEach(id => uniqueUIDs.add(id));
                             }
                         }
@@ -505,7 +506,7 @@
             } catch (error) { showToast("Update failed."); }
         };
 
-        // SURGICAL ADDITION: Type-Sensitive Submission
+        // SURGICAL UPDATE: Type-Sensitive Submission to Buckets
         window.handleDataSubmit = async () => {
             const type = document.getElementById('soulType').value;
             if (!type) return showToast("Select type.");
@@ -525,7 +526,7 @@
                     churchId, timestamp: serverTimestamp() 
                 });
                 
-                // Update type-specific members array
+                // SURGICAL CHANGE: Save User ID into specific bucket field
                 const statsUpdate = {};
                 statsUpdate[`${type}_members`] = arrayUnion(uid);
                 await setDoc(doc(db, `churches/${churchId}/daily_stats`, dateId), statsUpdate, { merge: true });
