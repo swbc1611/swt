@@ -32,72 +32,109 @@
     <main class="max-w-4xl mx-auto p-6 pb-40 text-center">
         <header class="mb-10">
             <div id="role-display" class="badge-base badge-role mb-2 uppercase tracking-widest font-bold">PASTOR</div>
+            
             <div class="flex items-center justify-center gap-2 mb-3">
                 <h2 id="user-display-name" class="text-4xl font-extrabold tracking-tight">...</h2>
-                <button onclick="openNameModal()" class="text-slate-400 hover:text-indigo-600 transition-all"><i class="bi bi-pencil-square text-xl"></i></button>
+                <button onclick="openNameModal()" class="text-slate-400 hover:text-indigo-600 transition-all">
+                    <i class="bi bi-pencil-square text-xl"></i>
+                </button>
             </div>
+
             <div id="church-list-tags" class="flex flex-wrap justify-center gap-2 mt-2"></div>
             
             <div class="mt-10 max-w-sm mx-auto space-y-8">
                 <div>
                     <label class="block text-[12px] font-bold text-slate-400 uppercase mb-3 tracking-widest">Personal</label>
                     <div class="p-8 bg-white dark:bg-slate-900 border dark:border-slate-800 rounded-[3rem] shadow-sm flex flex-col gap-4">
-                        <button onclick="window.location.href='prospects.html'" class="w-full flex items-center justify-center gap-3 py-5 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase transition-all shadow-lg active:scale-95">Record Prospect Contacts</button>
-                        <button onclick="window.location.href='history.html'" class="w-full flex items-center justify-center gap-2 py-4 bg-indigo-600 text-white rounded-2xl text-[10px] font-bold uppercase transition-all active:scale-95">My History</button>
-                        <button onclick="window.location.href='avatar.html'" class="w-full flex items-center justify-center gap-2 py-4 bg-amber-500 text-white rounded-2xl text-[10px] font-bold uppercase active:scale-95">Achievements</button>
-                        <button onclick="openPasswordModal()" class="w-full flex items-center justify-center gap-2 py-4 bg-slate-100 dark:bg-slate-800/50 text-slate-500 rounded-2xl text-[10px] font-bold uppercase active:scale-95">Change Password</button>
+                        <button onclick="window.location.href='prospects.html'" class="w-full flex items-center justify-center gap-3 py-5 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase transition-all shadow-lg shadow-indigo-500/30 active:scale-95">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                            </svg>
+                            Record Prospect Contacts
+                        </button>
+
+                        <button onclick="window.location.href='history.html'" class="w-full flex items-center justify-center gap-2 py-4 bg-indigo-600 text-white rounded-2xl text-[10px] font-bold uppercase transition-all shadow-lg shadow-indigo-500/30 active:scale-95">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
+                            My History
+                        </button>
+
+                        <button onclick="window.location.href='avatar.html'" class="w-full flex items-center justify-center gap-2 py-4 bg-amber-500 text-white rounded-2xl text-[10px] font-bold uppercase transition-all shadow-lg shadow-amber-500/20 active:scale-95">
+                            <i class="bi bi-star-fill text-sm"></i>
+                            Achievements
+                        </button>
+
+                        <button onclick="openPasswordModal()" class="w-full flex items-center justify-center gap-2 py-4 bg-slate-100 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 rounded-2xl text-[10px] font-bold uppercase transition-all active:scale-95">
+                            <i class="bi bi-key-fill"></i> Change Account Password
+                        </button>
                     </div>
                 </div>
 
                 <div>
                     <label class="block text-[12px] font-bold text-slate-400 uppercase mb-3 tracking-widest">Tools</label>
                     <div class="p-8 bg-white dark:bg-slate-900 border dark:border-slate-800 rounded-[3rem] shadow-sm flex flex-col gap-4">
-                        <button onclick="openChurchManager()" class="w-full text-[10px] font-bold bg-indigo-600 text-white px-6 py-4 rounded-2xl uppercase active:scale-95 shadow-lg flex items-center justify-center gap-2">Manage Churches & Codes</button>
-                        <button onclick="window.location.href='members.html'" class="w-full text-[10px] font-bold bg-indigo-600 text-white px-6 py-4 rounded-2xl uppercase active:scale-95 flex items-center justify-center gap-2">Member Management</button>
+                        <button id="manage-churches-btn" onclick="openChurchManager()" class="w-full text-[10px] font-bold bg-indigo-600 text-white px-6 py-4 rounded-2xl uppercase active:scale-95 transition-all shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A4.833 4.833 0 0 1 12 9.432a4.833 4.833 0 0 1-7.5.9V21h15Z" /></svg>
+                            Manage Churches & Codes
+                        </button>
+                        <button onclick="window.location.href='members.html'" class="w-full text-[10px] font-bold bg-indigo-600 text-white px-6 py-4 rounded-2xl uppercase active:scale-95 transition-all shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" /></svg>
+                            Member Management
+                        </button>
                         <div class="flex items-center gap-2">
-                            <button onclick="goToGuide()" class="flex-1 py-4 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase active:scale-95">Soulwinning Guide</button>
-                            <button onclick="openGuideSettings()" class="w-12 h-12 flex items-center justify-center bg-slate-100 dark:bg-slate-800/50 text-slate-400 border border-indigo-500/30 rounded-2xl active:scale-95"><i class="bi bi-gear-fill"></i></button>
+                            <button onclick="goToGuide()" class="flex-1 flex items-center justify-center gap-2 py-4 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase transition-all shadow-lg shadow-indigo-500/30 active:scale-95">
+                                <i class="bi bi-book-half text-sm"></i>
+                                Soulwinning Guide
+                            </button>
+                            <button onclick="openGuideSettings()" class="w-12 h-12 flex items-center justify-center bg-slate-100 dark:bg-slate-800/50 text-slate-400 transition-all border border-indigo-500/30 ring-1 ring-indigo-500/20 shadow-[0_0_15px_rgba(99,102,241,0.1)] active:scale-95 rounded-2xl hover:text-indigo-500">
+                                <i class="bi bi-gear-fill"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <div>
-                    <label class="block text-[12px] font-bold text-slate-400 uppercase mb-3 tracking-widest text-center">Reports</label>
-                    <div class="p-6 bg-white dark:bg-slate-900 border dark:border-slate-800 rounded-[2.5rem] shadow-sm">
-                        <select id="churchFilter" class="w-full bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 px-4 py-3 rounded-2xl text-xs font-bold mb-4 dark:text-white outline-none">
-                            <option value="all">All My Churches</option>
-                        </select>
+            <div class="mt-10 max-w-sm mx-auto">
+                <label class="block text-[12px] font-bold text-slate-400 uppercase mb-3 tracking-widest text-center">Reports</label>
+                <div class="p-6 bg-white dark:bg-slate-900 border dark:border-slate-800 rounded-[2.5rem] shadow-sm">
+                    <select id="churchFilter" class="w-full bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 px-4 py-3 rounded-2xl text-xs font-bold mb-4 pr-10 dark:text-white outline-none">
+                        <option value="all">All My Churches</option>
+                    </select>
 
-                        <div class="space-y-6">
-                            <div>
-                                <label class="block text-[9px] font-bold text-slate-400 uppercase mb-3 tracking-widest text-center">Soulwinning Type</label>
-                                <div class="flex gap-2">
-                                    <button id="type-all" onclick="setActiveType('all')" class="type-btn flex-1 py-3 bg-indigo-600 text-white border border-transparent rounded-2xl text-[10px] font-bold uppercase transition-all duration-200">All</button>
-                                    <button id="type-Regular" onclick="setActiveType('Regular')" class="type-btn flex-1 py-3 bg-slate-100 dark:bg-slate-800/50 border border-transparent rounded-2xl text-[10px] font-bold uppercase text-slate-500 transition-all">Regular</button>
-                                    <button id="type-School" onclick="setActiveType('School')" class="type-btn flex-1 py-3 bg-slate-100 dark:bg-slate-800/50 border border-transparent rounded-2xl text-[10px] font-bold uppercase text-slate-500 transition-all">School</button>
-                                    <button id="type-Event" onclick="setActiveType('Event')" class="type-btn flex-1 py-3 bg-slate-100 dark:bg-slate-800/50 border border-transparent rounded-2xl text-[10px] font-bold uppercase text-slate-500 transition-all">Event</button>
-                                </div>
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-[9px] font-bold text-slate-400 uppercase mb-3 ml-2 tracking-widest text-center">Soulwinning Type</label>
+                            <div class="flex gap-2">
+                                <button id="type-all" onclick="setActiveType('all')" class="type-btn flex-1 py-3 bg-indigo-600 text-white border border-transparent rounded-2xl text-[10px] font-bold uppercase transition-all duration-200">All</button>
+                                <button id="type-Regular" onclick="setActiveType('Regular')" class="type-btn flex-1 py-3 bg-slate-100 dark:bg-slate-800/50 border border-transparent rounded-2xl text-[10px] font-bold uppercase transition-all duration-200 shadow-sm text-slate-500">Regular</button>
+                                <button id="type-School" onclick="setActiveType('School')" class="type-btn flex-1 py-3 bg-slate-100 dark:bg-slate-800/50 border border-transparent rounded-2xl text-[10px] font-bold uppercase transition-all duration-200 shadow-sm text-slate-500">School</button>
+                                <button id="type-Event" onclick="setActiveType('Event')" class="type-btn flex-1 py-3 bg-slate-100 dark:bg-slate-800/50 border border-transparent rounded-2xl text-[10px] font-bold uppercase transition-all duration-200 shadow-sm text-slate-500">Event</button>
                             </div>
-
-                            <div>
-                                <label class="block text-[9px] font-bold text-slate-400 uppercase mb-3 text-center tracking-widest">Quick Presets</label>
-                                <div class="flex gap-2">
-                                    <button id="btn-today" onclick="setActivePreset('today')" class="preset-btn flex-1 py-3 bg-slate-100 dark:bg-slate-800/50 rounded-2xl text-[10px] font-bold uppercase text-slate-500">Today</button>
-                                    <button id="btn-week" onclick="setActivePreset('week')" class="preset-btn flex-1 py-3 bg-slate-100 dark:bg-slate-800/50 rounded-2xl text-[10px] font-bold uppercase text-slate-500">Week</button>
-                                    <button id="btn-month" onclick="setActivePreset('month')" class="preset-btn flex-1 py-3 bg-indigo-600 text-white rounded-2xl text-[10px] font-bold uppercase">Month</button>
-                                </div>
-                            </div>
-
-                            <div class="border-t dark:border-slate-800 pt-4">
-                                <label class="block text-[9px] font-bold text-slate-400 uppercase mb-4 tracking-widest text-center">Custom Selection</label>
-                                <div class="grid grid-cols-2 gap-3">
-                                    <input type="date" id="customDate" oninput="handleCustomInput('date')" class="bg-slate-50 dark:bg-slate-800 border p-3 rounded-xl text-[10px] font-bold dark:text-white">
-                                    <input type="month" id="customMonth" oninput="handleCustomInput('month')" class="bg-slate-50 dark:bg-slate-800 border p-3 rounded-xl text-[10px] font-bold dark:text-white">
-                                </div>
-                            </div>
-
-                            <button onclick="loadStats()" class="w-full py-4 bg-indigo-600 text-white rounded-2xl font-bold text-xs uppercase shadow-lg active:scale-95 transition-all">Generate Report</button>
                         </div>
+
+                        <div>
+                            <label class="block text-[9px] font-bold text-slate-400 uppercase mb-3 ml-2 text-left tracking-widest text-center">Quick Presets</label>
+                            <div class="flex gap-2">
+                                <button id="btn-today" onclick="setActivePreset('today')" class="preset-btn flex-1 py-3 bg-slate-100 dark:bg-slate-800/50 border border-transparent rounded-2xl text-[10px] font-bold uppercase transition-all duration-200 active:scale-95 shadow-sm text-slate-500 dark:text-slate-400">Today</button>
+                                <button id="btn-week" onclick="setActivePreset('week')" class="preset-btn flex-1 py-3 bg-slate-100 dark:bg-slate-800/50 border border-transparent rounded-2xl text-[10px] font-bold uppercase transition-all duration-200 active:scale-95 shadow-sm text-slate-500 dark:text-slate-400">Week</button>
+                                <button id="btn-month" onclick="setActivePreset('month')" class="preset-btn flex-1 py-3 bg-slate-100 dark:bg-slate-800/50 border border-transparent rounded-2xl text-[10px] font-bold uppercase transition-all duration-200 active:scale-95 shadow-sm text-slate-500 dark:text-slate-400">Month</button>
+                            </div>
+                        </div>
+
+                        <div class="border-t dark:border-slate-800 pt-4 text-left">
+                            <label class="block text-[9px] font-bold text-slate-400 uppercase mb-4 ml-2 tracking-widest text-center">Custom Selection</label>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="flex flex-col gap-1.5">
+                                    <label for="customDate" class="text-[8px] font-extrabold text-slate-400 uppercase ml-2 text-center">Specific Day</label>
+                                    <input type="date" id="customDate" oninput="handleCustomInput('date')" class="bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 p-3 rounded-xl text-[10px] font-bold dark:text-white outline-none transition-all duration-300">
+                                </div>
+                                <div class="flex flex-col gap-1.5">
+                                    <label for="customMonth" class="text-[8px] font-extrabold text-slate-400 uppercase ml-2 text-center">Whole Month</label>
+                                    <input type="month" id="customMonth" oninput="handleCustomInput('month')" class="bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 p-3 rounded-xl text-[10px] font-bold dark:text-white outline-none transition-all duration-300">
+                                </div>
+                            </div>
+                        </div>
+
+                        <button onclick="loadStats()" class="w-full py-4 bg-indigo-600 text-white rounded-2xl font-bold text-xs uppercase active:scale-95 transition-all shadow-lg shadow-indigo-500/20">Generate Report</button>
                     </div>
                 </div>
             </div>
@@ -112,11 +149,11 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
                     <div class="text-center py-4">
                         <p class="text-[10px] font-bold text-slate-400 uppercase mb-2 tracking-widest">Total Salvations</p>
-                        <span id="totalSouls" class="text-6xl font-black text-indigo-600">0</span>
+                        <span id="totalSouls" class="text-6xl font-black text-indigo-600 drop-shadow-sm">0</span>
                     </div>
                     <div class="text-center py-4 border-t sm:border-t-0 sm:border-l dark:border-slate-800">
                         <p class="text-[10px] font-bold text-slate-400 uppercase mb-2 tracking-widest">Participating Members</p>
-                        <span id="totalSW" class="text-6xl font-black text-indigo-600">0</span>
+                        <span id="totalSW" class="text-6xl font-black text-indigo-600 drop-shadow-sm">0</span>
                     </div>
                 </div>
             </div>
@@ -124,40 +161,82 @@
     </main>
 
     <div id="nameModal" class="hidden fixed inset-0 z-[150] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-        <div class="bg-white dark:bg-slate-900 w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl text-center">
+        <div class="bg-white dark:bg-slate-900 border dark:border-slate-800 w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl text-center">
             <h2 class="text-xl font-bold dark:text-white mb-2">Edit Display Name</h2>
-            <input id="newNameInput" type="text" placeholder="Your Name" maxlength="20" class="w-full p-4 bg-slate-50 dark:bg-slate-800 border rounded-2xl text-sm dark:text-white mb-4">
+            <p class="text-[10px] text-slate-400 mb-6 uppercase tracking-widest">How should you appear in reports?</p>
+            <input id="newNameInput" type="text" placeholder="Your Name" maxlength="20" class="w-full p-4 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-2xl outline-none text-sm dark:text-white mb-4">
             <div class="flex gap-2">
-                <button onclick="closeNameModal()" class="flex-1 py-3 text-slate-500 uppercase text-xs">Cancel</button>
-                <button id="saveNameBtn" onclick="saveDisplayName()" class="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-bold uppercase text-xs">Save</button>
+                <button onclick="closeNameModal()" class="flex-1 py-3 text-slate-500 font-bold text-xs uppercase tracking-widest">Cancel</button>
+                <button id="saveNameBtn" onclick="saveDisplayName()" class="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-indigo-500/20">Save</button>
             </div>
         </div>
     </div>
 
     <div id="guideSettingsModal" class="hidden fixed inset-0 z-[150] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-        <div class="bg-white dark:bg-slate-900 w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl text-center">
+        <div class="bg-white dark:bg-slate-900 border dark:border-slate-800 w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl text-center">
             <h2 class="text-xl font-bold dark:text-white mb-2">Guide Settings</h2>
-            <input id="guideUrlInput" type="text" placeholder="Google Sheets URL" class="w-full p-4 bg-slate-50 rounded-2xl outline-none text-[10px] mb-4">
+            <p class="text-[10px] text-slate-400 mb-6 uppercase tracking-widest text-center leading-relaxed">Paste your Google Sheets URL below.<br>Set access to "Anyone with the link can view".</p>
+            <input id="guideUrlInput" type="text" placeholder="https://docs.google.com/spreadsheets/d/..." class="w-full p-4 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-2xl outline-none text-[10px] dark:text-white mb-4">
             <div class="flex gap-2">
-                <button onclick="closeGuideSettings()" class="flex-1 py-3 text-slate-500 font-bold text-xs">Cancel</button>
-                <button id="saveGuideBtn" onclick="saveGuideUrl()" class="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-bold text-xs">Save URL</button>
+                <button onclick="closeGuideSettings()" class="flex-1 py-3 text-slate-500 font-bold text-xs uppercase tracking-widest">Cancel</button>
+                <button id="saveGuideBtn" onclick="saveGuideUrl()" class="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-indigo-500/20">Save URL</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="fixed bottom-0 left-0 right-0 z-[100] bg-white/80 dark:bg-[#0f172a]/80 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800 px-6 py-4">
+        <div class="max-w-4xl mx-auto flex justify-center items-center">
+            <button onclick="openModal()" class="relative flex items-center justify-center w-16 h-16 bg-indigo-600 text-white rounded-full shadow-[0_8px_30px_rgb(79,70,229,0.4)] hover:shadow-[0_8px_40px_rgb(79,70,229,0.6)] active:scale-90 transition-all duration-300">
+                <i class="bi bi-plus-lg text-3xl"></i>
+                <span class="absolute inset-0 rounded-full bg-indigo-500 animate-ping opacity-20"></span>
+            </button>
+        </div>
+    </div>
+
+    <div id="password-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-6 hidden z-[200]">
+        <div class="bg-white dark:bg-slate-900 w-full max-w-sm rounded-[2.5rem] p-8 border dark:border-slate-800 text-center shadow-2xl">
+            <div class="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <i class="bi bi-shield-lock-fill text-xl"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-2 dark:text-white text-center">Update Password</h3>
+            <p class="text-[10px] text-slate-400 uppercase tracking-widest mb-6">Verification required</p>
+            <div class="space-y-4 text-left mb-6">
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 ml-2 tracking-widest">Old Password</label>
+                    <input type="password" id="old-account-password" placeholder="••••••••" class="w-full p-3.5 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-2xl text-sm outline-none dark:text-white">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 ml-2 tracking-widest">New Password</label>
+                    <input type="password" id="new-account-password" placeholder="••••••••" class="w-full p-3.5 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-2xl text-sm outline-none dark:text-white">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 ml-2 tracking-widest">Confirm New Password</label>
+                    <input type="password" id="confirm-account-password" placeholder="••••••••" class="w-full p-3.5 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-2xl text-sm outline-none dark:text-white">
+                </div>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="closePasswordModal()" class="flex-1 py-4 text-slate-400 font-bold uppercase text-xs">Cancel</button>
+                <button id="save-pass-btn" onclick="handleChangePassword()" class="flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-bold uppercase text-xs shadow-lg shadow-indigo-500/30 active:scale-95">Save</button>
             </div>
         </div>
     </div>
 
     <div id="modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-6 hidden z-[120]">
-        <div class="bg-white dark:bg-slate-900 w-full max-w-sm rounded-[2.5rem] p-8 border text-center">
+        <div class="bg-white dark:bg-slate-900 w-full max-w-sm rounded-[2.5rem] p-8 border dark:border-slate-800 text-center shadow-2xl">
             <h3 class="text-xl font-bold mb-6 dark:text-white">Log Salvation</h3>
-            <select id="soulType" class="w-full p-4 bg-slate-50 dark:bg-slate-800 border rounded-2xl text-sm mb-4 font-bold">
-                <option value="Regular" selected>Regular</option><option value="School">School</option><option value="Event">Event</option>
-            </select>
-            <div class="flex items-center justify-between mb-6 bg-slate-50 dark:bg-slate-800/50 p-3 rounded-3xl">
-                <button onclick="decrement()" class="w-12 h-12 rounded-2xl bg-white font-bold text-xl">-</button>
-                <input id="soulCount" type="number" value="1" readonly class="w-20 text-center text-5xl font-light bg-transparent text-indigo-600">
-                <button onclick="increment()" class="w-12 h-12 rounded-2xl bg-indigo-600 text-white font-bold text-xl">+</button>
+            <div class="mb-4 text-left">
+                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-2 tracking-widest ml-2 text-center">Soulwinning Type</label>
+                <select id="soulType" class="w-full p-4 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-2xl text-sm outline-none dark:text-white font-bold">
+                    <option value="" disabled selected>Select Type...</option><option value="Regular">Regular</option><option value="School">School</option><option value="Event">Event</option>
+                </select>
             </div>
-            <input id="soulDateTime" type="datetime-local" class="w-full p-4 bg-slate-50 dark:bg-slate-800 border rounded-2xl text-sm mb-4">
-            <input id="soulNote" type="text" placeholder="Notes..." class="w-full p-4 bg-slate-50 dark:bg-slate-800 border rounded-2xl text-sm mb-8">
+            <div class="flex items-center justify-between mb-6 bg-slate-50 dark:bg-slate-800/50 p-3 rounded-3xl">
+                <button onclick="decrement()" class="w-12 h-12 rounded-2xl bg-white dark:bg-slate-700 font-bold text-xl hover:bg-slate-100 dark:text-white transition-all">-</button>
+                <input id="soulCount" type="number" value="1" readonly class="w-20 text-center text-5xl font-light bg-transparent text-indigo-600">
+                <button onclick="increment()" class="w-12 h-12 rounded-2xl bg-indigo-600 text-white font-bold text-xl hover:bg-indigo-700 transition-all">+</button>
+            </div>
+            <input id="soulDateTime" type="datetime-local" class="w-full p-4 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-2xl text-sm mb-4 outline-none dark:text-white">
+            <input id="soulNote" type="text" placeholder="Notes..." class="w-full p-4 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-2xl text-sm mb-8 outline-none dark:text-white">
             <div class="flex gap-3">
                 <button onclick="closeModal()" class="flex-1 py-4 text-slate-400 font-bold uppercase text-xs">Cancel</button>
                 <button id="submit-btn" onclick="handleDataSubmit()" class="flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-bold uppercase text-xs">Submit</button>
@@ -166,37 +245,16 @@
     </div>
 
     <div id="church-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-6 hidden z-[120]">
-        <div class="bg-white dark:bg-slate-900 w-full max-w-md rounded-[2.5rem] p-8 border shadow-2xl">
+        <div class="bg-white dark:bg-slate-900 w-full max-w-md rounded-[2.5rem] p-8 border dark:border-slate-800 shadow-2xl">
             <h3 class="text-xl font-bold mb-6 text-center dark:text-white">Church Management</h3>
-            <div id="church-list" class="space-y-1 mb-6 max-h-72 overflow-y-auto text-left"></div>
+            <div id="church-list" class="space-y-1 mb-6 max-h-72 overflow-y-auto pr-2 custom-scroll text-left"></div>
             <div class="border-t dark:border-slate-800 pt-6">
-                <input id="newChurchName" type="text" placeholder="Church Name" class="w-full p-4 mb-4 bg-slate-50 dark:bg-slate-800 border rounded-2xl">
+                <input id="newChurchName" type="text" placeholder="Church Name" class="w-full p-4 mb-4 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-2xl outline-none dark:text-white">
                 <div class="flex gap-3">
                     <button onclick="closeChurchManager()" class="flex-1 py-4 text-slate-400 uppercase text-xs">Close</button>
-                    <button onclick="addNewChurch()" class="flex-1 py-4 bg-indigo-600 text-white rounded-2xl uppercase text-xs">Add Code</button>
+                    <button id="add-btn" onclick="addNewChurch()" class="flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-bold uppercase text-xs">Add Code</button>
                 </div>
             </div>
-        </div>
-    </div>
-
-    <div id="password-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-6 hidden z-[200]">
-        <div class="bg-white dark:bg-slate-900 w-full max-w-sm rounded-[2.5rem] p-8 text-center shadow-2xl border">
-            <h3 class="text-xl font-bold mb-2 dark:text-white">Update Password</h3>
-            <div class="space-y-4 text-left mb-6 mt-4">
-                <input type="password" id="old-account-password" placeholder="Old Password" class="w-full p-3.5 bg-slate-50 rounded-2xl text-sm">
-                <input type="password" id="new-account-password" placeholder="New Password" class="w-full p-3.5 bg-slate-50 rounded-2xl text-sm">
-                <input type="password" id="confirm-account-password" placeholder="Confirm New Password" class="w-full p-3.5 bg-slate-50 rounded-2xl text-sm">
-            </div>
-            <div class="flex gap-3">
-                <button onclick="closePasswordModal()" class="flex-1 py-4 text-slate-400 uppercase text-xs">Cancel</button>
-                <button onclick="handleChangePassword()" class="flex-1 py-4 bg-indigo-600 text-white rounded-2xl uppercase text-xs">Save</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="fixed bottom-0 left-0 right-0 z-[100] bg-white/80 dark:bg-[#0f172a]/80 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800 px-6 py-4">
-        <div class="max-w-4xl mx-auto flex justify-center items-center">
-            <button onclick="openModal()" class="relative flex items-center justify-center w-16 h-16 bg-indigo-600 text-white rounded-full shadow-xl active:scale-90 transition-all"><i class="bi bi-plus-lg text-3xl"></i></button>
         </div>
     </div>
 
@@ -210,191 +268,339 @@
         let userProfile = null; 
         let churchNames = {};
         let currentPreset = 'month';
+        // SURGICAL ADDITION: Type Filter State
         let currentType = 'all';
 
         const initTheme = () => {
-            if (localStorage.getItem('theme') === 'dark') document.getElementById('main-html').classList.add('dark');
+            const isDark = localStorage.getItem('theme') === 'dark';
+            const html = document.getElementById('main-html');
+            const sun = document.getElementById('sun-icon');
+            const moon = document.getElementById('moon-icon');
+            if (isDark) { html.classList.add('dark'); sun.classList.remove('hidden'); moon.classList.add('hidden'); }
+            else { html.classList.remove('dark'); sun.classList.add('hidden'); moon.classList.remove('hidden'); }
         };
         initTheme();
 
-        window.toggleDarkMode = () => {
-            const isDark = document.getElementById('main-html').classList.toggle('dark');
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
-        };
-
         window.showToast = (msg) => {
             const t = document.getElementById('toast');
-            t.innerText = msg; t.classList.remove('opacity-0', 'translate-y-10');
+            if(!t) return;
+            t.innerText = msg;
+            t.classList.remove('opacity-0', 'translate-y-10');
             setTimeout(() => t.classList.add('opacity-0', 'translate-y-10'), 3000);
         };
 
-        // --- NAME MODAL ---
-        window.openNameModal = () => { document.getElementById('newNameInput').value = userProfile.displayName; document.getElementById('nameModal').classList.remove('hidden'); };
-        window.closeNameModal = () => document.getElementById('nameModal').classList.add('hidden');
-        window.saveDisplayName = async () => {
-            const name = document.getElementById('newNameInput').value.trim();
-            if(!name) return;
-            await updateDoc(doc(db, "profiles", auth.currentUser.uid), { displayName: name });
-            userProfile.displayName = name; document.getElementById('user-display-name').innerText = name;
-            sessionStorage.setItem('userContext', JSON.stringify(userProfile));
-            closeNameModal(); showToast("Name updated!");
+        window.toggleDarkMode = () => {
+            const html = document.getElementById('main-html');
+            const sun = document.getElementById('sun-icon');
+            const moon = document.getElementById('moon-icon');
+            const isDark = html.classList.toggle('dark');
+            sun.classList.toggle('hidden', !isDark);
+            moon.classList.toggle('hidden', isDark);
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
         };
 
-        // --- GUIDE MODAL ---
-        window.openGuideSettings = () => { document.getElementById('guideUrlInput').value = userProfile.guideUrl || ""; document.getElementById('guideSettingsModal').classList.remove('hidden'); };
+        window.openNameModal = () => {
+            document.getElementById('newNameInput').value = userProfile.displayName || "";
+            document.getElementById('nameModal').classList.remove('hidden');
+        };
+        window.closeNameModal = () => document.getElementById('nameModal').classList.add('hidden');
+        window.saveDisplayName = async () => {
+            const newName = document.getElementById('newNameInput').value.trim();
+            if (!newName) return showToast("Name required.");
+            const btn = document.getElementById('saveNameBtn');
+            btn.innerText = "SAVING..."; btn.disabled = true;
+            try {
+                await updateDoc(doc(db, "profiles", auth.currentUser.uid), { displayName: newName });
+                userProfile.displayName = newName;
+                sessionStorage.setItem('userContext', JSON.stringify(userProfile));
+                document.getElementById('user-display-name').innerText = newName;
+                showToast("Name updated! ✓");
+                closeNameModal();
+            } catch (e) { showToast("Error updating name."); }
+            finally { btn.innerText = "SAVE"; btn.disabled = false; }
+        };
+
+        window.openGuideSettings = () => {
+            document.getElementById('guideUrlInput').value = userProfile.guideUrl || "";
+            document.getElementById('guideSettingsModal').classList.remove('hidden');
+        };
         window.closeGuideSettings = () => document.getElementById('guideSettingsModal').classList.add('hidden');
         window.saveGuideUrl = async () => {
             const url = document.getElementById('guideUrlInput').value.trim();
-            await updateDoc(doc(db, "profiles", auth.currentUser.uid), { guideUrl: url });
-            userProfile.guideUrl = url; closeGuideSettings(); showToast("Guide URL saved!");
+            if (url && !url.includes("docs.google.com")) return showToast("Invalid Google Sheets URL.");
+            const btn = document.getElementById('saveGuideBtn');
+            btn.innerText = "SAVING..."; btn.disabled = true;
+            try {
+                await updateDoc(doc(db, "profiles", auth.currentUser.uid), { guideUrl: url });
+                userProfile.guideUrl = url;
+                showToast("Guide URL saved!");
+                closeGuideSettings();
+            } catch (e) { showToast("Error saving URL."); }
+            finally { btn.innerText = "SAVE URL"; btn.disabled = false; }
+        };
+        window.goToGuide = () => {
+            if (!userProfile?.guideUrl) return showToast("No guides saved yet.");
+            window.location.href = "guide.html";
         };
 
-        // --- PASSWORD MODAL ---
-        window.openPasswordModal = () => document.getElementById('password-modal').classList.remove('hidden');
+        // SURGICAL ADDITION: Type Selection Helper
+        window.setActiveType = (type) => {
+            currentType = type;
+            document.querySelectorAll('.type-btn').forEach(btn => {
+                btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-lg', 'shadow-indigo-500/20');
+                btn.classList.add('bg-slate-100', 'dark:bg-slate-800/50', 'text-slate-500');
+            });
+            const activeBtn = document.getElementById(`type-${type}`);
+            activeBtn.classList.remove('bg-slate-100', 'dark:bg-slate-800/50', 'text-slate-500');
+            activeBtn.classList.add('bg-indigo-600', 'text-white', 'shadow-lg', 'shadow-indigo-500/20');
+        };
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { sessionStorage.clear(); window.location.replace("index.html"); return; }
+            try {
+                const cachedData = sessionStorage.getItem('userContext');
+                if (cachedData) {
+                    userProfile = JSON.parse(cachedData);
+                    document.getElementById('user-display-name').innerText = userProfile.displayName || "Pastor";
+                    await renderChurchUI(); 
+                } else {
+                    const snap = await getDoc(doc(db, "profiles", user.uid));
+                    if (!snap.exists()) { window.location.replace("index.html"); return; }
+                    userProfile = snap.data();
+                    if (userProfile.role !== 'pastor') { window.location.replace("index.html"); return; }
+                    if (userProfile.status === 'inactive') { await signOut(auth); window.location.replace("index.html"); return; }
+                    document.getElementById('user-display-name').innerText = userProfile.displayName || "Pastor";
+                    await refreshUI();
+                }
+                setActivePreset('month');
+                setActiveType('all');
+            } catch (e) { console.error("Auth Guard Error:", e); }
+        });
+
+        async function refreshUI() {
+            const filter = document.getElementById('churchFilter');
+            const tagContainer = document.getElementById('church-list-tags');
+            if(!filter || !tagContainer) return;
+            filter.innerHTML = '<option value="all">All My Churches</option>';
+            churchNames = {};
+            let tagsHtml = "";
+            for(const code of (userProfile.churchId || [])) {
+                const d = await getDoc(doc(db, "churches", code));
+                if(d.exists()) {
+                    const name = d.data().name;
+                    churchNames[code] = name;
+                    tagsHtml += `<span class="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 px-3 py-1 rounded-full text-[10px] font-bold uppercase">${name}</span>`;
+                    filter.innerHTML += `<option value="${code}">${name}</option>`;
+                }
+            }
+            tagContainer.innerHTML = tagsHtml;
+            userProfile.churchNames = churchNames; 
+            sessionStorage.setItem('userContext', JSON.stringify(userProfile));
+        }
+
+        async function renderChurchUI() {
+            const filter = document.getElementById('churchFilter');
+            const tagContainer = document.getElementById('church-list-tags');
+            if(!filter || !tagContainer || !userProfile.churchNames) return;
+            churchNames = userProfile.churchNames;
+            let tagsHtml = "";
+            filter.innerHTML = '<option value="all">All My Churches</option>';
+            Object.entries(churchNames).forEach(([code, name]) => {
+                tagsHtml += `<span class="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 px-3 py-1 rounded-full text-[10px] font-bold uppercase">${name}</span>`;
+                filter.innerHTML += `<option value="${code}">${name}</option>`;
+            });
+            tagContainer.innerHTML = tagsHtml;
+        }
+
+        // SURGICAL ADDITION: Type-Sensitive loadStats
+        window.loadStats = async () => {
+            if (!userProfile || !userProfile.churchId || userProfile.churchId.length === 0) return showToast("No churches linked."); 
+            const selCh = document.getElementById('churchFilter').value;
+            const cDate = document.getElementById('customDate').value;
+            const cMonth = document.getElementById('customMonth').value;
+            const dateLabel = document.getElementById('reportDateLabel');
+            document.getElementById('stats-container').classList.remove('hidden');
+            document.getElementById('totalSouls').innerText = "...";
+            document.getElementById('totalSW').innerText = "...";
+            const now = new Date();
+            const churchIds = (selCh === 'all') ? userProfile.churchId : [selCh];
+            
+            // Build base constraints
+            let constraints = [where("churchId", "in", churchIds)];
+            if (currentType !== 'all') constraints.push(where("type", "==", currentType));
+
+            let bucketPaths = [];
+            const options = { month: 'long', day: 'numeric', year: 'numeric' };
+
+            if (cDate) {
+                dateLabel.innerText = new Date(cDate).toLocaleDateString('en-US', options);
+                bucketPaths.push(`daily_stats/${cDate}`);
+                constraints.push(where("eventDate", ">=", cDate + "T00:00"), where("eventDate", "<=", cDate + "T23:59"));
+            } else if (cMonth) {
+                const [year, month] = cMonth.split('-');
+                dateLabel.innerText = new Date(year, month - 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+                bucketPaths.push(`monthly_stats/${cMonth}`);
+                constraints.push(where("eventDate", ">=", cMonth + "-01T00:00"), where("eventDate", "<=", cMonth + "-31T23:59"));
+            } else if (currentPreset === 'today') {
+                const todayStr = now.toLocaleDateString('en-CA');
+                dateLabel.innerText = now.toLocaleDateString('en-US', options);
+                bucketPaths.push(`daily_stats/${todayStr}`);
+                constraints.push(where("eventDate", ">=", todayStr + "T00:00"), where("eventDate", "<=", todayStr + "T23:59"));
+            } else if (currentPreset === 'week') {
+                let startOfWeek = new Date(now); startOfWeek.setDate(now.getDate() - now.getDay());
+                let endOfWeek = new Date(startOfWeek); endOfWeek.setDate(startOfWeek.getDate() + 6);
+                const sunStr = startOfWeek.toLocaleDateString('en-CA'); const satStr = endOfWeek.toLocaleDateString('en-CA');
+                dateLabel.innerText = `${startOfWeek.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} – ${endOfWeek.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+                constraints.push(where("eventDate", ">=", sunStr + "T00:00"), where("eventDate", "<=", satStr + "T23:59"));
+                for(let i=0; i<7; i++) { let d = new Date(startOfWeek); d.setDate(startOfWeek.getDate() + i); bucketPaths.push(`daily_stats/${d.toLocaleDateString('en-CA')}`); }
+            } else if (currentPreset === 'month') {
+                const thisMonthStr = now.toLocaleDateString('en-CA').substring(0, 7);
+                dateLabel.innerText = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+                bucketPaths.push(`monthly_stats/${thisMonthStr}`);
+                constraints.push(where("eventDate", ">=", thisMonthStr + "-01T00:00"), where("eventDate", "<=", thisMonthStr + "-31T23:59"));
+            }
+
+            try {
+                const soulQuery = query(collection(db, "salvations"), ...constraints);
+                const soulSnap = await getAggregateFromServer(soulQuery, { total: sum('count') });
+                document.getElementById('totalSouls').innerText = soulSnap.data().total || "0";
+                
+                let uniqueUIDs = new Set();
+                for (const chId of churchIds) {
+                    for (const path of bucketPaths) {
+                        const bSnap = await getDoc(doc(db, `churches/${chId}/${path}`));
+                        if (bSnap.exists()) {
+                            const data = bSnap.data();
+                            if (currentType === 'all') {
+                                // Combined count across all type buckets
+                                (data.Regular_members || []).forEach(id => uniqueUIDs.add(id));
+                                (data.School_members || []).forEach(id => uniqueUIDs.add(id));
+                                (data.Event_members || []).forEach(id => uniqueUIDs.add(id));
+                            } else {
+                                // Specific type bucket
+                                (data[`${currentType}_members`] || []).forEach(id => uniqueUIDs.add(id));
+                            }
+                        }
+                    }
+                }
+                document.getElementById('totalSW').innerText = uniqueUIDs.size;
+            } catch(e) { console.error(e); showToast("Load Error."); }
+        };
+
+        window.openPasswordModal = () => { document.getElementById('password-modal').classList.remove('hidden'); };
         window.closePasswordModal = () => document.getElementById('password-modal').classList.add('hidden');
         window.handleChangePassword = async () => {
-            const oldP = document.getElementById('old-account-password').value;
-            const newP = document.getElementById('new-account-password').value;
-            const cred = EmailAuthProvider.credential(auth.currentUser.email, oldP);
+            const user = auth.currentUser;
+            const oldPass = document.getElementById('old-account-password').value;
+            const newPass = document.getElementById('new-account-password').value;
+            const confirmPass = document.getElementById('confirm-account-password').value;
+            if (!oldPass) return showToast("Enter old password.");
+            if (newPass.length < 6) return showToast("New password 6+ chars.");
+            if (newPass !== confirmPass) return showToast("Passwords don't match.");
             try {
-                await reauthenticateWithCredential(auth.currentUser, cred);
-                await updatePassword(auth.currentUser, newP);
-                closePasswordModal(); showToast("Password updated!");
-            } catch(e) { showToast("Verification failed."); }
+                const credential = EmailAuthProvider.credential(user.email, oldPass);
+                await reauthenticateWithCredential(user, credential);
+                await updatePassword(user, newPass);
+                showToast("Password updated!"); closePasswordModal();
+            } catch (error) { showToast("Update failed."); }
         };
 
-        // --- CHURCH MANAGER ---
+        // SURGICAL ADDITION: Type-Sensitive Submission
+        window.handleDataSubmit = async () => {
+            const type = document.getElementById('soulType').value;
+            if (!type) return showToast("Select type.");
+            if (!userProfile?.churchId || userProfile.churchId.length === 0) { showToast("No church linked."); return; }
+            const btn = document.getElementById('submit-btn'); 
+            btn.disabled = true; btn.innerText = "Saving...";
+            try {
+                const uid = auth.currentUser.uid; 
+                const churchId = userProfile.churchId[0];
+                const eventDateStr = document.getElementById('soulDateTime').value;
+                const dateId = eventDateStr.split('T')[0]; 
+                const monthId = dateId.substring(0, 7);
+                await addDoc(collection(db, "salvations"), { 
+                    count: Number(document.getElementById('soulCount').value), 
+                    type, note: document.getElementById('soulNote').value, 
+                    eventDate: eventDateStr, userId: uid, userEmail: auth.currentUser.email, 
+                    churchId, timestamp: serverTimestamp() 
+                });
+                
+                // Update type-specific members array
+                const statsUpdate = {};
+                statsUpdate[`${type}_members`] = arrayUnion(uid);
+                await setDoc(doc(db, `churches/${churchId}/daily_stats`, dateId), statsUpdate, { merge: true });
+                await setDoc(doc(db, `churches/${churchId}/monthly_stats`, monthId), statsUpdate, { merge: true });
+                
+                closeModal(); showToast("Record Saved."); 
+            } catch(e) { console.error(e); showToast("Error saving."); } 
+            finally { btn.disabled = false; btn.innerText = "Submit"; }
+        };
+
         window.openChurchManager = () => {
             const list = document.getElementById('church-list'); list.innerHTML = "";
             userProfile.churchId.forEach(async c => {
                 const name = churchNames[c] || 'Church';
-                list.innerHTML += `<div class="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl flex justify-between items-center mb-2 border"><div><p class="text-[9px] font-bold text-emerald-500 uppercase">${name}</p><p class="font-bold dark:text-white">${c}</p></div><button onclick="navigator.clipboard.writeText('${c}'); showToast('Copied!')" class="text-xs text-slate-400">Copy</button></div>`;
+                list.innerHTML += `<div class="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl flex justify-between items-center border dark:border-slate-700 mb-2"><div><p class="text-[9px] font-bold text-emerald-500 uppercase">${name}</p><p class="text-base font-mono font-bold dark:text-white">${c}</p></div><button onclick="navigator.clipboard.writeText('${c}'); showToast('Copied!');" class="text-xs font-bold text-slate-400">Copy</button></div>`;
             });
             document.getElementById('church-modal').classList.remove('hidden');
         };
-        window.closeChurchManager = () => document.getElementById('church-modal').classList.add('hidden');
+
         window.addNewChurch = async () => {
             const n = document.getElementById('newChurchName').value; if(!n) return;
             const c = Math.random().toString(36).substring(2, 8).toUpperCase();
-            await setDoc(doc(db, "churches", c), { name: n, pastorId: auth.currentUser.uid });
-            await updateDoc(doc(db, "profiles", auth.currentUser.uid), { churchId: arrayUnion(c) });
-            userProfile.churchId.push(c); document.getElementById('newChurchName').value = "";
-            refreshUI(); openChurchManager(); showToast("Church added!");
-        };
-
-        // --- REPORTING LOGIC ---
-        window.setActiveType = (type) => {
-            currentType = type;
-            document.querySelectorAll('.type-btn').forEach(btn => {
-                btn.classList.remove('bg-indigo-600', 'text-white');
-                btn.classList.add('bg-slate-100', 'dark:bg-slate-800', 'text-slate-500');
-            });
-            const activeBtn = document.getElementById(`type-${type}`);
-            activeBtn.classList.remove('bg-slate-100', 'text-slate-500');
-            activeBtn.classList.add('bg-indigo-600', 'text-white');
+            try {
+                await setDoc(doc(db, "churches", c), { name: n, pastorId: auth.currentUser.uid });
+                await updateDoc(doc(db, "profiles", auth.currentUser.uid), { churchId: arrayUnion(c) });
+                userProfile.churchId.push(c); document.getElementById('newChurchName').value = "";
+                await refreshUI(); openChurchManager(); showToast("Church Added");
+            } catch(e) { showToast("Error"); }
         };
 
         window.setActivePreset = (p) => {
             currentPreset = p;
-            document.querySelectorAll('.preset-btn').forEach(btn => {
-                btn.classList.remove('bg-indigo-600', 'text-white');
-                btn.classList.add('bg-slate-100', 'dark:bg-slate-800', 'text-slate-500');
-            });
-            const activeBtn = document.getElementById(`btn-${p}`);
-            if(activeBtn) { activeBtn.classList.remove('bg-slate-100', 'text-slate-500'); activeBtn.classList.add('bg-indigo-600', 'text-white'); }
-        };
-
-        window.handleCustomInput = (type) => {
-            currentPreset = null;
-            document.querySelectorAll('.preset-btn').forEach(btn => {
-                btn.classList.remove('bg-indigo-600', 'text-white');
-                btn.classList.add('bg-slate-100', 'dark:bg-slate-800', 'text-slate-500');
-            });
             const dateInput = document.getElementById('customDate');
             const monthInput = document.getElementById('customMonth');
-            if(type === 'date') monthInput.value = ""; else dateInput.value = "";
-        };
-
-        // --- SUBMISSION LOGIC (TYPE BUCKETS) ---
-        window.handleDataSubmit = async () => {
-            const type = document.getElementById('soulType').value;
-            const btn = document.getElementById('submit-btn'); btn.disabled = true;
-            try {
-                const uid = auth.currentUser.uid; const churchId = userProfile.churchId[0];
-                const eventDateStr = document.getElementById('soulDateTime').value;
-                const dateId = eventDateStr.split('T')[0];
-                await addDoc(collection(db, "salvations"), { 
-                    count: Number(document.getElementById('soulCount').value), type, 
-                    eventDate: eventDateStr, userId: uid, churchId, timestamp: serverTimestamp() 
-                });
-                const statsUpdate = {}; statsUpdate[`${type}_members`] = arrayUnion(uid);
-                await setDoc(doc(db, `churches/${churchId}/daily_stats`, dateId), statsUpdate, { merge: true });
-                await setDoc(doc(db, `churches/${churchId}/monthly_stats`, dateId.substring(0, 7)), statsUpdate, { merge: true });
-                closeModal(); showToast("Record Saved.");
-            } finally { btn.disabled = false; }
-        };
-
-        // --- LOAD STATS ---
-        window.loadStats = async () => {
-            const selCh = document.getElementById('churchFilter').value;
-            const cDate = document.getElementById('customDate').value;
-            const cMonth = document.getElementById('customMonth').value;
-            document.getElementById('stats-container').classList.remove('hidden');
-            const churchIds = (selCh === 'all') ? userProfile.churchId : [selCh];
-            let bucketPaths = [];
-            let constraints = [where("churchId", "in", churchIds)];
-            if(currentType !== 'all') constraints.push(where("type", "==", currentType));
-            
-            const now = new Date();
-            if(cDate) { bucketPaths.push(`daily_stats/${cDate}`); constraints.push(where("eventDate", ">=", cDate+"T00:00"), where("eventDate", "<=", cDate+"T23:59")); }
-            else if(cMonth) { bucketPaths.push(`monthly_stats/${cMonth}`); constraints.push(where("eventDate", ">=", cMonth+"-01T00:00"), where("eventDate", "<=", cMonth+"-31T23:59")); }
-            else if(currentPreset === 'month') { const m = now.toISOString().substring(0, 7); bucketPaths.push(`monthly_stats/${m}`); constraints.push(where("eventDate", ">=", m+"-01T00:00"), where("eventDate", "<=", m+"-31T23:59")); }
-
-            const soulSnap = await getAggregateFromServer(query(collection(db, "salvations"), ...constraints), { total: sum('count') });
-            document.getElementById('totalSouls').innerText = soulSnap.data().total || 0;
-            
-            let uniqueUIDs = new Set();
-            for(const chId of churchIds) {
-                for(const path of bucketPaths) {
-                    const snap = await getDoc(doc(db, `churches/${chId}/${path}`));
-                    if(snap.exists()) {
-                        const d = snap.data();
-                        if(currentType === 'all') { (d.Regular_members||[]).concat(d.School_members||[], d.Event_members||[]).forEach(id => uniqueUIDs.add(id)); }
-                        else (d[`${currentType}_members`] || []).forEach(id => uniqueUIDs.add(id));
-                    }
-                }
+            dateInput.value = ""; monthInput.value = "";
+            [dateInput, monthInput].forEach(input => {
+                input.classList.remove('border-indigo-500', 'ring-2', 'ring-indigo-500/50', 'bg-indigo-500/10');
+                input.classList.add('border-slate-700');
+            });
+            document.querySelectorAll('.preset-btn').forEach(btn => {
+                btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-lg', 'shadow-indigo-500/50');
+                btn.classList.add('bg-slate-100', 'dark:bg-slate-800/50', 'text-slate-500', 'dark:text-slate-400');
+            });
+            const activeBtn = document.getElementById(`btn-${p}`);
+            if (activeBtn) {
+                activeBtn.classList.remove('bg-slate-100', 'dark:bg-slate-800/50', 'text-slate-500', 'dark:text-slate-400');
+                activeBtn.classList.add('bg-indigo-600', 'text-white', 'shadow-lg', 'shadow-indigo-500/50');
             }
-            document.getElementById('totalSW').innerText = uniqueUIDs.size;
+        };
+        
+        window.handleCustomInput = (type) => {
+            currentPreset = null;
+            const dateInput = document.getElementById('customDate');
+            const monthInput = document.getElementById('customMonth');
+            document.querySelectorAll('.preset-btn').forEach(btn => {
+                btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-lg', 'shadow-indigo-500/50');
+                btn.classList.add('bg-slate-100', 'dark:bg-slate-800/50', 'text-slate-500');
+            });
+            if (type === 'date') {
+                dateInput.classList.add('border-indigo-500', 'ring-2', 'ring-indigo-500/50', 'bg-indigo-500/10');
+                monthInput.value = "";
+                monthInput.classList.remove('border-indigo-500', 'ring-2', 'ring-indigo-500/50', 'bg-indigo-500/10');
+            } else {
+                monthInput.classList.add('border-indigo-500', 'ring-2', 'ring-indigo-500/50', 'bg-indigo-500/10');
+                dateInput.value = "";
+                dateInput.classList.remove('border-indigo-500', 'ring-2', 'ring-indigo-500/50', 'bg-indigo-500/10');
+            }
         };
 
-        async function refreshUI() {
-            const filter = document.getElementById('churchFilter'); filter.innerHTML = '<option value="all">All My Churches</option>';
-            let tagsHtml = "";
-            for(const code of userProfile.churchId) {
-                const d = await getDoc(doc(db, "churches", code));
-                if(d.exists()) {
-                    churchNames[code] = d.data().name;
-                    tagsHtml += `<span class="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 px-3 py-1 rounded-full text-[10px] font-bold uppercase">${d.data().name}</span>`;
-                    filter.innerHTML += `<option value="${code}">${d.data().name}</option>`;
-                }
-            }
-            document.getElementById('church-list-tags').innerHTML = tagsHtml;
-            userProfile.churchNames = churchNames; sessionStorage.setItem('userContext', JSON.stringify(userProfile));
-        }
-
-        onAuthStateChanged(auth, async (user) => {
-            if(!user) return;
-            const snap = await getDoc(doc(db, "profiles", user.uid));
-            userProfile = snap.data(); document.getElementById('user-display-name').innerText = userProfile.displayName;
-            refreshUI();
-        });
-
+        window.handleLogout = () => { sessionStorage.clear(); signOut(auth).then(() => window.location.replace("index.html")); };
+        window.closeChurchManager = () => document.getElementById('church-modal').classList.add('hidden');
+        window.closeModal = () => document.getElementById('modal').classList.add('hidden');
+        window.openModal = () => { document.getElementById('modal').classList.remove('hidden'); document.getElementById('soulDateTime').value = new Date(Date.now() - new Date().getTimezoneOffset()*60000).toISOString().slice(0, 16); };
         window.increment = () => document.getElementById('soulCount').value++;
         window.decrement = () => { if(document.getElementById('soulCount').value > 1) document.getElementById('soulCount').value--; };
-        window.closeModal = () => document.getElementById('modal').classList.add('hidden');
-        window.openModal = () => { document.getElementById('modal').classList.remove('hidden'); document.getElementById('soulDateTime').value = new Date().toISOString().slice(0,16); };
-        window.handleLogout = () => { sessionStorage.clear(); signOut(auth).then(() => window.location.replace("index.html")); };
-        window.goToGuide = () => { if(userProfile?.guideUrl) window.location.href="guide.html"; else showToast("No guide URL."); };
     </script>
 </body>
 </html>
