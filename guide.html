@@ -3,27 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Soulwinning Guide - Soulwinning Tracker</title>
+    <title>Soulwinning Guide - Presentation Mode</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="style.css">
     <script>tailwind.config = { darkMode: 'class' }</script>
     <style>
-        /* VIEWPORT LOCK: Prevents scrolling/bouncing on mobile */
+        /* VIEWPORT LOCK: Prevents bouncing and scrolling on mobile */
         body, html { height: 100vh; overflow: hidden; position: fixed; width: 100%; }
         
         .step-active { height: 4px; background: #6366f1; transition: all 0.3s ease; box-shadow: 0 0 10px rgba(99,102,241,0.5); }
         .step-inactive { height: 4px; background: #1e293b; }
         
-        /* VERSE PAGINATION DOTS */
-        .dot-active { width: 24px; background: #6366f1; }
-        .dot-inactive { width: 8px; background: #334155; }
+        /* NUMBERED VERSE PAGINATION */
+        .v-pagination { width: 32px; height: 32px; border-radius: 8px; font-size: 11px; font-weight: 900; transition: all 0.2s; cursor: pointer; }
+        .v-active { background: #6366f1; color: white; transform: scale(1.1); box-shadow: 0 4px 12px rgba(99,102,241,0.3); }
+        .v-inactive { background: #1e293b; color: #64748b; border: 1px solid rgba(255,255,255,0.05); }
 
-        /* ANIMATIONS */
-        @keyframes fadeInScale { 
-            from { opacity: 0; transform: scale(0.98) translateY(10px); } 
-            to { opacity: 1; transform: scale(1) translateY(0); } 
+        @keyframes verseFade { 
+            from { opacity: 0; transform: translateY(10px); } 
+            to { opacity: 1; transform: translateY(0); } 
         }
-        .animate-verse { animation: fadeInScale 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-verse { animation: verseFade 0.3s ease-out forwards; }
 
         /* CRISPER FONT STACK */
         #card-verses {
@@ -37,7 +37,7 @@
     <nav class="bg-white dark:bg-slate-900 border-b dark:border-slate-800 px-6 py-4 flex justify-between items-center z-50 shrink-0">
         <div class="flex items-center gap-2">
             <button onclick="window.history.back()" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 active:scale-90 transition-all mr-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M15 19l-7-7 7-7" /></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-slate-600 dark:text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M15 19l-7-7 7-7" /></svg>
             </button>
             <div class="w-10 h-8 bg-indigo-600 rounded-lg flex items-center justify-center overflow-hidden">
                 <span class="font-bold text-white text-[10px] leading-none text-center">SWT</span>
@@ -51,42 +51,43 @@
         </button>
     </nav>
 
-    <main class="flex-1 flex flex-col items-center justify-between p-6 relative overflow-hidden">
+    <main class="flex-1 flex flex-col items-center p-4 md:p-6 overflow-hidden">
         
-        <div class="w-full max-w-xl text-center mt-2">
+        <div class="w-full max-w-4xl mx-auto text-center shrink-0 py-2">
             <span id="step-counter" class="inline-block mb-2 text-[10px] font-black text-indigo-500 uppercase tracking-[0.3em]">Step 0 of 0</span>
-            <div id="progress-bar-container" class="flex gap-1 justify-center mb-8"></div>
+            <div id="progress-bar-container" class="flex gap-1 justify-center mb-6"></div>
             
-            <div class="flex flex-col items-center gap-4">
-                <div class="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-500/20 shrink-0">
-                    <span id="current-order" class="text-white font-black text-xl">1</span>
+            <div class="flex flex-col items-center gap-3">
+                <div class="w-11 h-11 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20 shrink-0">
+                    <span id="current-order" class="text-white font-black text-xl leading-none">1</span>
                 </div>
-                <h2 id="card-title" class="text-2xl md:text-4xl font-black uppercase tracking-tight text-slate-800 dark:text-white leading-tight">...</h2>
+                <h2 id="card-title" class="text-xl md:text-4xl font-black uppercase tracking-tight leading-tight text-slate-800 dark:text-white max-w-lg">...</h2>
             </div>
         </div>
 
-        <div id="verse-stage" class="w-full flex-1 flex flex-col items-center justify-center py-4">
-            <div class="w-full max-w-3xl bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 md:p-12 border-l-[12px] border-indigo-600 shadow-2xl relative overflow-hidden ring-1 ring-black/5 dark:ring-white/5">
-                <div id="verse-sizer" class="flex items-center justify-center h-full min-h-[200px]">
-                    <p id="card-verses" class="font-bold italic text-slate-800 dark:text-white leading-tight text-center w-full whitespace-pre-line"></p>
-                </div>
+        <div id="verse-container" class="flex-1 w-full flex items-center justify-center overflow-hidden py-4">
+            <div id="verse-card" class="w-full h-full max-w-4xl bg-white dark:bg-slate-900 rounded-[2.5rem] md:rounded-[3.5rem] p-8 md:p-12 border-l-[12px] border-indigo-600 shadow-2xl flex items-center justify-center relative ring-1 ring-black/5 dark:ring-white/5 overflow-hidden">
+                <p id="card-verses" class="font-bold italic text-slate-800 dark:text-white leading-tight text-center w-full whitespace-pre-line"></p>
             </div>
-            <div id="verse-pagination" class="flex gap-2 mt-6"></div>
         </div>
 
-        <div class="mb-4 max-w-md text-center shrink-0">
-            <div class="inline-flex items-center gap-2 mb-1">
-                <div class="w-1.5 h-1.5 rounded-full bg-indigo-500"></div>
-                <span class="text-[9px] font-black text-indigo-500 uppercase tracking-widest">Guidance</span>
+        <div class="w-full max-w-4xl mx-auto shrink-0 flex flex-col items-center py-2">
+            <div id="verse-pagination" class="flex gap-3 mb-6"></div>
+
+            <div class="text-center max-w-md mb-2">
+                <div class="inline-flex items-center gap-2 mb-1">
+                    <div class="w-1.5 h-1.5 rounded-full bg-indigo-500"></div>
+                    <span class="text-[9px] font-black text-indigo-500 uppercase tracking-widest">Guidance</span>
+                </div>
+                <p id="card-guidance" class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase leading-relaxed"></p>
             </div>
-            <p id="card-guidance" class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase leading-relaxed"></p>
         </div>
     </main>
 
     <footer class="bg-white dark:bg-slate-900 border-t dark:border-slate-800 px-6 py-6 z-50 shrink-0">
         <div class="flex gap-4 max-w-lg mx-auto">
-            <button id="prev-btn" onclick="handleFlow(-1)" class="flex-1 py-4 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-2xl font-black uppercase text-[10px] tracking-widest active:scale-95 transition-all">Back</button>
-            <button id="next-btn" onclick="handleFlow(1)" class="flex-[2] py-4 bg-indigo-600 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-xl shadow-indigo-500/30 active:scale-95 transition-all">
+            <button id="prev-btn" onclick="changeStep(-1)" class="flex-1 py-4 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-2xl font-black uppercase text-[10px] tracking-widest active:scale-95 transition-all">Back</button>
+            <button id="next-btn" onclick="changeStep(1)" class="flex-[2] py-4 bg-indigo-600 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-xl shadow-indigo-500/30 active:scale-95 transition-all">
                 <span id="next-text">Next Step</span>
             </button>
         </div>
@@ -154,15 +155,16 @@
             document.getElementById('card-guidance').innerText = data.guidance || "Continue to next step.";
             document.getElementById('step-counter').innerText = `Step ${currentIndex + 1} of ${guideData.length}`;
 
-            // Build Verse Pagination
+            // Build NumberedPagination
             const pag = document.getElementById('verse-pagination');
             pag.innerHTML = '';
             if(verses.length > 1) {
                 verses.forEach((_, i) => {
-                    const dot = document.createElement('div');
-                    dot.className = `h-2 rounded-full transition-all duration-300 cursor-pointer ${i === verseSubIndex ? 'dot-active' : 'dot-inactive'}`;
-                    dot.onclick = () => { verseSubIndex = i; renderVerseContent(); };
-                    pag.appendChild(dot);
+                    const btn = document.createElement('div');
+                    btn.className = `v-pagination flex items-center justify-center ${i === verseSubIndex ? 'v-active' : 'v-inactive'}`;
+                    btn.innerText = i + 1;
+                    btn.onclick = () => { verseSubIndex = i; renderVerseContent(); };
+                    pag.appendChild(btn);
                 });
             }
 
@@ -172,41 +174,33 @@
 
         function renderVerseContent() {
             const verses = guideData[currentIndex].verses.split('|');
-            const content = verses[verseSubIndex].trim();
             const el = document.getElementById('card-verses');
             
             // Animation Trigger
-            const cardParent = el.closest('.relative');
-            cardParent.classList.remove('animate-verse');
-            void cardParent.offsetWidth;
-            cardParent.classList.add('animate-verse');
+            el.classList.remove('animate-verse');
+            void el.offsetWidth;
+            el.classList.add('animate-verse');
 
-            el.innerText = content;
+            el.innerText = verses[verseSubIndex].trim();
 
-            // Sync dots
-            const dots = document.querySelectorAll('#verse-pagination div');
-            dots.forEach((dot, i) => {
-                dot.className = `h-2 rounded-full transition-all duration-300 cursor-pointer ${i === verseSubIndex ? 'dot-active' : 'dot-inactive'}`;
+            // Sync Numbered Pagination
+            const pBtns = document.querySelectorAll('.v-pagination');
+            pBtns.forEach((btn, i) => {
+                btn.className = `v-pagination flex items-center justify-center ${i === verseSubIndex ? 'v-active' : 'v-inactive'}`;
             });
 
-            // Update footer button labels
-            const nextText = document.getElementById('next-text');
-            if (currentIndex === guideData.length - 1 && verseSubIndex === verses.length - 1) {
-                nextText.innerText = 'Finish';
-            } else if (verseSubIndex < verses.length - 1) {
-                nextText.innerText = 'Next Verse';
-            } else {
-                nextText.innerText = 'Next Step';
-            }
-
+            // Footer Labels
+            document.getElementById('next-text').innerText = (currentIndex === guideData.length - 1) ? 'Finish' : 'Next Step';
+            
             fitText();
         }
 
         function fitText() {
             const el = document.getElementById('card-verses');
-            const sizer = document.getElementById('verse-sizer');
-            const maxHeight = sizer.offsetHeight;
-            let size = 60; // Starting max font size
+            const card = document.getElementById('verse-card');
+            
+            const maxHeight = card.offsetHeight - 80; 
+            let size = 80; // Large starting scale
 
             el.style.fontSize = size + "px";
             while (el.scrollHeight > maxHeight && size > 16) {
@@ -215,29 +209,13 @@
             }
         }
 
-        window.handleFlow = (dir) => {
-            const verses = guideData[currentIndex].verses.split('|');
-            if (dir > 0) { // Forward
-                if (verseSubIndex < verses.length - 1) {
-                    verseSubIndex++;
-                    renderVerseContent();
-                } else if (currentIndex < guideData.length - 1) {
-                    currentIndex++;
-                    verseSubIndex = 0;
-                    renderStep();
-                } else {
-                    window.history.back();
-                }
-            } else { // Backward
-                if (verseSubIndex > 0) {
-                    verseSubIndex--;
-                    renderVerseContent();
-                } else if (currentIndex > 0) {
-                    currentIndex--;
-                    const prevVerses = guideData[currentIndex].verses.split('|');
-                    verseSubIndex = prevVerses.length - 1;
-                    renderStep();
-                }
+        window.changeStep = (dir) => {
+            if (currentIndex + dir >= 0 && currentIndex + dir < guideData.length) {
+                currentIndex += dir;
+                verseSubIndex = 0; // Reset verse index when changing steps
+                renderStep();
+            } else if (currentIndex + dir === guideData.length) {
+                window.history.back();
             }
         };
 
