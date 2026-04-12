@@ -247,6 +247,30 @@
             if(isSignUp) updateGenderAccess();
         };
 
+        // SURGICAL FIX: Map Firebase technical errors to friendly messages
+        const getFriendlyAuthError = (code) => {
+            switch (code) {
+                case 'auth/invalid-credential':
+                case 'auth/wrong-password':
+                case 'auth/user-not-found':
+                    return "❌ Invalid email or password. Please try again.";
+                case 'auth/invalid-email':
+                    return "❌ That email address doesn't look right.";
+                case 'auth/user-disabled':
+                    return "❌ This account has been disabled.";
+                case 'auth/too-many-requests':
+                    return "❌ Too many failed attempts. Please try again later.";
+                case 'auth/network-request-failed':
+                    return "❌ Connection error. Check your internet.";
+                case 'auth/email-already-in-use':
+                    return "❌ An account with this email already exists.";
+                case 'auth/weak-password':
+                    return "❌ Password should be at least 6 characters.";
+                default:
+                    return "❌ An unexpected error occurred. Please try again.";
+            }
+        };
+        
         window.handleAuth = async () => {
             if (isProcessing) return;
 
@@ -265,11 +289,11 @@
                     const role = document.querySelector('input[name="role"]:checked').value;
                     const gender = document.querySelector('input[name="gender"]:checked').value;
                     
-                    if(!inviteCode) throw new Error("Invite code required.");
+                    if(!inviteCode) throw { code: 'custom/missing-code', message: "Invite code required." };
 
                     const codeCollection = role === 'pastor' ? 'pastor_invites' : 'churches';
                     const codeSnap = await getDoc(doc(db, codeCollection, inviteCode));
-                    if (!codeSnap.exists()) throw new Error("Invalid code.");
+                    if (!codeSnap.exists()) throw { code: 'custom/invalid-code', message: "Invalid code." };
 
                     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                     await sendEmailVerification(userCredential.user);
@@ -307,7 +331,10 @@
                 console.error(err);
                 isProcessing = false;
                 btn.innerText = "Continue"; btn.disabled = false;
-                showToast(err.message);
+                
+                // Handle both custom and Firebase errors
+                const msg = err.code.startsWith('custom/') ? `❌ ${err.message}` : getFriendlyAuthError(err.code);
+                showToast(msg);
             }
         };
 
@@ -317,7 +344,9 @@
             try {
                 await sendPasswordResetEmail(auth, email);
                 showToast("Reset link sent.");
-            } catch (err) { showToast(err.message); }
+            } catch (err) { 
+                showToast(getFriendlyAuthError(err.code)); 
+            }
         };
 
         window.closeVerifyModal = async () => {
