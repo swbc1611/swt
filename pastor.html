@@ -428,115 +428,107 @@
 
         // --- UPDATED STATS LOGIC: Matrix Result Pane ---
         window.loadStats = async () => {
-            if (!userProfile?.churchId?.length) return showToast("No churches linked."); 
-            const selCh = document.getElementById('churchFilter').value;
-            const cDate = document.getElementById('customDate').value;
-            const cMonth = document.getElementById('customMonth').value;
-            const label = document.getElementById('reportDateLabel');
-            const matrixBody = document.getElementById('matrix-body');
+    if (!userProfile?.churchId?.length) return showToast("No churches linked."); 
+    const selCh = document.getElementById('churchFilter').value;
+    const cDate = document.getElementById('customDate').value;
+    const cMonth = document.getElementById('customMonth').value;
+    const label = document.getElementById('reportDateLabel');
+    const matrixBody = document.getElementById('matrix-body');
 
-            document.getElementById('stats-container').classList.remove('hidden');
-            matrixBody.innerHTML = '<tr><td colspan="3" class="py-8 italic text-slate-400">Loading Report...</td></tr>';
+    document.getElementById('stats-container').classList.remove('hidden');
+    matrixBody.innerHTML = '<tr><td colspan="3" class="py-8 italic text-slate-400">Loading Report...</td></tr>';
 
-            try {
-                const now = new Date();
-                let startLimit = ""; let endLimit = ""; let bucketPaths = [];
-                const getLocalDateStr = (d) => d.toLocaleDateString('en-CA');
+    try {
+        const now = new Date();
+        let startLimit = ""; let endLimit = ""; let bucketPaths = [];
+        const getLocalDateStr = (d) => d.toLocaleDateString('en-CA');
 
-                if (cDate) {
-                    startLimit = cDate + "T00:00"; endLimit = cDate + "T23:59";
-                    label.innerText = new Date(cDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-                    bucketPaths.push(`daily_stats/${cDate}`);
-                } else if (cMonth) {
-                    startLimit = cMonth + "-01T00:00"; endLimit = cMonth + "-31T23:59";
-                    label.innerText = new Date(cMonth).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-                    bucketPaths.push(`monthly_stats/${cMonth}`);
-                } else if (currentPreset === 'today') {
-                    const str = getLocalDateStr(now);
-                    startLimit = str + "T00:00"; endLimit = str + "T23:59";
-                    label.innerText = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                    bucketPaths.push(`daily_stats/${str}`);
-                } else if (currentPreset === 'week') {
-                    let startOfWeek = new Date(now);
-                    
-                    // RESTORED LOGIC: If it's Sunday, look at the completed previous week
-                    if (now.getDay() === 0) {
-                        startOfWeek.setDate(now.getDate() - 7);
-                    } else {
-                        startOfWeek.setDate(now.getDate() - now.getDay());
-                    }
-                
-                    let endOfWeek = new Date(startOfWeek);
-                    endOfWeek.setDate(startOfWeek.getDate() + 6);
-                    
-                    const sunStr = getLocalDateStr(startOfWeek);
-                    const satStr = getLocalDateStr(endOfWeek);
-                    
-                    dateLabel.innerText = `${startOfWeek.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} – ${endOfWeek.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
-                    
-                    startLimit = sunStr + "T00:00";
-                    endLimit = satStr + "T23:59";
-                
-                    // Re-populate bucketPaths for the correct 7-day range
-                    bucketPaths = [];
-                    for(let i=0; i<7; i++) {
-                        let d = new Date(startOfWeek);
-                        d.setDate(startOfWeek.getDate() + i);
-                        bucketPaths.push(`daily_stats/${getLocalDateStr(d)}`);
-                    }
-                }
-                } else if (currentPreset === 'month') {
-                    const str = getLocalDateStr(now).substring(0, 7);
-                    startLimit = str + "-01T00:00"; endLimit = str + "-31T23:59";
-                    label.innerText = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-                    bucketPaths.push(`monthly_stats/${str}`);
-                }
+        if (cDate) {
+            startLimit = cDate + "T00:00"; endLimit = cDate + "T23:59";
+            label.innerText = new Date(cDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+            bucketPaths.push(`daily_stats/${cDate}`);
+        } else if (cMonth) {
+            startLimit = cMonth + "-01T00:00"; endLimit = cMonth + "-31T23:59";
+            label.innerText = new Date(cMonth).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+            bucketPaths.push(`monthly_stats/${cMonth}`);
+        } else if (currentPreset === 'today') {
+            const str = getLocalDateStr(now);
+            startLimit = str + "T00:00"; endLimit = str + "T23:59";
+            label.innerText = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            bucketPaths.push(`daily_stats/${str}`);
+        } else if (currentPreset === 'week') {
+            let startOfWeek = new Date(now);
+            if (now.getDay() === 0) {
+                startOfWeek.setDate(now.getDate() - 7);
+            } else {
+                startOfWeek.setDate(now.getDate() - now.getDay());
+            }
+            let endOfWeek = new Date(startOfWeek);
+            endOfWeek.setDate(startOfWeek.getDate() + 6);
+            
+            const sunStr = getLocalDateStr(startOfWeek);
+            const satStr = getLocalDateStr(endOfWeek);
+            label.innerText = `${startOfWeek.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} – ${endOfWeek.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+            
+            startLimit = sunStr + "T00:00";
+            endLimit = satStr + "T23:59";
+            for(let i=0; i<7; i++) { 
+                let d = new Date(startOfWeek); 
+                d.setDate(startOfWeek.getDate() + i); 
+                bucketPaths.push(`daily_stats/${getLocalDateStr(d)}`); 
+            }
+        } else if (currentPreset === 'month') {
+            const str = getLocalDateStr(now).substring(0, 7);
+            startLimit = str + "-01T00:00"; endLimit = str + "-31T23:59";
+            label.innerText = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+            bucketPaths.push(`monthly_stats/${str}`);
+        }
 
-                const churchIds = (selCh === 'all') ? userProfile.churchId : [selCh];
-                const types = currentType === 'all' ? ['Regular', 'School', 'Event'] : [currentType];
-                const totals = {};
-                const participants = {};
-                const globalUnique = new Set();
+        const churchIds = (selCh === 'all') ? userProfile.churchId : [selCh];
+        const types = currentType === 'all' ? ['Regular', 'School', 'Event'] : [currentType];
+        const totals = {};
+        const participants = {};
+        const globalUnique = new Set();
 
-                for (const t of types) {
-                    let qConstraints = [where("churchId", "in", churchIds), where("eventDate", ">=", startLimit), where("eventDate", "<=", endLimit), where("type", "==", t)];
-                    const snap = await getAggregateFromServer(query(collection(db, "salvations"), ...qConstraints), { total: sum('count') });
-                    totals[t] = snap.data().total || 0;
-                    participants[t] = new Set();
-                }
+        for (const t of types) {
+            let qConstraints = [where("churchId", "in", churchIds), where("eventDate", ">=", startLimit), where("eventDate", "<=", endLimit), where("type", "==", t)];
+            const snap = await getAggregateFromServer(query(collection(db, "salvations"), ...qConstraints), { total: sum('count') });
+            totals[t] = snap.data().total || 0;
+            participants[t] = new Set();
+        }
 
-                for (const chId of churchIds) {
-                    for (const path of bucketPaths) {
-                        const bSnap = await getDoc(doc(db, `churches/${chId}/${path}`));
-                        if (bSnap.exists()) {
-                            const data = bSnap.data();
-                            for (const t of types) {
-                                (data[`${t}_members`] || []).forEach(id => {
-                                    participants[t].add(id);
-                                    globalUnique.add(id);
-                                });
-                            }
-                        }
+        for (const chId of churchIds) {
+            for (const path of bucketPaths) {
+                const bSnap = await getDoc(doc(db, `churches/${chId}/${path}`));
+                if (bSnap.exists()) {
+                    const data = bSnap.data();
+                    for (const t of types) {
+                        (data[`${t}_members`] || []).forEach(id => {
+                            participants[t].add(id);
+                            globalUnique.add(id);
+                        });
                     }
                 }
+            }
+        }
 
-                let html = "";
-                let grandSouls = 0;
-                for (const t of types) {
-                    grandSouls += totals[t];
-                    html += `
-                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
-                            <td class="px-6 py-4 text-left font-extrabold text-slate-500">${t}</td>
-                            <td class="px-6 py-4 text-center font-black text-indigo-600 text-lg">${totals[t]}</td>
-                            <td class="px-6 py-4 text-center font-black text-slate-600 dark:text-slate-200 text-lg">${participants[t].size}</td>
-                        </tr>`;
-                }
-                matrixBody.innerHTML = html;
-                document.getElementById('matrix-grand-souls').innerText = grandSouls;
-                document.getElementById('matrix-grand-sw').innerText = globalUnique.size;
+        let html = "";
+        let grandSouls = 0;
+        for (const t of types) {
+            grandSouls += totals[t];
+            html += `
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                    <td class="px-6 py-4 text-left font-extrabold text-slate-500">${t}</td>
+                    <td class="px-6 py-4 text-center font-black text-indigo-600 text-lg">${totals[t]}</td>
+                    <td class="px-6 py-4 text-center font-black text-slate-600 dark:text-slate-200 text-lg">${participants[t].size}</td>
+                </tr>`;
+        }
+        matrixBody.innerHTML = html;
+        document.getElementById('matrix-grand-souls').innerText = grandSouls;
+        document.getElementById('matrix-grand-sw').innerText = globalUnique.size;
 
-            } catch (e) { console.error(e); showToast("Load Error."); }
-        };
+    } catch (e) { console.error(e); showToast("Load Error."); }
+};
 
         window.setActivePreset = (p) => {
             currentPreset = p;
