@@ -457,11 +457,34 @@
                     label.innerText = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
                     bucketPaths.push(`daily_stats/${str}`);
                 } else if (currentPreset === 'week') {
-                    const start = new Date(now); start.setDate(now.getDate() - now.getDay());
-                    const end = new Date(start); end.setDate(start.getDate() + 6);
-                    startLimit = getLocalDateStr(start) + "T00:00"; endLimit = getLocalDateStr(end) + "T23:59";
-                    label.innerText = `${start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} – ${end.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
-                    for(let i=0; i<7; i++) { let d = new Date(start); d.setDate(start.getDate() + i); bucketPaths.push(`daily_stats/${getLocalDateStr(d)}`); }
+                    let startOfWeek = new Date(now);
+                    
+                    // RESTORED LOGIC: If it's Sunday, look at the completed previous week
+                    if (now.getDay() === 0) {
+                        startOfWeek.setDate(now.getDate() - 7);
+                    } else {
+                        startOfWeek.setDate(now.getDate() - now.getDay());
+                    }
+                
+                    let endOfWeek = new Date(startOfWeek);
+                    endOfWeek.setDate(startOfWeek.getDate() + 6);
+                    
+                    const sunStr = getLocalDateStr(startOfWeek);
+                    const satStr = getLocalDateStr(endOfWeek);
+                    
+                    dateLabel.innerText = `${startOfWeek.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} – ${endOfWeek.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+                    
+                    startLimit = sunStr + "T00:00";
+                    endLimit = satStr + "T23:59";
+                
+                    // Re-populate bucketPaths for the correct 7-day range
+                    bucketPaths = [];
+                    for(let i=0; i<7; i++) {
+                        let d = new Date(startOfWeek);
+                        d.setDate(startOfWeek.getDate() + i);
+                        bucketPaths.push(`daily_stats/${getLocalDateStr(d)}`);
+                    }
+                }
                 } else if (currentPreset === 'month') {
                     const str = getLocalDateStr(now).substring(0, 7);
                     startLimit = str + "-01T00:00"; endLimit = str + "-31T23:59";
