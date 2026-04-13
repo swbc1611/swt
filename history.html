@@ -226,7 +226,7 @@
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
         };
 
-        window.setActivePreset = (p) => {
+/*        window.setActivePreset = (p) => {
             currentPreset = p;
             const dateInput = document.getElementById('customDate');
             const monthInput = document.getElementById('customMonth');
@@ -244,6 +244,24 @@
                 activeBtn.classList.remove('bg-slate-100', 'dark:bg-slate-800/50', 'text-slate-500');
                 activeBtn.classList.add('bg-indigo-600', 'text-white','shadow-lg', 'shadow-indigo-500/50');
             }
+        };*/
+
+        window.setActivePreset = (p) => {
+            currentPreset = p;
+            const dateInput = document.getElementById('customDate');
+            const monthInput = document.getElementById('customMonth');
+            dateInput.value = ""; 
+            monthInput.value = "";
+            [dateInput, monthInput].forEach(input => {
+                input.classList.remove('border-indigo-500', 'ring-2', 'ring-indigo-500/50', 'bg-indigo-500/10');
+            });
+
+            const inactive = "preset-btn flex-1 py-3 bg-slate-100 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 border border-transparent rounded-2xl text-[10px] font-bold uppercase transition-all duration-200 active:scale-95";
+            const active = "preset-btn flex-1 py-3 bg-indigo-600 text-white border border-transparent rounded-2xl text-[10px] font-bold uppercase transition-all duration-200 active:scale-95 shadow-lg shadow-indigo-500/50";
+
+            document.querySelectorAll('.preset-btn').forEach(btn => btn.className = inactive);
+            const activeBtn = document.getElementById(`btn-${p}`);
+            if (activeBtn) activeBtn.className = active;
         };
 
         window.setActiveType = (type) => {
