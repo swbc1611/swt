@@ -278,23 +278,45 @@
         window.closeGuideSettings = () => document.getElementById('guideSettingsModal').classList.add('hidden');
         window.saveGuideUrl = async () => {
             const url = document.getElementById('guideUrlInput').value.trim();
-            if (url && !url.includes("docs.google.com")) return showToast("Invalid Google Sheets URL.");
+            if (!url) return showToast("⚠️ URL required.");
+
             const btn = document.getElementById('saveGuideBtn');
-            btn.innerText = "SAVING..."; btn.disabled = true;
+            btn.disabled = true;
+            btn.innerText = "SAVING...";
+
             try {
+                // 1. Update Firestore first
                 await updateDoc(doc(db, "profiles", auth.currentUser.uid), { guideUrl: url });
-                // 1. Update the local variable
+                
+                // 2. SURGICAL FIX: Directly update the global userProfile variable
                 userProfile.guideUrl = url;
                 
-                // 2. SURGICAL FIX: Update the session storage so it persists on refresh
-                sessionStorage.setItem('userContext', JSON.stringify(userProfile));
-                showToast("Guide URL saved!");
+                // 3. SURGICAL FIX: Merge with existing sessionStorage to prevent data loss
+                const existingData = JSON.parse(sessionStorage.getItem('userContext') || "{}");
+                const mergedData = { ...existingData, ...userProfile, guideUrl: url };
+                
+                sessionStorage.setItem('userContext', JSON.stringify(mergedData));
+                
+                // 4. Update the local variable again to ensure absolute parity
+                userProfile = mergedData;
+
+                showToast("✅ Guide URL saved & synced!");
                 closeGuideSettings();
-            } catch (e) { showToast("Error saving URL."); }
-            finally { btn.innerText = "SAVE URL"; btn.disabled = false; }
+            } catch (e) { 
+                console.error("Sync Failure:", e);
+                showToast("❌ Error saving URL."); 
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Save URL";
+            }
         };
+
         window.goToGuide = () => {
-            if (!userProfile?.guideUrl) return showToast("No guides saved yet.");
+            // Check session storage directly as a fallback to ensure zero-failure
+            const sessionContext = JSON.parse(sessionStorage.getItem('userContext') || "{}");
+            const finalUrl = userProfile?.guideUrl || sessionContext.guideUrl;
+
+            if (!finalUrl) return showToast("⚠️ No guides saved yet.");
             window.location.href = "guide.html";
         };
 
