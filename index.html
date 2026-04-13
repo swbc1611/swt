@@ -308,10 +308,11 @@
                         createdAt: serverTimestamp()
                     });
 
+                    // SURGICAL FIX: Explicitly await the deletion to ensure consumption
                     if (role === 'pastor') {
                         try {
                             await deleteDoc(doc(db, "pastor_invites", inviteCode));
-                        } catch (e) { console.error("Cleanup error", e); }
+                        } catch (e) { console.error("Invite cleanup failed:", e); }
                     }
 
                     showToast("Account created! Verify email.");
