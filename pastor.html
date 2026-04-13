@@ -361,12 +361,12 @@
         window.setActiveType = (type) => {
             currentType = type;
             document.querySelectorAll('.type-btn').forEach(btn => {
-                btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-lg', 'shadow-indigo-500/20');
+                btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-lg', 'shadow-indigo-500/50');
                 btn.classList.add('bg-slate-100', 'dark:bg-slate-800/50', 'text-slate-500');
             });
             const activeBtn = document.getElementById(`type-${type}`);
             activeBtn.classList.remove('bg-slate-100', 'dark:bg-slate-800/50', 'text-slate-500');
-            activeBtn.classList.add('bg-indigo-600', 'text-white', 'shadow-lg', 'shadow-indigo-500/20');
+            activeBtn.classList.add('bg-indigo-600', 'text-white', 'shadow-lg', 'shadow-indigo-500/50');
         };
 
         onAuthStateChanged(auth, async (user) => {
@@ -532,7 +532,7 @@
             const monthInput = document.getElementById('customMonth');
             dateInput.value = ""; monthInput.value = "";
             [dateInput, monthInput].forEach(input => {
-                input.classList.remove('border-indigo-500', 'ring-2', 'ring-indigo-500/50', 'bg-indigo-500/10');
+                input.classList.remove('border-indigo-500', 'ring-2', 'ring-indigo-500/50', 'bg-indigo-500/50');
             });
             document.querySelectorAll('.preset-btn').forEach(btn => {
                 // SURGICAL FIX: Strip indigo/white classes to allow text-slate/dark-slate to show
