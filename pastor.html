@@ -105,7 +105,7 @@
                         <div>
                             <label class="block text-[9px] font-bold text-slate-400 uppercase mb-3 ml-2 tracking-widest text-center">Soulwinning Type</label>
                             <div class="flex gap-2">
-                                <button id="type-all" onclick="setActiveType('all')" class="type-btn flex-1 py-3 bg-indigo-600 text-white border border-transparent rounded-2xl text-[10px] font-bold uppercase transition-all duration-200 active:scale-95">All</button>
+                                <button id="type-all" onclick="setActiveType('all')" class="type-btn flex-1 py-3 bg-indigo-600 text-white border border-transparent rounded-2xl text-[10px] font-bold uppercase transition-all duration-200 active:scale-95 shadow-lg shadow-indigo-500/50">All</button>
                                 <button id="type-Regular" onclick="setActiveType('Regular')" class="type-btn flex-1 py-3 bg-slate-100 dark:bg-slate-800/50 border border-transparent rounded-2xl text-[10px] font-bold uppercase transition-all duration-200 active:scale-95 shadow-sm text-slate-500 dark:text-slate-400">Regular</button>
                                 <button id="type-School" onclick="setActiveType('School')" class="type-btn flex-1 py-3 bg-slate-100 dark:bg-slate-800/50 border border-transparent rounded-2xl text-[10px] font-bold uppercase transition-all duration-200 active:scale-95 shadow-sm text-slate-500 dark:text-slate-400">School</button>
                                 <button id="type-Event" onclick="setActiveType('Event')" class="type-btn flex-1 py-3 bg-slate-100 dark:bg-slate-800/50 border border-transparent rounded-2xl text-[10px] font-bold uppercase transition-all duration-200 active:scale-95 shadow-sm text-slate-500 dark:text-slate-400">Event</button>
@@ -117,7 +117,7 @@
                             <div class="flex gap-2">
                                 <button id="btn-today" onclick="setActivePreset('today')" class="preset-btn flex-1 py-3 bg-slate-100 dark:bg-slate-800/50 border border-transparent rounded-2xl text-[10px] font-bold uppercase transition-all duration-200 active:scale-95 shadow-sm text-slate-500 dark:text-slate-400">Today</button>
                                 <button id="btn-week" onclick="setActivePreset('week')" class="preset-btn flex-1 py-3 bg-slate-100 dark:bg-slate-800/50 border border-transparent rounded-2xl text-[10px] font-bold uppercase transition-all duration-200 active:scale-95 shadow-sm text-slate-500 dark:text-slate-400">Week</button>
-                                <button id="btn-month" onclick="setActivePreset('month')" class="preset-btn flex-1 py-3 bg-indigo-600 text-white border border-transparent rounded-2xl text-[10px] font-bold uppercase transition-all duration-200 active:scale-95 shadow-sm text-slate-500 dark:text-slate-400">Month</button>
+                                <button id="btn-month" onclick="setActivePreset('month')" class="preset-btn flex-1 py-3 bg-indigo-600 text-white border border-transparent rounded-2xl text-[10px] font-bold uppercase transition-all duration-200 active:scale-95 shadow-lg shadow-indigo-500/50 text-slate-500 dark:text-slate-400">Month</button>
                             </div>
                         </div>
 
@@ -358,19 +358,17 @@
             window.location.href = "guide.html";
         };
 
-        // SURGICAL FIX: Applied tactical behavior and active colors cleanup to setActiveType
+        // --- SURGICAL FIX: Applied tactical behavior and active colors cleanup ---
         window.setActiveType = (type) => {
             currentType = type;
             document.querySelectorAll('.type-btn').forEach(btn => {
-                // SURGICAL FIX: Strip indigo/white classes to allow text-slate/dark-slate to show
-                btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-lg', 'shadow-indigo-500/20');
+                btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-lg', 'shadow-indigo-500/50');
                 btn.classList.add('bg-slate-100', 'dark:bg-slate-800/50', 'text-slate-500', 'dark:text-slate-400');
             });
             const activeBtn = document.getElementById(`type-${type}`);
             if (activeBtn) {
-                // SURGICAL FIX: Strip slate color classes before applying white text
                 activeBtn.classList.remove('bg-slate-100', 'dark:bg-slate-800/50', 'text-slate-500', 'dark:text-slate-400');
-                activeBtn.classList.add('bg-indigo-600', 'text-white', 'shadow-lg', 'shadow-indigo-500/20');
+                activeBtn.classList.add('bg-indigo-600', 'text-white', 'shadow-lg', 'shadow-indigo-500/50');
             }
         };
 
@@ -532,6 +530,7 @@
         };
 
 
+        // --- SURGICAL FIX: Applied tactical behavior and active colors cleanup ---
         window.setActivePreset = (p) => {
             currentPreset = p;
             const dateInput = document.getElementById('customDate');
