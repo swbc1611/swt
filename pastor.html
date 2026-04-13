@@ -535,12 +535,14 @@
                 input.classList.remove('border-indigo-500', 'ring-2', 'ring-indigo-500/50', 'bg-indigo-500/10');
             });
             document.querySelectorAll('.preset-btn').forEach(btn => {
+                // SURGICAL FIX: Strip indigo/white classes to allow text-slate/dark-slate to show
                 btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-lg', 'shadow-indigo-500/50');
-                btn.classList.add('bg-slate-100', 'dark:bg-slate-800/50', 'text-slate-500');
+                btn.classList.add('bg-slate-100', 'dark:bg-slate-800/50', 'text-slate-500', 'dark:text-slate-400');
             });
             const activeBtn = document.getElementById(`btn-${p}`);
             if (activeBtn) {
-                activeBtn.classList.remove('bg-slate-100', 'dark:bg-slate-800/50', 'text-slate-500');
+                // SURGICAL FIX: Strip slate color classes before applying white text
+                activeBtn.classList.remove('bg-slate-100', 'dark:bg-slate-800/50', 'text-slate-500', 'dark:text-slate-400');
                 activeBtn.classList.add('bg-indigo-600', 'text-white', 'shadow-lg', 'shadow-indigo-500/50');
             }
         };
@@ -550,8 +552,9 @@
             const dateInput = document.getElementById('customDate');
             const monthInput = document.getElementById('customMonth');
             document.querySelectorAll('.preset-btn').forEach(btn => {
+                // SURGICAL FIX: Strip indigo/white classes when custom input is used
                 btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-lg', 'shadow-indigo-500/50');
-                btn.classList.add('bg-slate-100', 'dark:bg-slate-800/50', 'text-slate-500');
+                btn.classList.add('bg-slate-100', 'dark:bg-slate-800/50', 'text-slate-500', 'dark:text-slate-400');
             });
             if (type === 'date') {
                 dateInput.classList.add('border-indigo-500', 'ring-2', 'ring-indigo-500/50', 'bg-indigo-500/10');
