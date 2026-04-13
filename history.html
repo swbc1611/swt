@@ -280,7 +280,7 @@
             const dateInput = document.getElementById('customDate');
             const monthInput = document.getElementById('customMonth');
             document.querySelectorAll('.preset-btn').forEach(btn => {
-                btn.classList.remove('bg-indigo-600', 'text-white');
+                btn.classList.remove('bg-indigo-600', 'text-white','shadow-lg', 'shadow-indigo-500/50');
                 btn.classList.add('bg-slate-100', 'dark:bg-slate-800/50', 'text-slate-500');
             });
             if (type === 'date') {
