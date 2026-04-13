@@ -366,7 +366,11 @@
             const url = document.getElementById('guideUrlInput').value.trim();
             try {
                 await updateDoc(doc(db, "profiles", auth.currentUser.uid), { guideUrl: url });
+                // 1. Update the local variable
                 userProfile.guideUrl = url;
+                
+                // 2. SURGICAL FIX: Update the session storage so it persists on refresh
+                sessionStorage.setItem('userContext', JSON.stringify(userProfile));
                 showToast("Guide URL saved!");
                 closeGuideSettings();
             } catch (e) { showToast("Error saving URL."); }
