@@ -358,7 +358,7 @@
             window.location.href = "guide.html";
         };
 
-        // SURGICAL FIX: Applied standard Admin.html behavior with transition-all for visual "ring" effect
+        // --- SURGICAL FIX: standardized strings to preserve visual "ring" effect (transition-all) ---
         window.setActiveType = (type) => {
             currentType = type;
             const inactive = "type-btn flex-1 py-3 bg-slate-100 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 border border-transparent rounded-2xl text-[10px] font-bold uppercase transition-all duration-200 active:scale-95";
@@ -527,7 +527,7 @@
         };
 
 
-        // SURGICAL FIX: Standardized preset logic to match Admin.html strings and include transition-all
+        // SURGICAL FIX: Synchronized strings to match Admin.html behavior with transition-all
         window.setActivePreset = (p) => {
             currentPreset = p;
             const dateInput = document.getElementById('customDate');
