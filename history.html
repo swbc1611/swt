@@ -93,7 +93,7 @@
                     </div>
                 </div>
 
-                <button onclick="loadHistory()" class="w-full py-4 bg-indigo-600 text-white rounded-2xl font-bold text-xs uppercase active:scale-95 transition-all shadow-lg shadow-indigo-500/20">Fetch Records</button>
+                <button onclick="loadHistory()" class="w-full py-4 bg-indigo-600 text-white rounded-2xl font-bold text-xs uppercase active:scale-95 transition-all shadow-lg shadow-indigo-500/50">Fetch Records</button>
             </div>
         </div>
 
@@ -242,19 +242,19 @@
             const activeBtn = document.getElementById(`btn-${p}`);
             if (activeBtn) {
                 activeBtn.classList.remove('bg-slate-100', 'dark:bg-slate-800/50', 'text-slate-500');
-                activeBtn.classList.add('bg-indigo-600', 'text-white');
+                activeBtn.classList.add('bg-indigo-600', 'text-white','shadow-lg', 'shadow-indigo-500/50');
             }
         };
 
         window.setActiveType = (type) => {
             currentType = type;
             document.querySelectorAll('.type-btn').forEach(btn => {
-                btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-lg', 'shadow-indigo-500/20');
+                btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-lg', 'shadow-indigo-500/50');
                 btn.classList.add('bg-slate-100', 'dark:bg-slate-800/50', 'text-slate-500');
             });
             const activeBtn = document.getElementById(`type-${type}`);
             activeBtn.classList.remove('bg-slate-100', 'dark:bg-slate-800/50', 'text-slate-500');
-            activeBtn.classList.add('bg-indigo-600', 'text-white', 'shadow-lg', 'shadow-indigo-500/20');
+            activeBtn.classList.add('bg-indigo-600', 'text-white', 'shadow-lg', 'shadow-indigo-500/50');
         };
 
         window.handleCustomInput = (type) => {
