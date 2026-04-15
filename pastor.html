@@ -665,7 +665,7 @@
             document.getElementById('church-modal').classList.remove('hidden');
         };
 
-        window.addNewChurch = async () => {
+        /*window.addNewChurch = async () => {
             const n = document.getElementById('newChurchName').value; if(!n) return;
             const c = Math.random().toString(36).substring(2, 8).toUpperCase();
             try {
@@ -674,6 +674,49 @@
                 userProfile.churchId.push(c);
                 await refreshUI(); openChurchManager(); showToast("Church Added");
             } catch(e) { showToast("Error"); }
+        };*/
+
+        window.addNewChurch = async () => {
+            const n = document.getElementById('newChurchName').value.trim(); 
+            if(!n) return;
+        
+            // --- SURGICAL CHECK: Prevent Duplicate Names ---
+            try {
+                const churchesRef = collection(db, "churches");
+                // We check against a lowercase version to be thorough
+                const q = query(churchesRef, where("name_lowercase", "==", n.toLowerCase()));
+                const querySnapshot = await getDocs(q);
+        
+                if (!querySnapshot.empty) {
+                    showToast("❌ This church name already exists!");
+                    return; // Stop the execution here
+                }
+        
+                // --- PROCEED: If name is unique, generate ID and save ---
+                const c = Math.random().toString(36).substring(2, 8).toUpperCase();
+                
+                await setDoc(doc(db, "churches", c), { 
+                    name: n, 
+                    name_lowercase: n.toLowerCase(), // Saved for future validation
+                    pastorId: auth.currentUser.uid,
+                    createdAt: serverTimestamp() // Good for sorting later
+                });
+        
+                await updateDoc(doc(db, "profiles", auth.currentUser.uid), { 
+                    churchId: arrayUnion(c) 
+                });
+        
+                // Update local state and UI
+                userProfile.churchId.push(c);
+                await refreshUI(); 
+                openChurchManager(); 
+                showToast("✅ Church Added");
+                document.getElementById('newChurchName').value = ""; // Clear input
+        
+            } catch(e) { 
+                console.error(e);
+                showToast("❌ Error adding church"); 
+            }
         };
 
         window.openModal = () => { 
