@@ -406,8 +406,29 @@
         };
         window.openPassModal = () => document.getElementById('pass-modal').classList.remove('hidden');
         window.closePassModal = () => document.getElementById('pass-modal').classList.add('hidden');
-        window.increment = () => document.getElementById('soulCount').value++;
-        window.decrement = () => { if(document.getElementById('soulCount').value > 1) document.getElementById('soulCount').value--; };
+        window.limitInput = (el) => {
+            let val = parseInt(el.value);
+            if (val > 999) el.value = 999; // Force cap at 999
+            if (val < 1) el.value = 1;      // Force minimum at 1
+        };
+        
+        window.increment = () => {
+            const el = document.getElementById('soulCount');
+            const current = parseInt(el.value) || 0;
+            if (current < 999) {
+                el.value = current + 1;
+            } else {
+                showToast("Maximum limit reached"); // Optional [Inference]
+            }
+        };
+        
+        window.decrement = () => {
+            const el = document.getElementById('soulCount');
+            const current = parseInt(el.value) || 0;
+            if (current > 1) {
+                el.value = current - 1;
+            }
+        };
     </script>
 </body>
 </html>
