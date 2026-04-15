@@ -635,7 +635,7 @@
 
         window.handleDataSubmit = async () => {
             const type = document.getElementById('soulType').value;
-            if (!type || !userProfile?.churchId?.length) return showToast("Incomplete info.");
+            if (!type || !userProfile?.churchId?.length) return showToast("Please select a soulwinning type.");
             const btn = document.getElementById('submit-btn'); 
             btn.disabled = true;
             try {
