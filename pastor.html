@@ -146,11 +146,11 @@
                                     <input type="date" id="customDate" oninput="handleCustomInput('date')" class="bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 p-3 rounded-xl text-[10px] font-bold dark:text-white outline-none transition-all duration-300">
                                 </div>
                                 <div class="flex flex-col gap-1.5">
-                                    <label for="customMonth" class="text-[8px] font-extrabold text-slate-400 uppercase ml-2 text-center">Whole Month</label>
+                                    <label for="customMonth" class="text-[8px] font-extrabold text-slate-400 uppercase ml-2 text-center">Specific Month</label>
                                     <input type="month" id="customMonth" oninput="handleCustomInput('month')" class="bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 p-3 rounded-xl text-[10px] font-bold dark:text-white outline-none transition-all duration-300">
                                 </div>
                                 <div class="flex flex-col gap-1.5">
-                                    <label for="customYear" class="text-[8px] font-extrabold text-slate-400 uppercase ml-2 text-center">Whole Year</label>
+                                    <label for="customYear" class="text-[8px] font-extrabold text-slate-400 uppercase ml-2 text-center">Specific Year</label>
                                     <select id="customYear" onchange="handleCustomInput('year')" class="bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 p-[13px] rounded-xl text-[10px] font-bold dark:text-white outline-none transition-all duration-300 appearance-none">
                                         </select>
                                 </div>
@@ -494,125 +494,112 @@
         }
 
         window.loadStats = async () => {
-            if (!userProfile?.churchId?.length) return showToast("No churches linked."); 
-            const selCh = document.getElementById('churchFilter').value;
-            const cDate = document.getElementById('customDate').value;
-            const cMonth = document.getElementById('customMonth').value;
-            const cYear = document.getElementById('customYear').value; // Added Year variable
-            const dateLabel = document.getElementById('reportDateLabel');
-            const matrixBody = document.getElementById('matrix-body');
-        
-            document.getElementById('stats-container').classList.remove('hidden');
-            matrixBody.innerHTML = '<tr><td colspan="3" class="py-8 italic text-slate-400">Loading Report...</td></tr>';
-        
-            try {
-                const now = new Date();
-                let startLimit = ""; let endLimit = ""; let bucketPaths = [];
-                const getLocalDateStr = (d) => d.toLocaleDateString('en-CA');
-        
-                // Logic branching for Date, Month, Year, and Presets
-                if (cDate) {
-                    startLimit = cDate + "T00:00"; endLimit = cDate + "T23:59";
-                    dateLabel.innerText = new Date(cDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-                    bucketPaths.push(`daily_stats/${cDate}`);
-                } else if (cMonth) {
-                    startLimit = cMonth + "-01T00:00"; endLimit = cMonth + "-31T23:59";
-                    dateLabel.innerText = new Date(cMonth + "-01").toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-                    bucketPaths.push(`monthly_stats/${cMonth}`);
-                } else if (cYear) {
-                    // SURGICAL YEARLY LOOP: Pulling from 365 daily buckets for 100% accuracy
-                    dateLabel.innerText = `Yearly Report: ${cYear}`;
-                    const startOfYear = new Date(`${cYear}-01-01`);
-                    const endOfYear = new Date(`${cYear}-12-31`);
-                    let dayLoop = new Date(startOfYear);
-                    while (dayLoop <= endOfYear) {
-                        // Formatting as YYYY-MM-DD for the daily_stats path
-                        bucketPaths.push(`daily_stats/${dayLoop.toISOString().split('T')[0]}`);
-                        dayLoop.setDate(dayLoop.getDate() + 1);
-                    }
-                    startLimit = `${cYear}-01-01T00:00`;
-                    endLimit = `${cYear}-12-31T23:59`;
-                } else if (currentPreset === 'today') {
-                    const str = getLocalDateStr(now);
-                    startLimit = str + "T00:00"; endLimit = str + "T23:59";
-                    dateLabel.innerText = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                    bucketPaths.push(`daily_stats/${str}`);
-                } else if (currentPreset === 'week') {
-                    let startOfWeek = new Date(now);
-                    if (now.getDay() === 0) {
-                        startOfWeek.setDate(now.getDate() - 7);
-                    } else {
-                        startOfWeek.setDate(now.getDate() - now.getDay());
-                    }
-                    let endOfWeek = new Date(startOfWeek);
-                    endOfWeek.setDate(startOfWeek.getDate() + 6);
-                    
-                    const sunStr = getLocalDateStr(startOfWeek);
-                    const satStr = getLocalDateStr(endOfWeek);
-                    dateLabel.innerText = `${startOfWeek.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} – ${endOfWeek.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
-                    
-                    startLimit = sunStr + "T00:00";
-                    endLimit = satStr + "T23:59";
-                    for(let i=0; i<7; i++) { 
-                        let d = new Date(startOfWeek); 
-                        d.setDate(startOfWeek.getDate() + i); 
-                        bucketPaths.push(`daily_stats/${getLocalDateStr(d)}`); 
-                    }
-                } else if (currentPreset === 'month') {
-                    const str = getLocalDateStr(now).substring(0, 7);
-                    startLimit = str + "-01T00:00"; endLimit = str + "-31T23:59";
-                    dateLabel.innerText = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-                    bucketPaths.push(`monthly_stats/${str}`);
-                }
-        
-                const churchIds = (selCh === 'all') ? userProfile.churchId : [selCh];
-                const types = currentType === 'all' ? ['Regular', 'School', 'Event'] : [currentType];
-                const totals = {};
-                const participants = {};
-                const globalUnique = new Set();
-        
-                // Part 1: Aggregate totals directly from salvations table
-                for (const t of types) {
-                    let qConstraints = [where("churchId", "in", churchIds), where("eventDate", ">=", startLimit), where("eventDate", "<=", endLimit), where("type", "==", t)];
-                    const snap = await getAggregateFromServer(query(collection(db, "salvations"), ...qConstraints), { total: sum('count') });
-                    totals[t] = snap.data().total || 0;
-                    participants[t] = new Set();
-                }
-        
-                // Part 2: Pull unique participants from the bucket paths
-                for (const chId of churchIds) {
-                    for (const path of bucketPaths) {
-                        const bSnap = await getDoc(doc(db, `churches/${chId}/${path}`));
-                        if (bSnap.exists()) {
-                            const data = bSnap.data();
-                            for (const t of types) {
-                                (data[`${t}_members`] || []).forEach(id => {
-                                    participants[t].add(id);
-                                    globalUnique.add(id);
-                                });
-                            }
-                        }
+    if (!userProfile?.churchId?.length) return showToast("No churches linked."); 
+    const selCh = document.getElementById('churchFilter').value;
+    const cDate = document.getElementById('customDate').value;
+    const cMonth = document.getElementById('customMonth').value;
+    const cYear = document.getElementById('customYear').value;
+    const dateLabel = document.getElementById('reportDateLabel');
+    const matrixBody = document.getElementById('matrix-body');
+
+    document.getElementById('stats-container').classList.remove('hidden');
+    matrixBody.innerHTML = '<tr><td colspan="3" class="py-8 italic text-slate-400">Loading Report...</td></tr>';
+
+    try {
+        const now = new Date();
+        let startLimit = ""; let endLimit = ""; let bucketPaths = [];
+        const getLocalDateStr = (d) => d.toLocaleDateString('en-CA');
+
+        // Logic branching for Date, Month, Year, and Presets
+        if (cDate) {
+            startLimit = cDate + "T00:00"; endLimit = cDate + "T23:59";
+            dateLabel.innerText = new Date(cDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+            bucketPaths.push(`daily_stats/${cDate}`);
+        } else if (cMonth) {
+            startLimit = cMonth + "-01T00:00"; endLimit = cMonth + "-31T23:59";
+            dateLabel.innerText = new Date(cMonth + "-01").toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+            bucketPaths.push(`monthly_stats/${cMonth}`);
+        } else if (cYear) {
+            // OPTIMIZED: We no longer build 365 paths manually. 
+            // We use the start/end limits to run a Range Query below.
+            dateLabel.innerText = `Yearly Report: ${cYear}`;
+            startLimit = `${cYear}-01-01T00:00`;
+            endLimit = `${cYear}-12-31T23:59`;
+        } else if (currentPreset === 'today') {
+            const str = getLocalDateStr(now);
+            startLimit = str + "T00:00"; endLimit = str + "T23:59";
+            dateLabel.innerText = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            bucketPaths.push(`daily_stats/${str}`);
+        } else if (currentPreset === 'week') {
+            let startOfWeek = new Date(now);
+            now.getDay() === 0 ? startOfWeek.setDate(now.getDate() - 7) : startOfWeek.setDate(now.getDate() - now.getDay());
+            let endOfWeek = new Date(startOfWeek);
+            endOfWeek.setDate(startOfWeek.getDate() + 6);
+            dateLabel.innerText = `${startOfWeek.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} – ${endOfWeek.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+            startLimit = getLocalDateStr(startOfWeek) + "T00:00";
+            endLimit = getLocalDateStr(endOfWeek) + "T23:59";
+            for(let i=0; i<7; i++) { 
+                let d = new Date(startOfWeek); d.setDate(startOfWeek.getDate() + i); 
+                bucketPaths.push(`daily_stats/${getLocalDateStr(d)}`); 
+            }
+        } else if (currentPreset === 'month') {
+            const str = getLocalDateStr(now).substring(0, 7);
+            startLimit = str + "-01T00:00"; endLimit = str + "-31T23:59";
+            dateLabel.innerText = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+            bucketPaths.push(`monthly_stats/${str}`);
+        }
+
+        const churchIds = (selCh === 'all') ? userProfile.churchId : [selCh];
+        const types = currentType === 'all' ? ['Regular', 'School', 'Event'] : [currentType];
+        const totals = {};
+        const participants = {};
+        const globalUnique = new Set();
+
+        for (const t of types) {
+            let qConstraints = [where("churchId", "in", churchIds), where("eventDate", ">=", startLimit), where("eventDate", "<=", endLimit), where("type", "==", t)];
+            const snap = await getAggregateFromServer(query(collection(db, "salvations"), ...qConstraints), { total: sum('count') });
+            totals[t] = snap.data().total || 0;
+            participants[t] = new Set();
+        }
+
+        // Part 2: Pull unique participants (Surgical Optimization)
+        for (const chId of churchIds) {
+            if (cYear) {
+                // RANGE QUERY: Fetch only existing docs for the year in one request
+                const dailyRef = collection(db, `churches/${chId}/daily_stats`);
+                const q = query(dailyRef, where("__name__", ">=", `${cYear}-01-01`), where("__name__", "<=", `${cYear}-12-31`));
+                const qSnap = await getDocs(q);
+                qSnap.forEach(bSnap => {
+                    const data = bSnap.data();
+                    types.forEach(t => { (data[`${t}_members`] || []).forEach(id => { participants[t].add(id); globalUnique.add(id); }); });
+                });
+            } else {
+                // Standard bucket fetch for Day/Week/Month
+                for (const path of bucketPaths) {
+                    const bSnap = await getDoc(doc(db, `churches/${chId}/${path}`));
+                    if (bSnap.exists()) {
+                        const data = bSnap.data();
+                        types.forEach(t => { (data[`${t}_members`] || []).forEach(id => { participants[t].add(id); globalUnique.add(id); }); });
                     }
                 }
-        
-                // Part 3: Render the Matrix Table
-                let html = "";
-                let grandSouls = 0;
-                for (const t of types) {
-                    grandSouls += totals[t];
-                    html += `
-                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
-                            <td class="px-6 py-4 text-left font-extrabold text-slate-500">${t}</td>
-                            <td class="px-6 py-4 text-center font-black text-indigo-600 text-lg">${totals[t]}</td>
-                            <td class="px-6 py-4 text-center font-black text-slate-600 dark:text-slate-200 text-lg">${participants[t].size}</td>
-                        </tr>`;
-                }
-                matrixBody.innerHTML = html;
-                document.getElementById('matrix-grand-souls').innerText = grandSouls;
-                document.getElementById('matrix-grand-sw').innerText = globalUnique.size;
-        
-            } catch (e) { console.error(e); showToast("Load Error."); }
-        };
+            }
+        }
+
+        let html = ""; let grandSouls = 0;
+        for (const t of types) {
+            grandSouls += totals[t];
+            html += `<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                <td class="px-6 py-4 text-left font-extrabold text-slate-500">${t}</td>
+                <td class="px-6 py-4 text-center font-black text-indigo-600 text-lg">${totals[t]}</td>
+                <td class="px-6 py-4 text-center font-black text-slate-600 dark:text-slate-200 text-lg">${participants[t].size}</td>
+            </tr>`;
+        }
+        matrixBody.innerHTML = html;
+        document.getElementById('matrix-grand-souls').innerText = grandSouls;
+        document.getElementById('matrix-grand-sw').innerText = globalUnique.size;
+
+    } catch (e) { console.error(e); showToast("Load Error."); }
+};
 
 
         // --- SURGICAL FIX: standard strings to preserve persistence + tactile ring animation ---
