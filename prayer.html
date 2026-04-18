@@ -145,7 +145,6 @@
                 const res = await fetch(`${API_URL}?key=${PSK}`);
                 let data = await res.json();
                 
-                // 1. Group the prayers by UserID
                 const grouped = data.reduce((acc, curr) => {
                     if (!acc[curr.UserID]) {
                         acc[curr.UserID] = {
@@ -162,37 +161,42 @@
                     return acc;
                 }, {});
         
-                // 2. Sort groups by the most recent activity
                 const sortedGroups = Object.values(grouped).sort((a, b) => b.lastActive - a.lastActive);
         
                 let html = "";
                 sortedGroups.forEach((group) => {
-                    // Sort inner prayers newest first
                     group.prayers.sort((a, b) => new Date(b.Date) - new Date(a.Date));
         
                     html += `
-                        <div class="bg-white dark:bg-[#111827] mx-2 rounded-2xl border dark:border-slate-800 shadow-2xl relative text-left ring-1 ring-black/5 dark:ring-white/5 border-l-[12px] border-l-rose-500 dark:border-l-white mb-8 overflow-hidden">
+                        <div class="bg-white dark:bg-[#111827] mx-2 rounded-3xl border dark:border-slate-800 shadow-2xl relative text-left ring-1 ring-black/5 dark:ring-white/5 mb-10 overflow-hidden">
                             
-                            <div class="p-6 pb-2 border-b dark:border-slate-800/50">
-                                <span class="text-xs font-black text-rose-500 uppercase tracking-[0.2em]">${group.userName}</span>
+                            <div class="px-7 py-4 bg-rose-500 dark:bg-rose-600 flex items-center justify-between">
+                                <span class="text-[10px] font-black text-white uppercase tracking-[0.25em]">
+                                    <i class="bi bi-person-fill mr-1"></i> ${group.userName}
+                                </span>
+                                <div class="flex gap-2 items-center">
+                                     <span class="text-[8px] font-bold text-rose-100 uppercase bg-white/10 px-2 py-0.5 rounded-full">
+                                        ${group.prayers.length} Requests
+                                     </span>
+                                </div>
                             </div>
         
                             <div class="flex flex-col">
                                 ${group.prayers.map((p, index) => `
-                                    <div class="p-6 ${index % 2 !== 0 ? 'bg-slate-50/50 dark:bg-slate-800/20' : ''} ${index !== group.prayers.length - 1 ? 'border-b dark:border-slate-800/50' : ''} relative group">
-                                        <div class="flex justify-between items-start gap-4">
-                                            <p class="text-sm text-slate-700 dark:text-slate-100 leading-relaxed font-semibold italic mb-3">
+                                    <div class="p-7 ${index % 2 !== 0 ? 'bg-slate-50/50 dark:bg-slate-800/20' : ''} ${index !== group.prayers.length - 1 ? 'border-b dark:border-slate-800/50' : ''} relative">
+                                        <div class="flex justify-between items-start gap-6">
+                                            <p class="text-sm text-slate-700 dark:text-slate-100 leading-relaxed font-semibold italic mb-4">
                                                 "${p.Request}"
                                             </p>
                                             
                                             ${p.UserID == user.uid ? `
-                                                <button onclick="deletePrayer('${p.ID}')" class="shrink-0 w-7 h-7 flex items-center justify-center rounded-lg bg-slate-200/50 dark:bg-slate-800 text-slate-500 hover:text-rose-500 transition-all">
-                                                    <i class="bi bi-trash3-fill text-[9px]"></i>
+                                                <button onclick="deletePrayer('${p.ID}')" class="shrink-0 w-8 h-8 flex items-center justify-center rounded-xl bg-slate-200/50 dark:bg-slate-800 text-slate-500 hover:text-rose-500 transition-all border dark:border-slate-700">
+                                                    <i class="bi bi-trash3-fill text-[10px]"></i>
                                                 </button>` : ''}
                                         </div>
         
-                                        <div class="flex items-center gap-2 text-[8px] text-slate-400 font-extrabold uppercase tracking-widest opacity-70">
-                                            <i class="bi bi-clock-fill"></i>
+                                        <div class="flex items-center gap-2 text-[9px] text-slate-400 font-extrabold uppercase tracking-widest opacity-80">
+                                            <i class="bi bi-clock-fill text-rose-400/50"></i>
                                             ${new Date(p.Date).toLocaleDateString(undefined, {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'})}
                                         </div>
                                     </div>
@@ -202,9 +206,8 @@
                     `;
                 });
         
-                list.innerHTML = html || '<p class="text-center text-slate-400 py-10 italic text-xs uppercase tracking-widest">No active requests</p>';
+                list.innerHTML = html || '<div class="text-center opacity-40 py-20 uppercase font-black tracking-widest text-[10px]">No active petitions</div>';
             } catch (e) { 
-                console.error("Board Error:", e);
                 list.innerHTML = "Error connecting to Board."; 
             }
         };
