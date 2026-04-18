@@ -11,12 +11,17 @@
         .guide-card {
             background-color: white;
             transition: all 0.3s ease;
+            /* REMOVE overflow: hidden if it exists here */
         }
+        
         .dark .guide-card {
             background-color: #111827 !important;
             border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+            /* Ensure the shadow color is soft enough so it doesn't look like a solid block */
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7); 
+            margin-bottom: 2rem; /* Adds space so the bottom shadow isn't cut by the next element */
         }
+        
         textarea {
             background: rgba(225, 29, 72, 0.05) !important; /* Rose tint */
             border: 1px solid rgba(225, 29, 72, 0.1) !important;
@@ -66,7 +71,7 @@
         </button>
     </nav>
 
-    <main class="flex-1 flex flex-col items-center p-6 py-8 relative z-10 overflow-y-auto w-full max-w-xl mx-auto">
+    <main class="flex-1 flex flex-col items-center p-12 py-16 relative z-10 overflow-y-auto w-full max-w-xl mx-auto">
         <div id="prospect-card" class="guide-card w-full bg-white dark:bg-[#111827] rounded-[2rem] p-8 shadow-md flex flex-col items-center gap-6 ring-1 ring-black/5 dark:ring-white/5 mb-8">
             
             <div class="flex flex-col items-center gap-3">
