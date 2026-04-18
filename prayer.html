@@ -140,35 +140,74 @@
         });
 
         window.loadPrayers = async () => {
-    const list = document.getElementById('prayer-list');
-    try {
-        const res = await fetch(`${API_URL}?key=${PSK}`);
-        const data = await res.json();
+            const list = document.getElementById('prayer-list');
+            try {
+                const res = await fetch(`${API_URL}?key=${PSK}`);
+                let data = await res.json();
+                
+                // 1. Group the prayers by UserID
+                const grouped = data.reduce((acc, curr) => {
+                    if (!acc[curr.UserID]) {
+                        acc[curr.UserID] = {
+                            userName: curr.Name,
+                            lastActive: new Date(curr.Date).getTime(),
+                            prayers: []
+                        };
+                    }
+                    // Update the group's "lastActive" time if this prayer is newer
+                    const prayerTime = new Date(curr.Date).getTime();
+                    if (prayerTime > acc[curr.UserID].lastActive) {
+                        acc[curr.UserID].lastActive = prayerTime;
+                    }
+                    acc[curr.UserID].prayers.push(curr);
+                    return acc;
+                }, {});
         
-        list.innerHTML = data.length ? data.map(p => `
-            <div class="bg-white dark:bg-[#111827] mx-2 p-7 rounded-2xl border dark:border-slate-800 shadow-xl relative text-left ring-1 ring-black/5 dark:ring-white/5 border-l-6 border-l-rose-500 dark:border-l-white">
-                
-                <div class="flex justify-between items-center mb-4">
-                    <span class="text-xs font-black text-rose-500 uppercase tracking-[0.15em]">${p.Name}</span>
-                    
-                    ${p.UserID == user.uid ? `
-                        <button onclick="deletePrayer('${p.ID}')" class="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-rose-500 transition-all border dark:border-slate-700">
-                            <i class="bi bi-trash3-fill text-xs"></i>
-                        </button>` : ''}
-                </div>
-                
-                <p class="text-sm text-slate-700 dark:text-slate-100 leading-relaxed font-semibold mb-5 italic">
-                    "${p.Request}"
-                </p>
-                
-                <div class="flex items-center gap-2 text-[9px] text-slate-400 font-extrabold uppercase tracking-widest opacity-70">
-                    <i class="bi bi-clock-fill"></i>
-                    ${new Date(p.Date).toLocaleDateString(undefined, {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'})}
-                </div>
-            </div>
-        `).join('') : '<div class="py-10 opacity-30 text-center uppercase text-[10px] font-bold tracking-[0.2em]"><i class="bi bi-cloud-sun text-4xl block mb-2"></i>No active requests</div>';
-    } catch (e) { list.innerHTML = "Error connecting to Board."; }
-};
+                // 2. Convert to Array and Sort groups by lastActive (Newest group first)
+                const sortedGroups = Object.values(grouped).sort((a, b) => b.lastActive - a.lastActive);
+        
+                let html = "";
+                sortedGroups.forEach((group, groupIndex) => {
+                    // Alternating colors for groups
+                    const bgColor = (groupIndex % 2 === 0) 
+                        ? "bg-white dark:bg-[#111827]" 
+                        : "bg-slate-50 dark:bg-[#161e2e]";
+        
+                    // Sort prayers within the group (newest first)
+                    group.prayers.sort((a, b) => new Date(b.Date) - new Date(a.Date));
+        
+                    group.prayers.forEach((p) => {
+                        html += `
+                            <div class="${bgColor} mx-2 p-7 rounded-2xl border dark:border-slate-800 shadow-xl relative text-left ring-1 ring-black/5 dark:ring-white/5 border-l-[12px] border-l-rose-500 dark:border-l-white mb-4 transition-all">
+                                
+                                <div class="flex justify-between items-center mb-4">
+                                    <span class="text-xs font-black text-rose-500 uppercase tracking-[0.15em]">${p.Name}</span>
+                                    
+                                    ${p.UserID == user.uid ? `
+                                        <button onclick="deletePrayer('${p.ID}')" class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-200/50 dark:bg-slate-800 text-slate-500 hover:text-rose-500 transition-all">
+                                            <i class="bi bi-trash3-fill text-[10px]"></i>
+                                        </button>` : ''}
+                                </div>
+                                
+                                <p class="text-sm text-slate-700 dark:text-slate-100 leading-relaxed font-semibold mb-5 italic">
+                                    "${p.Request}"
+                                </p>
+                                
+                                <div class="flex items-center gap-2 text-[9px] text-slate-400 font-extrabold uppercase tracking-widest opacity-70">
+                                    <i class="bi bi-clock-fill"></i>
+                                    ${new Date(p.Date).toLocaleDateString(undefined, {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'})}
+                                </div>
+                            </div>
+                        `;
+                    });
+                });
+        
+                list.innerHTML = html || '<p class="text-center text-slate-400 py-10 italic text-xs uppercase tracking-widest">No active requests</p>';
+            } catch (e) { 
+                console.error("Board Error:", e);
+                list.innerHTML = "Error connecting to Board."; 
+            }
+        };
 
         window.addPrayer = async () => {
             const req = document.getElementById('prayerInput').value.trim();
