@@ -22,15 +22,20 @@
             margin-bottom: 2rem; /* Adds space so the bottom shadow isn't cut by the next element */
         }
         
-        textarea {
-            background: rgba(225, 29, 72, 0.05) !important; /* indigo tint */
-            border: 1px solid rgba(225, 29, 72, 0.1) !important;
+        textarea, input {
+            /* Corrected Indigo Tint: #4f46e5 at 5% opacity */
+            background: rgba(79, 70, 229, 0.05) !important; 
+            border: 1px solid rgba(79, 70, 229, 0.1) !important;
             outline: none !important;
+            transition: all 0.2s ease;
         }
-        textarea:focus {
-            border-color: #f43f5e !important;
-            ring: 1px solid #f43f5e !important;
+        
+        textarea:focus, input:focus {
+            /* Focus state: Solid Indigo-600 border */
+            border-color: #4f46e5 !important;
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1) !important;
         }
+        
         button, 
         .preset-btn, 
         .type-btn,
