@@ -11,19 +11,15 @@
         .guide-card {
             background-color: white;
             transition: all 0.3s ease;
-            /* REMOVE overflow: hidden if it exists here */
         }
         
         .dark .guide-card {
             background-color: #111827 !important;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            /* Ensure the shadow color is soft enough so it doesn't look like a solid block */
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7); 
-            margin-bottom: 2rem; /* Adds space so the bottom shadow isn't cut by the next element */
+            /* REMOVED: border and box-shadow that were fighting Tailwind */
+            margin-bottom: 2rem; 
         }
         
         textarea, input {
-            /* Corrected Indigo Tint: #4f46e5 at 5% opacity */
             background: rgba(79, 70, 229, 0.05) !important; 
             border: 1px solid rgba(79, 70, 229, 0.1) !important;
             outline: none !important;
@@ -31,7 +27,6 @@
         }
         
         textarea:focus, input:focus {
-            /* Focus state: Solid Indigo-600 border */
             border-color: #4f46e5 !important;
             box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1) !important;
         }
@@ -48,7 +43,8 @@
         .type-btn:active,
         [role="button"]:active {
             transform: scale(0.95) !important;
-            box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.7) !important;
+            /* Keep this inset for the "click" feel, or remove if you want it totally flat */
+            box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.2) !important; 
             outline: none !important;
         }
     </style>
