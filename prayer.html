@@ -190,33 +190,41 @@
                 sortedGroups.forEach((group, index) => {
                     group.prayers.sort((a, b) => new Date(b.Date) - new Date(a.Date));
                     
-                    // THE FIX: Electric Cyan & Sky Blue for System Cohesion
                     const isAlt = index % 2 !== 0;
-                    const themeBorder = isAlt ? 'border-sky-600' : 'border-cyan-500';
-                    const themeBg = isAlt ? 'bg-sky-600' : 'bg-cyan-500';
-                    const accentText = isAlt ? 'text-sky-400' : 'text-cyan-400';
-                    const internalBorder = isAlt ? 'border-sky-500/10' : 'border-cyan-500/10';
+                    // High-Contrast Accent Colors
+                    const themeColor = isAlt ? 'sky-500' : 'cyan-400';
+                    const themeBorder = isAlt ? 'border-sky-500/30' : 'border-cyan-400/30';
+                    const themeBg = isAlt ? 'bg-sky-500' : 'bg-cyan-400';
+                    const themeText = isAlt ? 'text-sky-400' : 'text-cyan-400';
         
                     html += `
-                        <div class="bg-white dark:bg-[#111827] w-full rounded-3xl border-2 ${themeBorder} relative text-left mb-10 transition-all duration-300">
-                            <div class="px-7 py-4 ${themeBg} flex items-center justify-between rounded-t-[22px] -mt-[1px] -mx-[1px]">
+                        <div class="bg-white dark:bg-[#111827] w-full rounded-3xl border-2 ${themeBorder} relative text-left mb-10 transition-all duration-300 overflow-hidden shadow-xl dark:shadow-cyan-500/5">
+                            
+                            <div class="px-7 py-4 bg-slate-50 dark:bg-slate-800/40 flex items-center justify-between border-b ${themeBorder}">
                                 <div class="flex items-center gap-2">
-                                    <i class="bi bi-person-circle text-white/80 text-xs"></i>
-                                    <span class="text-[10px] font-black text-white uppercase tracking-[0.25em]">${group.userName}</span>
+                                    <i class="bi bi-person-circle ${themeText} text-xs"></i>
+                                    <span class="text-[10px] font-black ${themeText} uppercase tracking-[0.25em]">${group.userName}</span>
                                 </div>
-                                <span class="text-[9px] font-black text-zinc-900 uppercase bg-emerald-400 px-3 py-1 rounded-full shadow-lg shadow-emerald-500/20 border border-emerald-300/50">
+                                <span class="text-[9px] font-black text-zinc-900 uppercase bg-emerald-400 px-3 py-1 rounded-full shadow-lg shadow-emerald-500/20">
                                     ${group.prayers.length} ${group.prayers.length === 1 ? 'Request' : 'Requests'}
                                 </span>
                             </div>
-                            <div class="flex flex-col overflow-hidden rounded-b-3xl">
+        
+                            <div class="flex flex-col">
                                 ${group.prayers.map((p, pIndex) => `
-                                    <div class="p-7 ${pIndex % 2 !== 0 ? 'bg-black/5 dark:bg-white/5' : ''} ${pIndex !== group.prayers.length - 1 ? internalBorder : ''} relative">
+                                    <div class="p-7 pl-9 relative ${pIndex % 2 !== 0 ? 'bg-black/5 dark:bg-white/5' : ''} ${pIndex !== group.prayers.length - 1 ? 'border-b border-white/5' : ''}">
+                                        
+                                        <div class="absolute left-0 top-4 bottom-4 w-1 rounded-r-full ${themeBg}"></div>
+        
                                         <div class="flex justify-between items-start gap-6">
                                             <p class="text-sm text-slate-700 dark:text-slate-100 leading-relaxed font-semibold italic mb-4">"${p.Request}"</p>
-                                            ${p.UserID == user.uid ? `<button onclick="deletePrayer('${p.ID}')" class="shrink-0 w-8 h-8 flex items-center justify-center rounded-xl bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white transition-all border border-rose-500/20 active:scale-90"><i class="bi bi-trash3-fill text-[10px]"></i></button>` : ''}
+                                            ${p.UserID == user.uid ? `
+                                                <button onclick="deletePrayer('${p.ID}')" class="shrink-0 w-8 h-8 flex items-center justify-center rounded-xl bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white transition-all border border-rose-500/20 active:scale-90">
+                                                    <i class="bi bi-trash3-fill text-[10px]"></i>
+                                                </button>` : ''}
                                         </div>
                                         <div class="flex items-center gap-2 text-[9px] text-slate-400 font-extrabold uppercase tracking-widest opacity-80">
-                                            <i class="bi bi-clock-fill ${accentText}"></i>
+                                            <i class="bi bi-clock-fill ${themeText} opacity-40"></i>
                                             ${new Date(p.Date).toLocaleDateString(undefined, {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'})}
                                         </div>
                                     </div>`).join('')}
