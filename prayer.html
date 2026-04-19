@@ -100,7 +100,7 @@
                 <i class="bi bi-exclamation-triangle-fill text-xl"></i>
             </div>
             <h3 class="text-xl font-bold dark:text-white mb-2">Remove Request?</h3>
-            <p class="text-[11px] text-slate-500 dark:text-slate-400 mb-8 leading-relaxed">This action will permanently remove your petition from the public board.</p>
+            <p class="text-[11px] text-slate-500 dark:text-slate-400 mb-8 leading-relaxed">This action will permanently remove your request from the public board.</p>
             <div class="flex flex-col gap-2">
                 <button id="final-confirm-btn" class="w-full py-4 bg-red-600 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest active:scale-95 transition-all">Delete Petition</button>
                 <button onclick="closeDeleteModal()" class="w-full py-4 text-slate-500 font-bold uppercase text-[10px] tracking-widest">Cancel</button>
@@ -255,7 +255,7 @@
                 closeDeleteModal();
                 setTimeout(() => loadPrayers(), 500);
             } catch (e) { showToast("Error deleting."); }
-            finally { btn.disabled = false; btn.innerText = "DELETE PETITION"; }
+            finally { btn.disabled = false; btn.innerText = "DELETE REQUEST"; }
         };
     </script>
 </body>
