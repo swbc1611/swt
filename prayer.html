@@ -165,25 +165,38 @@
             try {
                 const res = await fetch(`${API_URL}?key=${PSK}`);
                 let rawData = await res.json();
-                let data = (currentPrayerFilter === 'mine') ? rawData.filter(p => p.UserID == user.uid) : rawData;
+                
+                let data = (currentPrayerFilter === 'mine') 
+                    ? rawData.filter(p => p.UserID == user.uid) 
+                    : rawData;
+        
                 const grouped = data.reduce((acc, curr) => {
-                    if (!acc[curr.UserID]) { acc[curr.UserID] = { userName: curr.Name, lastActive: new Date(curr.Date).getTime(), prayers: [] }; }
+                    if (!acc[curr.UserID]) { 
+                        acc[curr.UserID] = { 
+                            userName: curr.Name, 
+                            lastActive: new Date(curr.Date).getTime(), 
+                            prayers: [] 
+                        }; 
+                    }
                     const prayerTime = new Date(curr.Date).getTime();
                     if (prayerTime > acc[curr.UserID].lastActive) acc[curr.UserID].lastActive = prayerTime;
                     acc[curr.UserID].prayers.push(curr);
                     return acc;
                 }, {});
-
+        
                 const sortedGroups = Object.values(grouped).sort((a, b) => b.lastActive - a.lastActive);
                 let html = "";
+                
                 sortedGroups.forEach((group, index) => {
                     group.prayers.sort((a, b) => new Date(b.Date) - new Date(a.Date));
+                    
+                    // THE FIX: Electric Cyan & Sky Blue for System Cohesion
                     const isAlt = index % 2 !== 0;
-                    const themeBorder = isAlt ? 'border-cyan-700' : 'border-teal-600';
-                    const themeBg = isAlt ? 'bg-cyan-700' : 'bg-teal-600';
-                    const accentText = isAlt ? 'text-cyan-400' : 'text-teal-400';
-                    const internalBorder = isAlt ? 'border-cyan-600/10' : 'border-teal-600/10';
-
+                    const themeBorder = isAlt ? 'border-sky-600' : 'border-cyan-500';
+                    const themeBg = isAlt ? 'bg-sky-600' : 'bg-cyan-500';
+                    const accentText = isAlt ? 'text-sky-400' : 'text-cyan-400';
+                    const internalBorder = isAlt ? 'border-sky-500/10' : 'border-cyan-500/10';
+        
                     html += `
                         <div class="bg-white dark:bg-[#111827] w-full rounded-3xl border-2 ${themeBorder} relative text-left mb-10 transition-all duration-300">
                             <div class="px-7 py-4 ${themeBg} flex items-center justify-between rounded-t-[22px] -mt-[1px] -mx-[1px]">
