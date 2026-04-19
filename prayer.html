@@ -85,7 +85,7 @@
 
         <div class="w-full py-6 flex flex-col items-center justify-center">
             <label class="text-[13px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.4em] block text-center leading-none">
-                Active Petitions
+                Active Requests
             </label>
         </div>
 
@@ -169,7 +169,7 @@
                                     </span>
                                 </div>
                                 <span class="text-[8px] font-bold text-indigo-100 uppercase bg-white/10 px-2 py-0.5 rounded-full border border-white/10">
-                                    ${group.prayers.length} Petitions
+                                    ${group.prayers.length} Requests
                                 </span>
                             </div>
         
@@ -196,7 +196,7 @@
                     `;
                 });
         
-                list.innerHTML = html || '<div class="text-center opacity-40 py-20 uppercase font-black tracking-widest text-[10px]"><i class="bi bi-shield-check text-4xl block mb-2"></i>No active petitions</div>';
+                list.innerHTML = html || '<div class="text-center opacity-40 py-20 uppercase font-black tracking-widest text-[10px]"><i class="bi bi-shield-check text-4xl block mb-2"></i>No active requests</div>';
             } catch (e) { 
                 console.error("Critical Board Error:", e);
                 list.innerHTML = `<div class="p-10 text-center text-rose-500 font-bold text-xs uppercase tracking-widest">Connection Error: Check API/PSK</div>`; 
