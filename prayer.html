@@ -217,12 +217,12 @@
                 sortedGroups.forEach((group, index) => {
                     group.prayers.sort((a, b) => new Date(b.Date) - new Date(a.Date));
         
-                    // THE FIX: Swap Slate for Violet-600 for vibrant "Analogous Harmony"
+                    // THE FIX: Vibrant Teal and Cyan for separation from the Indigo interface
                     const isAlt = index % 2 !== 0;
-                    const themeBorder = isAlt ? 'border-violet-600' : 'border-indigo-600';
-                    const themeBg = isAlt ? 'bg-violet-600' : 'bg-indigo-600';
-                    const accentText = isAlt ? 'text-violet-400' : 'text-indigo-400';
-                    const internalBorder = isAlt ? 'border-violet-500/10' : 'border-indigo-600/10';
+                    const themeBorder = isAlt ? 'border-cyan-700' : 'border-teal-600';
+                    const themeBg = isAlt ? 'bg-cyan-700' : 'bg-teal-600';
+                    const accentText = isAlt ? 'text-cyan-400' : 'text-teal-400';
+                    const internalBorder = isAlt ? 'border-cyan-600/10' : 'border-teal-600/10';
         
                     html += `
                         <div class="bg-white dark:bg-[#111827] w-full rounded-3xl border-2 ${themeBorder} relative text-left mb-10 transition-all duration-300">
@@ -232,8 +232,9 @@
                                     <i class="bi bi-person-circle text-white/80 text-xs"></i>
                                     <span class="text-[10px] font-black text-white uppercase tracking-[0.25em]">${group.userName}</span>
                                 </div>
-                                <span class="text-[8px] font-bold text-white/90 uppercase bg-black/10 px-2 py-0.5 rounded-full border border-white/10">
-                                    ${group.prayers.length} Requests
+        
+                                <span class="text-[9px] font-black text-zinc-900 uppercase bg-emerald-400 px-3 py-1 rounded-full shadow-lg shadow-emerald-500/20 border border-emerald-300/50">
+                                    ${group.prayers.length} ${group.prayers.length === 1 ? 'Request' : 'Requests'}
                                 </span>
                             </div>
         
