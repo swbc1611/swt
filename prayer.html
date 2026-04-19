@@ -88,7 +88,18 @@
                 Active Requests
             </label>
         </div>
-
+        
+        <div class="w-full flex justify-center gap-2 mb-8">
+            <button id="filter-all" onclick="setPrayerFilter('all')" 
+                class="flex-1 max-w-[140px] py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-200 bg-indigo-600 text-white shadow-lg shadow-indigo-500/20">
+                All Requests
+            </button>
+            <button id="filter-mine" onclick="setPrayerFilter('mine')" 
+                class="flex-1 max-w-[140px] py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-200 bg-slate-100 dark:bg-slate-800 text-slate-400">
+                My Requests
+            </button>
+        </div>
+        
         <div id="prayer-list" class="w-full space-y-8 pb-24">
             <p class="text-center text-slate-400 py-10 italic animate-pulse text-xs uppercase tracking-widest">Gathering requests...</p>
         </div>
@@ -131,12 +142,35 @@
             loadPrayers();
         });
 
+        let currentPrayerFilter = 'all';
+
+        window.setPrayerFilter = (filter) => {
+            currentPrayerFilter = filter;
+            
+            // UI Feedback
+            const allBtn = document.getElementById('filter-all');
+            const mineBtn = document.getElementById('filter-mine');
+            
+            const active = "bg-indigo-600 text-white shadow-lg shadow-indigo-500/20";
+            const inactive = "bg-slate-100 dark:bg-slate-800 text-slate-400";
+            
+            allBtn.className = `flex-1 max-w-[140px] py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${filter === 'all' ? active : inactive}`;
+            mineBtn.className = `flex-1 max-w-[140px] py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${filter === 'mine' ? active : inactive}`;
+            
+            loadPrayers();
+        };
+        
         window.loadPrayers = async () => {
             const list = document.getElementById('prayer-list');
             try {
                 const res = await fetch(`${API_URL}?key=${PSK}`);
-                let data = await res.json();
+                let rawData = await res.json();
                 
+                // SURGICAL FILTERING
+                let data = (currentPrayerFilter === 'mine') 
+                    ? rawData.filter(p => p.UserID == user.uid) 
+                    : rawData;
+        
                 const grouped = data.reduce((acc, curr) => {
                     if (!acc[curr.UserID]) {
                         acc[curr.UserID] = {
@@ -146,9 +180,7 @@
                         };
                     }
                     const prayerTime = new Date(curr.Date).getTime();
-                    if (prayerTime > acc[curr.UserID].lastActive) {
-                        acc[curr.UserID].lastActive = prayerTime;
-                    }
+                    if (prayerTime > acc[curr.UserID].lastActive) acc[curr.UserID].lastActive = prayerTime;
                     acc[curr.UserID].prayers.push(curr);
                     return acc;
                 }, {});
@@ -160,13 +192,11 @@
                     group.prayers.sort((a, b) => new Date(b.Date) - new Date(a.Date));
         
                     html += `
-                        <div class="bg-white dark:bg-[#111827] w-full rounded-3xl border-2 border-indigo-600 dark:border-indigo-600 relative text-left mb-10">
-                            <div class="px-7 py-4 bg-indigo-600 dark:bg-indigo-600 flex items-center justify-between rounded-t-[22px] -mt-[1px] -mx-[1px]">
+                        <div class="bg-white dark:bg-[#111827] w-full rounded-3xl border-2 border-indigo-600 relative text-left mb-10">
+                            <div class="px-7 py-4 bg-indigo-600 flex items-center justify-between rounded-t-[22px] -mt-[1px] -mx-[1px]">
                                 <div class="flex items-center gap-2">
                                     <i class="bi bi-person-circle text-white/80 text-xs"></i>
-                                    <span class="text-[10px] font-black text-white uppercase tracking-[0.25em]">
-                                        ${group.userName}
-                                    </span>
+                                    <span class="text-[10px] font-black text-white uppercase tracking-[0.25em]">${group.userName}</span>
                                 </div>
                                 <span class="text-[8px] font-bold text-indigo-100 uppercase bg-white/10 px-2 py-0.5 rounded-full border border-white/10">
                                     ${group.prayers.length} Requests
@@ -175,11 +205,9 @@
         
                             <div class="flex flex-col overflow-hidden rounded-b-3xl">
                                 ${group.prayers.map((p, index) => `
-                                    <div class="p-7 ${index % 2 !== 0 ? 'bg-slate-50/50 dark:bg-slate-800/20' : ''} ${index !== group.prayers.length - 1 ? 'border-b border-indigo-600/20' : ''} relative group">
+                                    <div class="p-7 ${index % 2 !== 0 ? 'bg-slate-50/50 dark:bg-slate-800/20' : ''} ${index !== group.prayers.length - 1 ? 'border-b border-indigo-600/20' : ''} relative">
                                         <div class="flex justify-between items-start gap-6">
-                                            <p class="text-sm text-slate-700 dark:text-slate-100 leading-relaxed font-semibold italic mb-4">
-                                                "${p.Request}"
-                                            </p>
+                                            <p class="text-sm text-slate-700 dark:text-slate-100 leading-relaxed font-semibold italic mb-4">"${p.Request}"</p>
                                             ${p.UserID == user.uid ? `
                                                 <button onclick="deletePrayer('${p.ID}')" class="shrink-0 w-8 h-8 flex items-center justify-center rounded-xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-400 hover:text-rose-500 transition-all border border-indigo-600/20 active:scale-90">
                                                     <i class="bi bi-trash3-fill text-[10px]"></i>
@@ -192,15 +220,11 @@
                                     </div>
                                 `).join('')}
                             </div>
-                        </div>
-                    `;
+                        </div>`;
                 });
         
-                list.innerHTML = html || '<div class="text-center opacity-40 py-20 uppercase font-black tracking-widest text-[10px]"><i class="bi bi-shield-check text-4xl block mb-2"></i>No active requests</div>';
-            } catch (e) { 
-                console.error("Critical Board Error:", e);
-                list.innerHTML = `<div class="p-10 text-center text-rose-500 font-bold text-xs uppercase tracking-widest">Connection Error: Check API/PSK</div>`; 
-            }
+                list.innerHTML = html || `<div class="text-center opacity-40 py-20 uppercase font-black tracking-widest text-[10px]">${currentPrayerFilter === 'mine' ? 'You have no active requests' : 'No active petitions'}</div>`;
+            } catch (e) { list.innerHTML = "Error loading."; }
         };
 
         window.addPrayer = async () => {
