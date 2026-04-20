@@ -307,7 +307,7 @@
         <div class="modal-content bg-white dark:bg-slate-900 border dark:border-slate-800 w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl text-center">
             <h2 class="text-xl font-bold dark:text-white mb-2 text-center">Guide Settings</h2>
             <p class="text-[10px] text-slate-400 mb-6 uppercase tracking-widest text-center leading-relaxed">Paste your Google Sheets URL below.<br>Set access to "Anyone with the link can view".</p>
-            <input id="guideUrlInput" type="text" placeholder="https://docs.google.com/spreadsheets/d/..." class="w-full p-4 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-2xl outline-none text-[10px] dark:text-white mb-4 text-center">
+            <textarea id="guideUrlInput" placeholder="https://docs.google.com/spreadsheets/d/..." rows="3" class="w-full p-4 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-2xl outline-none text-[10px] dark:text-white mb-4 text-center resize-none"></textarea>
             <div class="flex gap-2">
                 <button onclick="closeGuideSettings()" class="flex-1 py-3 text-slate-500 font-bold text-xs uppercase tracking-widest">Cancel</button>
                 <button id="saveGuideBtn" onclick="saveGuideUrl()" class="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-indigo-500/20">Save URL</button>
@@ -374,7 +374,7 @@
                 <input id="newChurchName" type="text" placeholder="Church Name" class="w-full p-4 mb-4 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-2xl outline-none dark:text-white text-center">
                 <div class="flex gap-3">
                     <button onclick="closeChurchManager()" class="flex-1 py-4 text-slate-400 uppercase text-xs">Close</button>
-                    <button id="add-btn" onclick="addNewChurch()" class="flex-1 py-4 bg-indigo-600 text-white rounded-2 font-bold uppercase text-xs shadow-lg shadow-indigo-500/30 active:scale-95">Add Code</button>
+                    <button id="add-btn" onclick="addNewChurch()" class="flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-bold uppercase text-xs shadow-lg shadow-indigo-500/30 active:scale-95">Add Code</button>
                 </div>
             </div>
         </div>
