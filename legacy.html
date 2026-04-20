@@ -21,6 +21,7 @@
             background: rgba(245, 158, 11, 0.05) !important; 
             border: 1px solid rgba(245, 158, 11, 0.1) !important;
             outline: none !important;
+            transition: all 0.2s ease;
         }
         input:focus, select:focus, textarea:focus {
             border-color: #f59e0b !important;
@@ -75,17 +76,15 @@
                 </div>
 
                 <div class="flex flex-col gap-2">
-                    <label class="text-[9px] font-bold text-amber-500 uppercase tracking-widest ml-2">Salvation Total</label>
-                    <div class="flex items-center justify-between bg-slate-50 dark:bg-slate-800/50 p-2 rounded-3xl border dark:border-slate-700">
-                        <button onclick="stepCount(-10)" class="w-14 h-14 flex items-center justify-center rounded-2xl bg-white dark:bg-slate-700 text-amber-500 font-bold text-xl active:scale-90 transition-all shadow-sm">
-                            <i class="bi bi-dash-lg"></i>
-                        </button>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-2 tracking-widest ml-2 text-center">Salvation Total</label>
+                    <div class="flex items-center justify-between bg-slate-50 dark:bg-slate-800/50 p-3 rounded-3xl border dark:border-slate-700">
+                        <button onclick="stepCount(-10)" class="w-14 h-14 flex-shrink-0 rounded-2xl bg-white dark:bg-slate-700 font-bold text-xl hover:bg-slate-100 dark:text-white transition-all active:scale-95 flex items-center justify-center border dark:border-slate-600 shadow-sm">-</button>
                         
-                        <input id="histCount" type="number" value="0" class="w-full text-center text-4xl font-black bg-transparent text-amber-500 outline-none">
+                        <input id="histCount" type="number" value="0" min="0" max="99999"
+                            class="w-full text-center text-5xl font-light bg-transparent text-amber-500 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            oninput="limitInput(this)">
                         
-                        <button onclick="stepCount(10)" class="w-14 h-14 flex items-center justify-center rounded-2xl bg-amber-500 text-white font-bold text-xl active:scale-90 transition-all shadow-lg shadow-amber-500/30">
-                            <i class="bi bi-plus-lg"></i>
-                        </button>
+                        <button onclick="stepCount(10)" class="w-14 h-14 flex-shrink-0 rounded-2xl bg-amber-500 text-white font-bold text-xl hover:bg-amber-600 transition-all active:scale-95 flex items-center justify-center shadow-lg shadow-amber-500/30">+</button>
                     </div>
                 </div>
 
@@ -123,7 +122,7 @@
         document.getElementById('histPeriod').value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
         if (localStorage.getItem('theme') === 'dark') document.getElementById('main-html').classList.add('dark');
 
-         window.toggleDarkMode = () => {
+        window.toggleDarkMode = () => {
             const html = document.getElementById('main-html');
             const isDark = html.classList.toggle('dark');
             document.getElementById('sun-icon')?.classList.toggle('hidden', !isDark);
@@ -135,6 +134,12 @@
             const el = document.getElementById('histCount');
             const newVal = (parseInt(el.value) || 0) + val;
             el.value = newVal < 0 ? 0 : newVal;
+        };
+
+        window.limitInput = (el) => {
+            let val = parseInt(el.value);
+            if (val < 0 || isNaN(val)) el.value = 0;
+            if (val > 99999) el.value = 99999;
         };
 
         window.showToast = (msg) => {
