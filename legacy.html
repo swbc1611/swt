@@ -28,7 +28,7 @@
             box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.1) !important;
         }
 
-        /* SURGICAL FIX: REMOVING BOXY INPUT BORDERS */
+        /* SURGICAL FIX: REMOVING ALL BOXY OUTLINES & BORDERS FOR MODAL AESTHETIC */
         .clean-input {
             border: none !important;
             background: transparent !important;
@@ -37,6 +37,7 @@
             padding: 0 !important;
             margin: 0 !important;
             appearance: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
         input::-webkit-outer-spin-button,
@@ -128,7 +129,6 @@
 
         let userProfile = JSON.parse(sessionStorage.getItem('userContext') || "{}");
 
-        // STANDARDIZED THEME INITIALIZATION
         const initTheme = () => {
             const isDark = localStorage.getItem('theme') === 'dark' || 
                           (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
@@ -240,7 +240,7 @@
                 docs.forEach(d => {
                     const mName = new Date(2000, d.month - 1).toLocaleString('en-US', {month:'long'});
                     html += `
-                        <div class="bg-white dark:bg-[#111827] p-6 rounded-[2.5rem] border dark:border-slate-800 flex items-center justify-between shadow-sm border-l-4 border-amber-500">
+                        <div class="bg-white dark:bg-[#111827] p-6 rounded-[2rem] border dark:border-slate-800 flex items-center justify-between shadow-sm border-l-4 border-amber-500">
                             <div class="text-left">
                                 <h4 class="text-[10px] font-black uppercase tracking-widest text-slate-400">${mName} ${d.year}</h4>
                                 <p class="text-2xl font-black text-amber-500">${d.salvationCount.toLocaleString()}</p>
