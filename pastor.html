@@ -11,6 +11,9 @@
     <style>        
         button, .preset-btn, .type-btn, [role="button"] {
             transition: all 0.3s ease-in-out !important;
+            /* FIX: Consistent box-sizing and border to prevent layout shifting */
+            box-sizing: border-box !important;
+            border: 1px solid transparent;
         }
         button:active, .preset-btn:active, .type-btn:active, [role="button"]:active {
             transform: scale(0.98) !important;
@@ -220,10 +223,10 @@
                     <div>
                         <label class="block text-[9px] font-black text-slate-500 uppercase mb-4 tracking-widest text-center">Type Filter</label>
                         <div class="flex gap-2">
-                            <button id="type-all" onclick="setActiveType('all')" class="type-btn flex-1 py-3 bg-indigo-600 text-white rounded-xl text-[10px] font-bold uppercase shadow-lg shadow-indigo-600/20">All</button>
-                            <button id="type-Regular" onclick="setActiveType('Regular')" class="type-btn flex-1 py-3 bg-slate-100 dark:bg-slate-800/40 text-slate-500 rounded-xl text-[10px] font-bold uppercase">Regular</button>
-                            <button id="type-School" onclick="setActiveType('School')" class="type-btn flex-1 py-3 bg-slate-100 dark:bg-slate-800/40 text-slate-500 rounded-xl text-[10px] font-bold uppercase">School</button>
-                            <button id="type-Event" onclick="setActiveType('Event')" class="type-btn flex-1 py-3 bg-slate-100 dark:bg-slate-800/40 text-slate-500 rounded-xl text-[10px] font-bold uppercase">Event</button>
+                            <button id="type-all" onclick="setActiveType('all')" class="type-btn flex-1 py-4 bg-indigo-600 text-white rounded-xl text-[10px] font-bold uppercase shadow-lg shadow-indigo-600/20 border border-transparent">All</button>
+                            <button id="type-Regular" onclick="setActiveType('Regular')" class="type-btn flex-1 py-4 bg-slate-100 dark:bg-slate-800/40 text-slate-500 rounded-xl text-[10px] font-bold uppercase border border-transparent">Regular</button>
+                            <button id="type-School" onclick="setActiveType('School')" class="type-btn flex-1 py-4 bg-slate-100 dark:bg-slate-800/40 text-slate-500 rounded-xl text-[10px] font-bold uppercase border border-transparent">School</button>
+                            <button id="type-Event" onclick="setActiveType('Event')" class="type-btn flex-1 py-4 bg-slate-100 dark:bg-slate-800/40 text-slate-500 rounded-xl text-[10px] font-bold uppercase border border-transparent">Event</button>
                         </div>
                     </div>
 
@@ -234,9 +237,9 @@
                             <div class="h-[1px] flex-1 bg-white/5"></div>
                         </div>
                         <div class="flex gap-2">
-                            <button id="btn-today" onclick="setActivePreset('today')" class="preset-btn flex-1 py-3 bg-slate-100 dark:bg-slate-800/50 text-slate-500 rounded-xl text-[10px] font-bold uppercase">Today</button>
-                            <button id="btn-week" onclick="setActivePreset('week')" class="preset-btn flex-1 py-3 bg-slate-100 dark:bg-slate-800/50 text-slate-500 rounded-xl text-[10px] font-bold uppercase">Week</button>
-                            <button id="btn-month" onclick="setActivePreset('month')" class="preset-btn flex-1 py-3 bg-indigo-600 text-white rounded-xl text-[10px] font-bold uppercase shadow-lg shadow-indigo-500/50">Month</button>
+                            <button id="btn-today" onclick="setActivePreset('today')" class="preset-btn flex-1 py-4 bg-slate-100 dark:bg-slate-800/50 text-slate-500 rounded-xl text-[10px] font-bold uppercase border border-transparent">Today</button>
+                            <button id="btn-week" onclick="setActivePreset('week')" class="preset-btn flex-1 py-4 bg-slate-100 dark:bg-slate-800/50 text-slate-500 rounded-xl text-[10px] font-bold uppercase border border-transparent">Week</button>
+                            <button id="btn-month" onclick="setActivePreset('month')" class="preset-btn flex-1 py-4 bg-indigo-600 text-white rounded-xl text-[10px] font-bold uppercase shadow-lg shadow-indigo-500/50 border border-transparent">Month</button>
                         </div>
                     </div>
 
@@ -249,9 +252,9 @@
                         </div>
 
                         <div class="grid grid-cols-3 gap-3">
-                            <input type="date" id="customDate" oninput="handleCustomInput('date')" class="bg-slate-900 border border-white/5 p-3 rounded-xl text-[10px] font-bold text-white outline-none transition-all duration-300 text-center">
-                            <input type="month" id="customMonth" oninput="handleCustomInput('month')" class="bg-slate-900 border border-white/5 p-3 rounded-xl text-[10px] font-bold text-white outline-none transition-all duration-300 text-center">
-                            <select id="customYear" onchange="handleCustomInput('year')" class="bg-slate-900 border border-white/5 p-3 rounded-xl text-[10px] font-bold text-white outline-none appearance-none text-center transition-all duration-300">
+                            <input type="date" id="customDate" oninput="handleCustomInput('date')" class="bg-slate-900 border border-white/5 p-3 rounded-xl text-[10px] font-bold text-white outline-none transition-all duration-300 text-center h-[52px]">
+                            <input type="month" id="customMonth" oninput="handleCustomInput('month')" class="bg-slate-900 border border-white/5 p-3 rounded-xl text-[10px] font-bold text-white outline-none transition-all duration-300 text-center h-[52px]">
+                            <select id="customYear" onchange="handleCustomInput('year')" class="bg-slate-900 border border-white/5 p-3 rounded-xl text-[10px] font-bold text-white outline-none appearance-none text-center transition-all duration-300 h-[52px]">
                             </select>
                         </div>
                     </div>
@@ -361,14 +364,14 @@
     </div>
 
     <div id="church-modal" class="hidden fixed inset-0 z-[300] backdrop-blur-md flex items-center justify-center p-6">
-        <div class="modal-content bg-white dark:bg-slate-900 border dark:border-slate-800 w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl">
+        <div class="modal-content bg-white dark:bg-slate-900 border dark:border-slate-800 w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl text-center">
             <h3 class="text-xl font-bold mb-6 text-center dark:text-white">Church Management</h3>
             <div id="church-list" class="space-y-1 mb-6 max-h-72 overflow-y-auto pr-2 text-left"></div>
             <div class="border-t dark:border-slate-800 pt-6">
                 <input id="newChurchName" type="text" placeholder="Church Name" class="w-full p-4 mb-4 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-2xl outline-none dark:text-white text-center">
                 <div class="flex gap-3">
                     <button onclick="closeChurchManager()" class="flex-1 py-4 text-slate-400 uppercase text-xs">Close</button>
-                    <button id="add-btn" onclick="addNewChurch()" class="flex-1 py-4 bg-indigo-600 text-white rounded-2 font-bold uppercase text-xs shadow-lg shadow-indigo-500/30">Add Code</button>
+                    <button id="add-btn" onclick="addNewChurch()" class="flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-bold uppercase text-xs">Add Code</button>
                 </div>
             </div>
         </div>
@@ -485,8 +488,8 @@
 
         window.setActiveType = (type) => {
             currentType = type;
-            const inactive = "type-btn flex-1 py-3 bg-slate-100 dark:bg-slate-800/40 text-slate-500 rounded-2xl text-[10px] font-bold uppercase transition-all duration-200 active:scale-95";
-            const active = "type-btn flex-1 py-3 bg-indigo-600 text-white border border-transparent rounded-2xl text-[10px] font-bold uppercase transition-all duration-200 active:scale-95 shadow-lg shadow-indigo-500/50";
+            const inactive = "type-btn flex-1 py-4 bg-slate-100 dark:bg-slate-800/40 text-slate-500 rounded-xl text-[10px] font-bold uppercase transition-all duration-200 active:scale-95 border border-transparent";
+            const active = "type-btn flex-1 py-4 bg-indigo-600 text-white border border-transparent rounded-xl text-[10px] font-bold uppercase transition-all duration-200 active:scale-95 shadow-lg shadow-indigo-500/50";
             document.querySelectorAll('.type-btn').forEach(btn => btn.className = inactive);
             const activeBtn = document.getElementById(`type-${type}`);
             if (activeBtn) activeBtn.className = active;
@@ -613,7 +616,7 @@
                 if(el) el.classList.remove('border-indigo-500', 'ring-2', 'ring-indigo-500/50', 'bg-indigo-500/10');
             });
 
-            const inactive = "preset-btn flex-1 py-4 bg-slate-100 dark:bg-slate-800/50 text-slate-500 rounded-2xl text-[10px] font-bold uppercase transition-all duration-200 active:scale-95";
+            const inactive = "preset-btn flex-1 py-4 bg-slate-100 dark:bg-slate-800/50 text-slate-500 rounded-2xl text-[10px] font-bold uppercase transition-all duration-200 active:scale-95 border border-transparent";
             const active = "preset-btn flex-1 py-4 bg-indigo-600 text-white border border-transparent rounded-2xl text-[10px] font-bold uppercase transition-all duration-200 active:scale-95 shadow-lg shadow-indigo-500/50";
             document.querySelectorAll('.preset-btn').forEach(btn => btn.className = inactive);
             const activeBtn = document.getElementById(`btn-${p}`);
@@ -626,7 +629,8 @@
             const monthInput = document.getElementById('customMonth');
             const yearInput = document.getElementById('customYear');
 
-            document.querySelectorAll('.preset-btn').forEach(btn => btn.className = "preset-btn flex-1 py-4 bg-slate-100 dark:bg-slate-800/50 text-slate-500 rounded-2xl text-[10px] font-bold uppercase");
+            const inactivePreset = "preset-btn flex-1 py-4 bg-slate-100 dark:bg-slate-800/50 text-slate-500 rounded-2xl text-[10px] font-bold uppercase border border-transparent";
+            document.querySelectorAll('.preset-btn').forEach(btn => btn.className = inactivePreset);
             [dateInput, monthInput, yearInput].forEach(el => el.classList.remove('border-indigo-500', 'ring-2', 'ring-indigo-500/50', 'bg-indigo-500/10'));
 
             if (type === 'date') {
