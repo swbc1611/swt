@@ -59,8 +59,8 @@
         }
 
         /* THEME LOGIC FOR ACTION ZONES */
-        :root { --action-zone-bg: rgba(255, 255, 255, 0.06); }
-        #main-html:not(.dark) { --action-zone-bg: rgba(0, 0, 0, 0.03); }
+        :root { --gear-bg: rgba(255, 255, 255, 0.06); }
+        #main-html:not(.dark) { --gear-bg: rgba(0, 0, 0, 0.08); }
 
         textarea#soulNote {
             resize: none;
@@ -142,17 +142,13 @@
                     <i class="bi bi-chevron-right text-slate-600 group-hover:text-amber-400"></i>
                 </button>
 
-                <div class="dash-row unified-button group hover:shadow-lg transition-all">
-                    <button onclick="openPassModal()" class="flex-1 flex items-center gap-4 p-5 hover:bg-white/5 transition-all text-left active:scale-[0.98]">
-                        <div class="w-10 h-10 bg-slate-500/10 text-slate-400 rounded-xl flex items-center justify-center group-hover:bg-slate-500/20">
-                            <i class="bi bi-shield-lock-fill"></i>
-                        </div>
+                <button onclick="openPassModal()" class="dash-row group">
+                    <div class="flex items-center gap-4 text-left">
+                        <div class="w-10 h-10 bg-slate-500/10 text-slate-400 rounded-xl flex items-center justify-center"><i class="bi bi-shield-lock-fill"></i></div>
                         <span class="text-sm font-bold text-slate-300">Update account password</span>
-                    </button>
-                    <div class="w-14 flex items-center justify-center border-l border-white/5 dark:border-white/5" style="background: var(--action-zone-bg) !important;">
-                        <i class="bi bi-key-fill text-slate-500"></i>
                     </div>
-                </div>
+                    <i class="bi bi-chevron-right text-slate-600 transition-all"></i>
+                </button>
             </div>
         </div>
 
@@ -165,13 +161,15 @@
 
             <div class="dash-row unified-button group hover:shadow-lg transition-all">
                 <button onclick="goToGuide()" class="flex-1 flex items-center gap-4 p-5 hover:bg-white/5 transition-all text-left active:scale-[0.98]">
-                    <div class="w-10 h-10 bg-indigo-500/10 text-indigo-400 rounded-xl flex items-center justify-center group-hover:bg-indigo-500/20">
+                    <div class="w-10 h-10 bg-indigo-500/10 text-indigo-400 rounded-xl flex items-center justify-center">
                         <i class="bi bi-book-half"></i>
                     </div>
                     <span class="text-sm font-bold text-slate-300">Soulwinning guide</span>
                 </button>
-                <button onclick="openGuideSettings()" class="w-14 flex items-center justify-center transition-all active:scale-90 border-l border-white/5 dark:border-white/5" style="background: var(--action-zone-bg) !important;">
-                    <i class="bi bi-gear-fill text-slate-500"></i>
+                <button onclick="openGuideSettings()" 
+                    class="w-14 flex items-center justify-center transition-all active:scale-90 rounded-r-[1.25rem]"
+                    style="background: var(--gear-bg) !important;">
+                    <i class="bi bi-gear-fill text-slate-400"></i>
                 </button>
             </div>
         </div>
@@ -200,7 +198,7 @@
     <div id="guideSettingsModal" class="hidden fixed inset-0 z-[300] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white dark:bg-slate-900 border dark:border-slate-800 w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl text-center">
             <h2 class="text-xl font-bold dark:text-white mb-2">Guide Settings</h2>
-            <p class="text-[10px] text-slate-400 mb-6 uppercase tracking-widest">Paste your Google Sheets URL</p>
+            <p class="text-[10px] text-slate-400 mb-6 uppercase tracking-widest text-center leading-relaxed">Paste your Google Sheets URL below.<br>Set access to "Anyone with the link can view".</p>
             <textarea id="guideUrlInput" placeholder="https://docs.google.com/spreadsheets/d/..." rows="3" class="w-full p-4 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-2xl outline-none text-[10px] dark:text-white mb-4 text-center resize-none"></textarea>
             <div class="flex gap-2">
                 <button onclick="closeGuideSettings()" class="flex-1 py-3 text-slate-500 font-bold text-xs uppercase tracking-widest">Cancel</button>
