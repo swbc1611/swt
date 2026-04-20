@@ -10,14 +10,13 @@
     <script>tailwind.config = { darkMode: 'class' }</script>
     <style>        
         button, .preset-btn, .type-btn, [role="button"] {
-            transition: all 0.5s ease-in-out !important;
+            transition: all 0.3s ease-in-out !important;
         }
         button:active, .preset-btn:active, .type-btn:active, [role="button"]:active {
             transform: scale(0.95) !important;
-            box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.7) !important;
+            box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.2) !important;
             outline: none !important;
         }
-        /* Aesthetic Rows from Screenshot */
         .dash-row {
             background: rgba(30, 41, 59, 0.4) !important;
             border: 1px solid rgba(255, 255, 255, 0.05) !important;
@@ -59,7 +58,7 @@
         <header class="mb-10 flex flex-col items-center">
             <div id="role-display" class="badge-base badge-role mb-4 uppercase tracking-[0.3em] text-[10px] font-black opacity-50">PASTOR</div>
             <div class="flex items-center justify-center gap-2 mb-3">
-                <h2 id="user-display-name" class="text-4xl font-extrabold tracking-tight text-center">...</h2>
+                <h2 id="user-display-name" class="text-4xl font-extrabold tracking-tight">...</h2>
                 <button onclick="openNameModal()" class="ml-2 w-8 h-8 inline-flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-400 border border-slate-200 dark:border-slate-700 active:scale-90">
                     <i class="bi bi-pencil-fill text-[12px]"></i>
                 </button>
@@ -67,88 +66,97 @@
             <div id="church-list-tags" class="flex flex-wrap justify-center gap-2 mt-2"></div>
         </header>
 
-        <div class="mb-10">
+        <div class="mb-12">
             <label class="block text-[10px] font-bold text-slate-500 uppercase mb-4 tracking-[0.3em] text-center">Personal</label>
             <div class="space-y-3">
                 <button onclick="window.location.href='prospects.html'" class="dash-row group">
-                    <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-4 text-left">
                         <div class="w-10 h-10 bg-indigo-500/10 text-indigo-400 rounded-xl flex items-center justify-center"><i class="bi bi-person-plus-fill"></i></div>
                         <span class="text-sm font-bold text-slate-300">Record prospect contacts</span>
                     </div>
-                    <i class="bi bi-chevron-right text-slate-600 group-hover:text-indigo-400"></i>
+                    <i class="bi bi-chevron-right text-slate-600 group-hover:text-indigo-400 transition-all"></i>
                 </button>
+
                 <button onclick="window.location.href='history.html'" class="dash-row group">
-                    <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-4 text-left">
                         <div class="w-10 h-10 bg-blue-500/10 text-blue-400 rounded-xl flex items-center justify-center"><i class="bi bi-clock-history"></i></div>
                         <span class="text-sm font-bold text-slate-300">My history</span>
                     </div>
-                    <i class="bi bi-chevron-right text-slate-600 group-hover:text-blue-400"></i>
+                    <i class="bi bi-chevron-right text-slate-600 group-hover:text-blue-400 transition-all"></i>
                 </button>
+
                 <button onclick="window.location.href='prayer.html'" class="dash-row group">
-                    <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-4 text-left">
                         <div class="w-10 h-10 bg-rose-500/10 text-rose-400 rounded-xl flex items-center justify-center"><i class="bi bi-heart-fill"></i></div>
                         <span class="text-sm font-bold text-slate-300">Prayer board</span>
                     </div>
-                    <i class="bi bi-chevron-right text-slate-600 group-hover:text-rose-400"></i>
+                    <i class="bi bi-chevron-right text-slate-600 group-hover:text-rose-400 transition-all"></i>
                 </button>
+
                 <button onclick="window.location.href='avatar.html'" class="dash-row group">
-                    <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-4 text-left">
                         <div class="w-10 h-10 bg-amber-500/10 text-amber-400 rounded-xl flex items-center justify-center"><i class="bi bi-star-fill"></i></div>
                         <span class="text-sm font-bold text-slate-300">Achievements</span>
                     </div>
-                    <i class="bi bi-chevron-right text-slate-600 group-hover:text-amber-400"></i>
+                    <i class="bi bi-chevron-right text-slate-600 group-hover:text-amber-400 transition-all"></i>
                 </button>
+
                 <button onclick="openPasswordModal()" class="dash-row group">
-                    <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-4 text-left">
                         <div class="w-10 h-10 bg-slate-500/10 text-slate-400 rounded-xl flex items-center justify-center"><i class="bi bi-key-fill"></i></div>
                         <span class="text-sm font-bold text-slate-300">Change account password</span>
                     </div>
-                    <i class="bi bi-chevron-right text-slate-600"></i>
+                    <i class="bi bi-chevron-right text-slate-600 transition-all"></i>
                 </button>
             </div>
         </div>
 
-        <div class="mb-10">
-            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-4 tracking-[0.3em] text-center">Tools</label>
+        <div class="mb-12">
+            <div class="flex items-center gap-4 mb-6 px-4">
+                <div class="h-[1px] flex-1 bg-white/5"></div>
+                <label class="text-[10px] font-black text-slate-600 uppercase tracking-[0.3em]">Tools</label>
+                <div class="h-[1px] flex-1 bg-white/5"></div>
+            </div>
+
             <div class="space-y-3">
                 <button id="manage-churches-btn" onclick="openChurchManager()" class="dash-row group">
-                    <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-4 text-left">
                         <div class="w-10 h-10 bg-emerald-500/10 text-emerald-400 rounded-xl flex items-center justify-center"><i class="bi bi-building-fill"></i></div>
-                        <span class="text-sm font-bold text-slate-300">Manage churches & codes</span>
+                        <span class="text-sm font-bold text-slate-300 group-hover:text-white">Manage churches & codes</span>
                     </div>
-                    <i class="bi bi-chevron-right text-slate-600 group-hover:text-emerald-400"></i>
+                    <i class="bi bi-chevron-right text-slate-600 group-hover:text-emerald-400 transition-all"></i>
                 </button>
+
                 <button onclick="window.location.href='members.html'" class="dash-row group">
-                    <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-4 text-left">
                         <div class="w-10 h-10 bg-cyan-500/10 text-cyan-400 rounded-xl flex items-center justify-center"><i class="bi bi-people-fill"></i></div>
-                        <span class="text-sm font-bold text-slate-300">Member management</span>
+                        <span class="text-sm font-bold text-slate-300 group-hover:text-white">Member management</span>
                     </div>
-                    <i class="bi bi-chevron-right text-slate-600 group-hover:text-cyan-400"></i>
+                    <i class="bi bi-chevron-right text-slate-600 group-hover:text-cyan-400 transition-all"></i>
                 </button>
+
                 <button onclick="window.location.href='legacy.html'" class="dash-row group">
-                    <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-4 text-left">
                         <div class="w-10 h-10 bg-amber-600/10 text-amber-500 rounded-xl flex items-center justify-center"><i class="bi bi-journal-bookmark-fill"></i></div>
-                        <span class="text-sm font-bold text-slate-300">Church historical totals</span>
+                        <span class="text-sm font-bold text-slate-300 group-hover:text-white">Church historical totals</span>
                     </div>
-                    <i class="bi bi-chevron-right text-slate-600 group-hover:text-amber-500"></i>
+                    <i class="bi bi-chevron-right text-slate-600 group-hover:text-amber-500 transition-all"></i>
                 </button>
-                <div class="flex items-stretch gap-3">
-                    <button onclick="goToGuide()" class="dash-row flex-1 group">
-                        <div class="flex items-center gap-4">
-                            <div class="w-10 h-10 bg-indigo-500/10 text-indigo-400 rounded-xl flex items-center justify-center"><i class="bi bi-book-half"></i></div>
-                            <span class="text-sm font-bold text-slate-300">Soulwinning guide</span>
-                        </div>
-                        <i class="bi bi-chevron-right text-slate-600 group-hover:text-indigo-400"></i>
+
+                <div class="dash-row p-1.5 gap-2">
+                    <button onclick="goToGuide()" class="flex-1 flex items-center gap-4 p-3.5 hover:bg-white/5 rounded-xl transition-all group">
+                        <div class="w-10 h-10 bg-indigo-500/10 text-indigo-400 rounded-xl flex items-center justify-center group-hover:bg-indigo-500/20"><i class="bi bi-book-half"></i></div>
+                        <span class="text-sm font-bold text-slate-300 group-hover:text-white">Soulwinning Guide</span>
                     </button>
-                    <button onclick="openGuideSettings()" class="w-16 bg-slate-900 border border-white/5 rounded-2xl flex items-center justify-center text-slate-500 hover:text-white transition-all">
+                    <button onclick="openGuideSettings()" class="w-12 h-12 flex items-center justify-center bg-white/5 hover:bg-white/10 text-slate-500 hover:text-white rounded-xl transition-all border border-white/5">
                         <i class="bi bi-gear-fill"></i>
                     </button>
                 </div>
             </div>
         </div>
 
-        <div class="mt-20">
-            <label class="block text-[11px] font-black text-indigo-400 uppercase tracking-[0.4em] mb-6 text-center">Reports</label>
+        <div class="mt-24">
+            <label class="block text-[11px] font-black text-indigo-400 uppercase tracking-[0.4em] mb-6 text-center">Analytics Report</label>
             <div class="bg-slate-900/40 p-8 rounded-[2.5rem] border border-white/5 shadow-2xl">
                 <select id="churchFilter" class="w-full bg-[#0f172a] border-none px-6 py-4 rounded-2xl text-xs font-bold mb-10 text-white outline-none text-center appearance-none">
                     <option value="all">All My Churches</option>
@@ -177,7 +185,8 @@
                     <div class="grid grid-cols-3 gap-3">
                         <input type="date" id="customDate" oninput="handleCustomInput('date')" class="bg-slate-900 border border-white/5 p-3 rounded-xl text-[10px] font-bold text-white outline-none">
                         <input type="month" id="customMonth" oninput="handleCustomInput('month')" class="bg-slate-900 border border-white/5 p-3 rounded-xl text-[10px] font-bold text-white outline-none">
-                        <select id="customYear" onchange="handleCustomInput('year')" class="bg-slate-900 border border-white/5 p-3 rounded-xl text-[10px] font-bold text-white outline-none appearance-none text-center"></select>
+                        <select id="customYear" onchange="handleCustomInput('year')" class="bg-slate-900 border border-white/5 p-3 rounded-xl text-[10px] font-bold text-white outline-none appearance-none text-center">
+                        </select>
                     </div>
 
                     <button onclick="loadStats()" class="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black text-[11px] uppercase tracking-widest active:scale-95 shadow-xl shadow-indigo-600/30 transition-all mt-4">Generate Report</button>
@@ -195,9 +204,9 @@
                     <tbody id="matrix-body" class="divide-y divide-white/5 text-slate-300 font-bold text-[13px]"></tbody>
                     <tfoot class="bg-indigo-600/10 border-t-2 border-indigo-500/20">
                         <tr class="text-indigo-400 font-black">
-                            <td class="px-6 py-6 text-left text-[10px] uppercase tracking-widest">GRAND TOTAL</td>
-                            <td id="matrix-grand-souls" class="px-6 py-6 text-center text-3xl italic">0</td>
-                            <td id="matrix-grand-sw" class="px-6 py-6 text-right text-3xl italic">0</td>
+                            <td class="px-6 py-7 text-left text-[9px] uppercase tracking-widest">GRAND TOTAL</td>
+                            <td id="matrix-grand-souls" class="px-6 py-7 text-center text-xl italic">0</td>
+                            <td id="matrix-grand-sw" class="px-6 py-7 text-right text-xl italic">0</td>
                         </tr>
                     </tfoot>
                 </table>
@@ -205,7 +214,7 @@
         </div>
     </main>
 
-    <div class="fixed bottom-0 left-0 right-0 z-[100] bg-white/80 dark:bg-[#0f172a]/80 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 px-6 py-5">
+    <div class="fixed bottom-0 left-0 right-0 z-[110] bg-white/80 dark:bg-[#0f172a]/80 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 px-6 py-5">
         <div class="max-w-4xl mx-auto flex justify-center items-center">
             <button onclick="openModal()" class="relative flex items-center justify-center w-16 h-16 bg-indigo-600 text-white rounded-full shadow-[0_10px_35px_rgba(79,70,229,0.5)] active:scale-90 transition-all duration-300">
                 <i class="bi bi-plus-lg text-3xl"></i>
@@ -214,7 +223,7 @@
         </div>
     </div>
 
-    <div id="nameModal" class="hidden fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+    <div id="nameModal" class="hidden fixed inset-0 z-[300] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
         <div class="bg-[#111827] border border-white/5 w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl text-center">
             <h2 class="text-xl font-bold dark:text-white mb-2">Edit Name</h2>
             <input id="newNameInput" type="text" class="w-full p-4 bg-slate-900 border border-white/5 rounded-2xl outline-none text-white mb-4">
@@ -225,7 +234,7 @@
         </div>
     </div>
 
-    <div id="guideSettingsModal" class="hidden fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+    <div id="guideSettingsModal" class="hidden fixed inset-0 z-[300] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
         <div class="bg-[#111827] border border-white/5 w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl text-center">
             <h2 class="text-xl font-bold dark:text-white mb-2 text-center">Guide Settings</h2>
             <input id="guideUrlInput" type="text" placeholder="URL..." class="w-full p-4 bg-slate-900 border border-white/5 rounded-2xl outline-none text-[10px] text-white mb-4">
@@ -236,7 +245,7 @@
         </div>
     </div>
 
-    <div id="password-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-6 hidden z-[200]">
+    <div id="password-modal" class="hidden fixed inset-0 z-[300] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
         <div class="bg-[#111827] border border-white/5 w-full max-w-sm rounded-[2.5rem] p-8 text-center shadow-2xl">
             <h3 class="text-xl font-bold mb-6 text-white text-center">Update Password</h3>
             <div class="space-y-4 text-left mb-6">
@@ -251,37 +260,31 @@
         </div>
     </div>
 
-    <div id="modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-6 hidden z-[120]">
-        <div class="bg-white dark:bg-slate-900 w-full max-w-sm rounded-[2.5rem] p-8 border dark:border-slate-800 text-center shadow-2xl">
-            <h3 class="text-xl font-bold mb-6 dark:text-white">Log Salvation</h3>
+    <div id="modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-6 hidden z-[300]">
+        <div class="bg-[#111827] border border-white/5 w-full max-w-sm rounded-[2.5rem] p-8 text-center shadow-2xl">
+            <h3 class="text-xl font-bold mb-6 text-white">Log Salvation</h3>
             <div class="mb-4 text-left">
-                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-2 tracking-widest ml-2 text-center">Soulwinning Type</label>
-                <select id="soulType" class="w-full p-4 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-2xl text-sm outline-none dark:text-white font-bold">
+                <select id="soulType" class="w-full p-4 bg-slate-900 border border-white/5 rounded-2xl text-sm outline-none text-white font-bold">
                     <option value="" disabled selected>Select Type...</option><option value="Regular">Regular</option><option value="School">School</option><option value="Event">Event</option>
                 </select>
             </div>
-
-            <div class="flex items-center justify-between mb-6 bg-slate-50 dark:bg-slate-800/50 p-3 rounded-3xl">
-                <button onclick="decrement()" class="w-14 h-14 flex-shrink-0 rounded-2xl bg-white dark:bg-slate-700 font-bold text-xl hover:bg-slate-100 dark:text-white transition-all active:scale-95 flex items-center justify-center">-</button>
-
-                <input id="soulCount" type="number" value="1" min="1" max="999"
-                    class="w-full text-center text-5xl font-light bg-transparent text-indigo-600 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                    oninput="limitInput(this)">
-
-                <button onclick="increment()" class="w-14 h-14 flex-shrink-0 rounded-2xl bg-indigo-600 text-white font-bold text-xl hover:bg-indigo-700 transition-all active:scale-95 flex items-center justify-center">+</button>
+            <div class="flex items-center justify-between mb-6 bg-white/5 p-3 rounded-3xl border border-white/5">
+                <button onclick="decrement()" class="w-14 h-14 rounded-2xl bg-white/5 font-bold text-xl text-white">-</button>
+                <input id="soulCount" type="number" value="1" min="1" max="999" class="w-full text-center text-5xl font-light bg-transparent text-indigo-400 outline-none">
+                <button onclick="increment()" class="w-14 h-14 rounded-2xl bg-indigo-600 text-white font-bold text-xl">+</button>
             </div>
-            <input id="soulDateTime" type="datetime-local" class="w-full p-4 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-2xl text-sm mb-4 outline-none dark:text-white">
-            <input id="soulNote" type="text" placeholder="Notes..." class="w-full p-4 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-2xl text-sm mb-8 outline-none dark:text-white">
+            <input id="soulDateTime" type="datetime-local" class="w-full p-4 bg-slate-900 border border-white/5 rounded-2xl text-sm mb-4 outline-none text-white">
+            <input id="soulNote" type="text" placeholder="Notes..." class="w-full p-4 bg-slate-900 border border-white/5 rounded-2xl text-sm mb-8 outline-none text-white">
             <div class="flex gap-3">
-                <button onclick="closeModal()" class="flex-1 py-4 text-slate-400 font-bold uppercase text-xs">Cancel</button>
+                <button onclick="closeModal()" class="flex-1 py-4 text-slate-500 font-bold uppercase text-xs">Cancel</button>
                 <button id="submit-btn" onclick="handleDataSubmit()" class="flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-bold uppercase text-xs">Submit</button>
             </div>
         </div>
     </div>
 
-    <div id="church-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-6 hidden z-[200]">
-        <div class="bg-[#111827] border border-white/5 w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl">
-            <h3 class="text-xl font-bold mb-6 text-center text-white">Church Manager</h3>
+    <div id="church-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-6 hidden z-[300]">
+        <div class="bg-[#111827] border border-white/5 w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl text-center">
+            <h3 class="text-xl font-bold mb-6 text-white">Church Manager</h3>
             <div id="church-list" class="space-y-1 mb-6 max-h-72 overflow-y-auto pr-2 text-left"></div>
             <div class="border-t border-white/10 pt-6">
                 <input id="newChurchName" type="text" placeholder="Church Name" class="w-full p-4 mb-4 bg-slate-900 border border-white/5 rounded-2xl outline-none text-white">
@@ -292,6 +295,8 @@
             </div>
         </div>
     </div>
+
+    <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 bg-indigo-600 text-white px-6 py-3 rounded-2xl shadow-2xl opacity-0 translate-y-10 transition-all duration-500 z-[400] pointer-events-none text-sm font-bold"></div>
 
     <script type="module">
         import { auth, db } from './firebase-config.js';
@@ -463,7 +468,7 @@
             const dateLabel = document.getElementById('reportDateLabel');
             const matrixBody = document.getElementById('matrix-body');
             document.getElementById('stats-container').classList.remove('hidden');
-            matrixBody.innerHTML = '<tr><td colspan="3" class="py-10 italic text-slate-400 text-center">Loading Data...</td></tr>';
+            matrixBody.innerHTML = '<tr><td colspan="3" class="py-10 italic text-slate-400 text-center">Loading Report...</td></tr>';
             try {
                 const now = new Date();
                 let startLimit = ""; let endLimit = ""; let bucketPaths = [];
@@ -487,7 +492,7 @@
                     else { for (const path of bucketPaths) { const bSnap = await getDoc(doc(db, `churches/${chId}/${path}`)); if (bSnap.exists()) { const data = bSnap.data(); types.forEach(t => { (data[`${t}_members`] || []).forEach(id => { participants[t].add(id); globalUnique.add(id); }); }); } } }
                 }
                 let html = ""; let grandSouls = 0;
-                for (const t of types) { grandSouls += totals[t]; html += `<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors"><td class="px-6 py-6 text-left font-extrabold text-slate-500">${t}</td><td class="px-6 py-6 text-center font-black text-indigo-400 text-lg">${totals[t].toLocaleString()}</td><td class="px-6 py-6 text-center font-black text-slate-500 text-lg">${participants[t].size}</td></tr>`; }
+                for (const t of types) { grandSouls += totals[t]; html += `<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors"><td class="px-6 py-6 text-left font-extrabold text-slate-500">${t}</td><td class="px-6 py-6 text-center font-black text-indigo-400 text-lg">${totals[t].toLocaleString()}</td><td class="px-6 py-6 text-right font-black text-slate-500 text-lg">${participants[t].size}</td></tr>`; }
                 matrixBody.innerHTML = html;
                 document.getElementById('matrix-grand-souls').innerText = grandSouls.toLocaleString();
                 document.getElementById('matrix-grand-sw').innerText = globalUnique.size.toLocaleString();
@@ -499,7 +504,7 @@
             const dateInput = document.getElementById('customDate');
             const monthInput = document.getElementById('customMonth');
             dateInput.value = ""; monthInput.value = "";
-            const inactive = "preset-btn flex-1 py-4 bg-slate-100 dark:bg-slate-800/50 text-slate-500 rounded-2xl text-[10px] font-bold uppercase transition-all duration-200 active:scale-95";
+            const inactive = "preset-btn flex-1 py-4 bg-slate-100 dark:bg-slate-800/40 text-slate-500 rounded-2xl text-[10px] font-bold uppercase transition-all duration-200 active:scale-95";
             const active = "preset-btn flex-1 py-4 bg-indigo-600 text-white border border-transparent rounded-2xl text-[10px] font-bold uppercase transition-all duration-200 active:scale-95 shadow-lg shadow-indigo-500/50";
             document.querySelectorAll('.preset-btn').forEach(btn => btn.className = inactive);
             const activeBtn = document.getElementById(`btn-${p}`);
