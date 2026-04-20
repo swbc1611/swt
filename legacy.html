@@ -27,7 +27,18 @@
             border-color: #f59e0b !important;
             box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.1) !important;
         }
-        /* Surgical Fix: Hiding default number spinners */
+
+        /* SURGICAL FIX: REMOVING BOXY INPUT BORDERS */
+        .clean-input {
+            border: none !important;
+            background: transparent !important;
+            outline: none !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            appearance: none;
+        }
+
         input::-webkit-outer-spin-button,
         input::-webkit-inner-spin-button {
             -webkit-appearance: none;
@@ -68,11 +79,11 @@
             <p class="text-xs text-slate-400 mt-1 uppercase tracking-widest font-bold">Institutional Data Sync</p>
         </header>
 
-        <div class="bg-white dark:bg-slate-900 border-2 border-amber-500/20 rounded-[2.5rem] p-8 shadow-sm mb-10 max-w-sm mx-auto">
+        <div class="bg-white dark:bg-[#111827] border-2 border-amber-500/20 rounded-[2.5rem] p-8 shadow-sm mb-10 max-w-sm mx-auto">
             <div class="space-y-8">
                 <div class="flex flex-col gap-2 text-left">
                     <label class="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-2 text-center">Period Selection</label>
-                    <input id="histPeriod" type="month" class="p-4 rounded-2xl bg-slate-50 dark:bg-[#1e293b] border dark:border-slate-700 dark:text-white font-bold text-sm outline-none text-center uppercase tracking-widest">
+                    <input id="histPeriod" type="month" class="p-4 rounded-2xl bg-slate-50 dark:bg-[#1e293b] border dark:border-slate-700/50 dark:text-white font-bold text-sm outline-none text-center uppercase tracking-widest">
                 </div>
 
                 <div class="flex flex-col gap-2">
@@ -81,7 +92,7 @@
                         <button onclick="stepCount(-10)" class="w-14 h-14 flex-shrink-0 rounded-2xl bg-white dark:bg-slate-700 font-bold text-xl hover:bg-slate-100 dark:text-white transition-all active:scale-95 flex items-center justify-center shadow-sm border dark:border-slate-600">-</button>
                         
                         <input id="histCount" type="number" value="0" min="0" max="99999"
-                            class="w-full text-center text-5xl font-light bg-transparent text-amber-500 outline-none"
+                            class="w-full text-center text-5xl font-light text-amber-500 clean-input [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             oninput="limitInput(this)">
                         
                         <button onclick="stepCount(10)" class="w-14 h-14 flex-shrink-0 rounded-2xl bg-amber-500 text-white font-bold text-xl hover:bg-amber-600 transition-all active:scale-95 flex items-center justify-center shadow-lg shadow-amber-500/30">+</button>
@@ -90,7 +101,7 @@
 
                 <div class="flex flex-col gap-2 text-left">
                     <label class="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-2 text-center">Reference Note</label>
-                    <textarea id="histNote" placeholder="Notes (e.g., Logbook 2018)" class="p-4 rounded-2xl bg-slate-50 dark:bg-[#1e293b] border dark:border-slate-700 dark:text-white text-xs italic resize-none h-20 outline-none"></textarea>
+                    <textarea id="histNote" placeholder="Notes (e.g., Logbook 2018)" class="p-4 rounded-2xl bg-slate-50 dark:bg-[#1e293b] border dark:border-slate-700/50 dark:text-white text-xs italic resize-none h-20 outline-none"></textarea>
                 </div>
 
                 <button id="saveBtn" onclick="saveLegacyData()" class="w-full py-5 bg-amber-500 text-white rounded-2xl font-black uppercase text-[11px] tracking-widest shadow-lg shadow-amber-500/30 active:scale-95 transition-all">
@@ -117,7 +128,7 @@
 
         let userProfile = JSON.parse(sessionStorage.getItem('userContext') || "{}");
 
-        // SURGICAL THEME INITIALIZATION (Zero-Regression)
+        // STANDARDIZED THEME INITIALIZATION
         const initTheme = () => {
             const isDark = localStorage.getItem('theme') === 'dark' || 
                           (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
@@ -137,7 +148,6 @@
         };
         initTheme();
 
-        // Initialization of Values
         const now = new Date();
         document.getElementById('histPeriod').value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
@@ -206,7 +216,7 @@
                 await setDoc(doc(db, "churchHistoricalTotals", docId), {
                     churchId: userProfile.churchId[0],
                     month, year, salvationCount: count, note,
-                    type: "Legacy", // Categorized as Legacy for Reporting
+                    type: "Legacy",
                     updatedBy: auth.currentUser.uid,
                     lastUpdated: serverTimestamp()
                 }, { merge: true });
@@ -230,7 +240,7 @@
                 docs.forEach(d => {
                     const mName = new Date(2000, d.month - 1).toLocaleString('en-US', {month:'long'});
                     html += `
-                        <div class="bg-white dark:bg-slate-900 p-6 rounded-[2.5rem] border dark:border-slate-800 flex items-center justify-between shadow-sm border-l-4 border-amber-500">
+                        <div class="bg-white dark:bg-[#111827] p-6 rounded-[2.5rem] border dark:border-slate-800 flex items-center justify-between shadow-sm border-l-4 border-amber-500">
                             <div class="text-left">
                                 <h4 class="text-[10px] font-black uppercase tracking-widest text-slate-400">${mName} ${d.year}</h4>
                                 <p class="text-2xl font-black text-amber-500">${d.salvationCount.toLocaleString()}</p>
