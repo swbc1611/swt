@@ -10,50 +10,54 @@
     <script>tailwind.config = { darkMode: 'class' }</script>
     <style>        
         button, .preset-btn, .type-btn, [role="button"] {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            transition: all 0.3s ease-in-out !important;
         }
         button:active, .preset-btn:active, .type-btn:active, [role="button"]:active {
             transform: scale(0.95) !important;
             box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.2) !important;
         }
     
-        /* THE DASH-ROW: Adaptive Light/Dark Logic */
-        .dash-row {
+        /* THE DASH-ROW & CARDS: Adaptive Logic */
+        .dash-row, .bg-slate-900\/40 {
             background: rgba(30, 41, 59, 0.4) !important;
             border: 1px solid rgba(255, 255, 255, 0.05) !important;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            width: 100%;
-            border-radius: 1.25rem;
-            padding: 1.25rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
     
-        /* SURGICAL FIX: Light Mode Clean White Look */
+        /* Light Mode Overrides */
         #main-html:not(.dark) .dash-row,
-        #main-html:not(.dark) .bg-slate-900\/40 { 
+        #main-html:not(.dark) .bg-slate-900\/40 {
             background: white !important;
             border: 1px solid rgba(0, 0, 0, 0.05) !important;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04), 0 4px 6px -2px rgba(0, 0, 0, 0.02) !important;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
         }
     
-        #main-html:not(.dark) .bg-[#0f172a] {
-            background: #f8fafc !important; /* Clean slate background for result cards */
+        /* TYPE FILTER CONTAINER FIX (Image eb33a9) */
+        #main-html:not(.dark) .bg-\[\#0f172a\] {
+            background: #f1f5f9 !important; /* Light Slate for the container */
+            border: 1px solid rgba(0,0,0,0.05) !important;
+        }
+    
+        /* DROPDOWN CHEVRON FIX */
+        #main-html:not(.dark) select#churchFilter {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2364748b' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e") !important;
+            background-position: right 1rem center !important;
+            background-repeat: no-repeat !important;
+            background-size: 1.5em 1.5em !important;
+            padding-right: 2.5rem !important;
+            color: #1e293b !important;
+        }
+    
+        /* RESULTS TABLE ADAPTATION */
+        #main-html:not(.dark) .bg-\[\#0f172a\].border.rounded-\[2\.5rem\] {
+            background: white !important;
             border: 1px solid rgba(0, 0, 0, 0.05) !important;
         }
-    
-        /* Text Color Correction for Light Mode */
-        #main-html:not(.dark) .text-slate-300, 
-        #main-html:not(.dark) .text-slate-400 { color: #475569 !important; }
-        #main-html:not(.dark) .text-white { color: #1e293b !important; }
-        
-        /* Input Styling for Light Mode */
-        #main-html:not(.dark) input, 
-        #main-html:not(.dark) select {
-            background: #f1f5f9 !important;
-            color: #1e293b !important;
-            border: 1px solid #e2e8f0 !important;
+        #main-html:not(.dark) .bg-slate-900\/60 {
+            background: #f8fafc !important; /* Table Header Light */
+        }
+        #main-html:not(.dark) tbody#matrix-body tr {
+            color: #334155 !important;
         }
     </style>
 </head>
@@ -577,12 +581,12 @@
                 }
         
                 let html = ""; let grandSouls = 0;
+                // FIND THIS LOOP in your loadStats() function
                 for (const t of types) { 
                     grandSouls += totals[t]; 
-                    // SURGICAL FIX: Column alignment and adaptive text colors
                     html += `
-                        <tr class="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors border-l-2 border-transparent hover:border-indigo-500">
-                            <td class="px-6 py-6 text-left font-extrabold text-slate-600 dark:text-slate-400">${t}</td>
+                        <tr class="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+                            <td class="px-6 py-6 text-left font-extrabold text-slate-500 dark:text-slate-400">${t}</td>
                             <td class="px-6 py-6 text-center font-black text-indigo-600 dark:text-indigo-400 text-lg">${totals[t].toLocaleString()}</td>
                             <td class="px-6 py-6 text-right pr-10 font-black text-slate-600 dark:text-slate-300 text-lg">${participants[t].size}</td>
                         </tr>`; 
