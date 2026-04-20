@@ -368,7 +368,7 @@
                 <input id="newChurchName" type="text" placeholder="Church Name" class="w-full p-4 mb-4 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-2xl outline-none dark:text-white text-center">
                 <div class="flex gap-3">
                     <button onclick="closeChurchManager()" class="flex-1 py-4 text-slate-400 uppercase text-xs">Close</button>
-                    <button id="add-btn" onclick="addNewChurch()" class="flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-bold uppercase text-xs shadow-lg shadow-indigo-500/30">Add Code</button>
+                    <button id="add-btn" onclick="addNewChurch()" class="flex-1 py-4 bg-indigo-600 text-white rounded-2 font-bold uppercase text-xs shadow-lg shadow-indigo-500/30">Add Code</button>
                 </div>
             </div>
         </div>
@@ -485,7 +485,7 @@
 
         window.setActiveType = (type) => {
             currentType = type;
-            const inactive = "type-btn flex-1 py-3 bg-slate-800/40 text-slate-500 rounded-2xl text-[10px] font-bold uppercase transition-all duration-200 active:scale-95";
+            const inactive = "type-btn flex-1 py-3 bg-slate-800/40 text-slate-500 rounded-xl text-[10px] font-bold uppercase transition-all duration-200 active:scale-95";
             const active = "type-btn flex-1 py-3 bg-indigo-600 text-white border border-transparent rounded-2xl text-[10px] font-bold uppercase transition-all duration-200 active:scale-95 shadow-lg shadow-indigo-500/50";
             document.querySelectorAll('.type-btn').forEach(btn => btn.className = inactive);
             const activeBtn = document.getElementById(`type-${type}`);
