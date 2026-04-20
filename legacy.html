@@ -123,8 +123,11 @@
         document.getElementById('histPeriod').value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
         if (localStorage.getItem('theme') === 'dark') document.getElementById('main-html').classList.add('dark');
 
-        window.toggleDarkMode = () => {
-            const isDark = document.getElementById('main-html').classList.toggle('dark');
+         window.toggleDarkMode = () => {
+            const html = document.getElementById('main-html');
+            const isDark = html.classList.toggle('dark');
+            document.getElementById('sun-icon')?.classList.toggle('hidden', !isDark);
+            document.getElementById('moon-icon')?.classList.toggle('hidden', isDark);
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
         };
 
