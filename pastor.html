@@ -11,7 +11,6 @@
     <style>        
         button, .preset-btn, .type-btn, [role="button"] {
             transition: all 0.3s ease-in-out !important;
-            /* FIX: Consistent box-sizing and border to prevent layout shifting */
             box-sizing: border-box !important;
             border: 1px solid transparent;
         }
@@ -192,15 +191,15 @@
                     <i class="bi bi-chevron-right text-slate-600 group-hover:text-amber-500 transition-all"></i>
                 </button>
 
-                <div class="dash-row unified-button border dark:border-white/5 mb-3">
-                    <button onclick="goToGuide()" class="flex-1 flex items-center gap-4 p-5 hover:bg-white/5 dark:hover:bg-white/5 transition-all text-left">
-                        <div class="w-10 h-10 bg-indigo-500/10 text-indigo-400 rounded-xl flex items-center justify-center">
+                <div class="dash-row unified-button border dark:border-white/5 mb-3 group hover:shadow-lg transition-all">
+                    <button onclick="goToGuide()" class="flex-1 flex items-center gap-4 p-5 hover:bg-white/5 dark:hover:bg-white/5 transition-all text-left active:scale-[0.98]">
+                        <div class="w-10 h-10 bg-indigo-500/10 text-indigo-400 rounded-xl flex items-center justify-center group-hover:bg-indigo-500/20">
                             <i class="bi bi-book-half"></i>
                         </div>
                         <span class="text-sm font-bold text-slate-300">Soulwinning guide</span>
                     </button>
                     
-                    <button onclick="openGuideSettings()" class="w-16 flex items-center justify-center hover:bg-white/5 dark:hover:bg-white/5 border-l border-white/10 text-slate-500 hover:text-white transition-all">
+                    <button onclick="openGuideSettings()" class="w-16 flex items-center justify-center bg-slate-800/40 dark:bg-slate-800/60 hover:bg-indigo-500/20 text-slate-500 hover:text-indigo-400 transition-all active:scale-90 border-l border-white/5">
                         <i class="bi bi-gear-fill"></i>
                     </button>
                 </div>
@@ -371,7 +370,7 @@
                 <input id="newChurchName" type="text" placeholder="Church Name" class="w-full p-4 mb-4 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-2xl outline-none dark:text-white text-center">
                 <div class="flex gap-3">
                     <button onclick="closeChurchManager()" class="flex-1 py-4 text-slate-400 uppercase text-xs">Close</button>
-                    <button id="add-btn" onclick="addNewChurch()" class="flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-bold uppercase text-xs">Add Code</button>
+                    <button id="add-btn" onclick="addNewChurch()" class="flex-1 py-4 bg-indigo-600 text-white rounded-2 font-bold uppercase text-xs shadow-lg shadow-indigo-500/30">Add Code</button>
                 </div>
             </div>
         </div>
@@ -702,4 +701,4 @@
         };
     </script>
 </body>
-</html>
+</html>```
