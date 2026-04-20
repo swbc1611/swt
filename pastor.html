@@ -62,13 +62,24 @@
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05) !important;
         }
 
-        /* SURGICAL FIX: Allow the unified button to fill the container exactly */
+        /* SURGICAL FIX: Unify the Guide Button Behavior */
         .dash-row.unified-button {
             padding: 0 !important;
             overflow: hidden !important;
             display: flex !important;
-            items-stretch !important;
+            align-items: stretch !important;
         }
+        
+        /* Prevent internal buttons from scaling independently */
+        .unified-button button {
+            transform: none !important;
+            box-shadow: none !important;
+            background: transparent !important;
+        }
+        
+        /* Fix Light Mode text/icon colors specifically for this combined row */
+        #main-html:not(.dark) .unified-button span { color: #1e293b !important; }
+        #main-html:not(.dark) .unified-button i { color: #64748b !important; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 dark:bg-[#0f172a] dark:text-slate-100 transition-colors duration-300">
@@ -184,15 +195,15 @@
                     <i class="bi bi-chevron-right text-slate-600 group-hover:text-amber-500 transition-all"></i>
                 </button>
 
-               <div class="flex items-stretch w-full mb-3">
-                    <button onclick="goToGuide()" class="flex-1 flex items-center gap-4 p-5 bg-slate-900/40 dark:bg-slate-900/40 border border-white/5 border-r-0 rounded-l-[1.25rem] hover:bg-slate-900/60 transition-all text-left group">
-                        <div class="w-10 h-10 bg-indigo-500/10 text-indigo-400 rounded-xl flex items-center justify-center group-hover:bg-indigo-500/20">
+               <div class="dash-row unified-button border dark:border-white/5 mb-3">
+                    <button onclick="goToGuide()" class="flex-1 flex items-center gap-4 p-5 hover:bg-white/5 dark:hover:bg-white/5 transition-all text-left">
+                        <div class="w-10 h-10 bg-indigo-500/10 text-indigo-400 rounded-xl flex items-center justify-center">
                             <i class="bi bi-book-half"></i>
                         </div>
-                        <span class="text-sm font-bold text-slate-300 dark:text-slate-300">Soulwinning guide</span>
+                        <span class="text-sm font-bold text-slate-300">Soulwinning guide</span>
                     </button>
                     
-                    <button onclick="openGuideSettings()" class="w-16 flex items-center justify-center bg-slate-900/40 dark:bg-slate-900/40 border border-white/5 rounded-r-[1.25rem] text-slate-500 hover:text-white transition-all">
+                    <button onclick="openGuideSettings()" class="w-16 flex items-center justify-center hover:bg-white/5 dark:hover:bg-white/5 border-l border-white/10 text-slate-500 hover:text-white transition-all">
                         <i class="bi bi-gear-fill"></i>
                     </button>
                 </div>
