@@ -221,12 +221,12 @@
             </div>
             
             <div class="px-2 space-y-12">
-                <select id="churchFilter" class="w-full bg-[#0f172a] border border-white/10 px-6 py-4 rounded-2xl text-xs font-bold mb-10 text-white outline-none text-center appearance-none shadow-inner">
+                <select id="churchFilter" class="w-full bg-[#0f172a] border border-white/10 px-6 py-4 rounded-2xl text-xs font-bold mb-2 text-white outline-none text-center appearance-none shadow-inner">
                     <option value="all">All My Churches</option>
                 </select>
 
                 <div>
-                    <label class="block text-[10px] font-black text-slate-500 uppercase mb-4 tracking-widest text-center">Type Filter</label>
+                    <label class="block text-[9px] font-black text-slate-500 uppercase mb-4 tracking-widest text-center">Type Filter</label>
                     <div class="flex gap-2">
                         <button id="type-all" onclick="setActiveType('all')" class="type-btn flex-1 py-4 bg-indigo-600 text-white rounded-xl text-[10px] font-bold uppercase shadow-lg shadow-indigo-600/20 border border-transparent">All</button>
                         <button id="type-Regular" onclick="setActiveType('Regular')" class="type-btn flex-1 py-4 bg-slate-100 dark:bg-slate-800/40 text-slate-500 rounded-xl text-[10px] font-bold uppercase border border-transparent">Regular</button>
@@ -245,7 +245,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-[10px] font-black text-slate-500 uppercase mb-4 tracking-widest text-center">Custom Selection</label>
+                    <label class="block text-[9px] font-black text-slate-500 uppercase mb-4 tracking-widest text-center">Custom Selection</label>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-2 px-1 text-center">
                         <div class="flex flex-col gap-2">
                             <label class="text-[8px] font-bold text-slate-500 uppercase">Specific Day</label>
@@ -367,7 +367,7 @@
     </div>
 
     <div id="church-modal" class="hidden fixed inset-0 z-[300] bg-black/80 backdrop-blur-sm flex items-center justify-center p-6">
-        <div class="modal-content bg-white dark:bg-slate-900 border dark:border-slate-800 w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl">
+        <div class="modal-content bg-white dark:bg-slate-900 border dark:border-slate-800 w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl text-center">
             <h3 class="text-xl font-bold mb-6 text-center dark:text-white">Church Management</h3>
             <div id="church-list" class="space-y-1 mb-6 max-h-72 overflow-y-auto pr-2 text-left"></div>
             <div class="border-t dark:border-slate-800 pt-6">
@@ -492,7 +492,7 @@
         window.setActiveType = (type) => {
             currentType = type;
             const inactive = "type-btn flex-1 py-4 bg-slate-100 dark:bg-slate-800/40 text-slate-500 rounded-xl text-[10px] font-bold uppercase transition-all duration-200 active:scale-95 border border-transparent";
-            const active = "type-btn flex-1 py-4 bg-indigo-600 text-white border border-transparent rounded-2xl text-[10px] font-bold uppercase transition-all duration-200 active:scale-95 shadow-lg shadow-indigo-500/50";
+            const active = "type-btn flex-1 py-4 bg-indigo-600 text-white border border-transparent rounded-xl text-[10px] font-bold uppercase transition-all duration-200 active:scale-95 shadow-lg shadow-indigo-500/50";
             document.querySelectorAll('.type-btn').forEach(btn => btn.className = inactive);
             const activeBtn = document.getElementById(`type-${type}`);
             if (activeBtn) activeBtn.className = active;
@@ -638,10 +638,10 @@
 
             if (type === 'date') {
                 dateInput.classList.add('border-indigo-500', 'ring-2', 'ring-indigo-500/50', 'bg-indigo-500/10');
-                monthInput.value = ""; if(yearInput) yearInput.selectedIndex = 0;
+                monthInput.value = ""; if(yearSelect) yearSelect.selectedIndex = 0;
             } else if (type === 'month') {
                 monthInput.classList.add('border-indigo-500', 'ring-2', 'ring-indigo-500/50', 'bg-indigo-500/10');
-                dateInput.value = ""; if(yearInput) yearInput.selectedIndex = 0;
+                dateInput.value = ""; if(yearSelect) yearSelect.selectedIndex = 0;
             } else if (type === 'year') {
                 yearInput.classList.add('border-indigo-500', 'ring-2', 'ring-indigo-500/50', 'bg-indigo-500/10');
                 dateInput.value = ""; monthInput.value = "";
