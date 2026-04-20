@@ -13,51 +13,53 @@
             transition: all 0.3s ease-in-out !important;
         }
         button:active, .preset-btn:active, .type-btn:active, [role="button"]:active {
-            transform: scale(0.95) !important;
-            box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.2) !important;
+            transform: scale(0.98) !important;
+            box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.1) !important;
         }
     
-        /* THE DASH-ROW & CARDS: Adaptive Logic */
-        .dash-row, .bg-slate-900\/40 {
+        /* THE DASH-ROW: High-End Adaptive Logic */
+        .dash-row {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            width: 100% !important; /* Forces full width to fix shrunken buttons */
+            border-radius: 1.25rem !important;
+            padding: 1.25rem !important;
+            margin-bottom: 0.75rem !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            
+            /* Dark Mode Default */
             background: rgba(30, 41, 59, 0.4) !important;
             border: 1px solid rgba(255, 255, 255, 0.05) !important;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
     
-        /* Light Mode Overrides */
-        #main-html:not(.dark) .dash-row,
+        /* Light Mode Override: Clean White iOS Style */
+        #main-html:not(.dark) .dash-row {
+            background: white !important;
+            border: 1px solid rgba(0, 0, 0, 0.05) !important;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03) !important;
+        }
+    
+        /* Hover States */
+        .dash-row:hover {
+            background: rgba(30, 41, 59, 0.7) !important;
+            border-color: rgba(255, 255, 255, 0.1) !important;
+        }
+        #main-html:not(.dark) .dash-row:hover {
+            background: #f8fafc !important;
+            transform: translateY(-1px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08) !important;
+        }
+    
+        /* Text Color Restoration for Light Mode */
+        #main-html:not(.dark) .dash-row span { color: #1e293b !important; }
+        #main-html:not(.dark) .dash-row i { color: #64748b !important; }
+    
+        /* Fix for the Reports Card muddy background */
         #main-html:not(.dark) .bg-slate-900\/40 {
             background: white !important;
-            border: 1px solid rgba(0, 0, 0, 0.05) !important;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
-        }
-    
-        /* TYPE FILTER CONTAINER FIX (Image eb33a9) */
-        #main-html:not(.dark) .bg-\[\#0f172a\] {
-            background: #f1f5f9 !important; /* Light Slate for the container */
             border: 1px solid rgba(0,0,0,0.05) !important;
-        }
-    
-        /* DROPDOWN CHEVRON FIX */
-        #main-html:not(.dark) select#churchFilter {
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2364748b' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e") !important;
-            background-position: right 1rem center !important;
-            background-repeat: no-repeat !important;
-            background-size: 1.5em 1.5em !important;
-            padding-right: 2.5rem !important;
-            color: #1e293b !important;
-        }
-    
-        /* RESULTS TABLE ADAPTATION */
-        #main-html:not(.dark) .bg-\[\#0f172a\].border.rounded-\[2\.5rem\] {
-            background: white !important;
-            border: 1px solid rgba(0, 0, 0, 0.05) !important;
-        }
-        #main-html:not(.dark) .bg-slate-900\/60 {
-            background: #f8fafc !important; /* Table Header Light */
-        }
-        #main-html:not(.dark) tbody#matrix-body tr {
-            color: #334155 !important;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05) !important;
         }
     </style>
 </head>
