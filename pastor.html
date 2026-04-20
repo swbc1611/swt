@@ -156,13 +156,19 @@
                     <i class="bi bi-chevron-right text-slate-600 group-hover:text-amber-400"></i>
                 </button>
 
-                <button onclick="openPasswordModal()" class="dash-row group">
-                    <div class="flex items-center gap-4 text-left">
-                        <div class="w-10 h-10 bg-slate-500/10 text-slate-400 rounded-xl flex items-center justify-center"><i class="bi bi-key-fill"></i></div>
-                        <span class="text-sm font-bold">Change account password</span>
-                    </div>
-                    <i class="bi bi-chevron-right text-slate-600 transition-all"></i>
-                </button>
+                <div class="dash-row unified-button border dark:border-white/5 mb-3 group hover:shadow-lg transition-all">
+                    <button onclick="goToGuide()" class="flex-1 flex items-center gap-4 p-5 hover:bg-white/5 dark:hover:bg-white/5 transition-all text-left active:scale-[0.98]">
+                        <div class="w-10 h-10 bg-indigo-500/10 text-indigo-400 rounded-xl flex items-center justify-center group-hover:bg-indigo-500/20">
+                            <i class="bi bi-book-half"></i>
+                        </div>
+                        <span class="text-sm font-bold text-slate-300">Soulwinning guide</span>
+                    </button>
+                    
+                    <button onclick="openGuideSettings()" class="w-16 flex items-center justify-center bg-black/10 dark:bg-black/20 hover:bg-indigo-500/20 text-slate-500 hover:text-indigo-400 transition-all active:scale-90 border-l border-white/5">
+                        <i class="bi bi-gear-fill"></i>
+                    </button>
+                </div>
+                
             </div>
         </div>
 
@@ -198,18 +204,15 @@
                     <i class="bi bi-chevron-right text-slate-600 group-hover:text-amber-500 transition-all"></i>
                 </button>
 
-                <div class="dash-row unified-button border dark:border-white/5 mb-3 group hover:shadow-lg transition-all">
-                    <button onclick="goToGuide()" class="flex-1 flex items-center gap-4 p-5 hover:bg-white/5 dark:hover:bg-white/5 transition-all text-left active:scale-[0.98]">
-                        <div class="w-10 h-10 bg-indigo-500/10 text-indigo-400 rounded-xl flex items-center justify-center group-hover:bg-indigo-500/20">
-                            <i class="bi bi-book-half"></i>
-                        </div>
-                        <span class="text-sm font-bold text-slate-300">Soulwinning guide</span>
-                    </button>
-                    
-                    <button onclick="openGuideSettings()" class="w-16 flex items-center justify-center bg-black/10 dark:bg-black/20 hover:bg-indigo-500/20 text-slate-500 hover:text-indigo-400 transition-all active:scale-90 border-l border-white/5">
-                        <i class="bi bi-gear-fill"></i>
-                    </button>
-                </div>
+                <button onclick="openPasswordModal()" class="dash-row group">
+                    <div class="flex items-center gap-4 text-left">
+                        <div class="w-10 h-10 bg-slate-500/10 text-slate-400 rounded-xl flex items-center justify-center"><i class="bi bi-key-fill"></i></div>
+                        <span class="text-sm font-bold">Change account password</span>
+                    </div>
+                    <i class="bi bi-chevron-right text-slate-600 transition-all"></i>
+                </button>
+                
+                
             </div>
         </div>
 
