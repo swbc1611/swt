@@ -75,14 +75,14 @@
             box-shadow: none !important;
             background: transparent !important;
         }
-        
-        /* SURGICAL: Force lighter background for the settings zone */
+
+        /* SURGICAL FIX: Force lighter background and visible divider for settings zone */
         .settings-zone {
-            background: rgba(255, 255, 255, 0.08) !important;
+            background: rgba(255, 255, 255, 0.06) !important;
             border-left: 1px solid rgba(255, 255, 255, 0.1) !important;
         }
         #main-html:not(.dark) .settings-zone {
-            background: rgba(0, 0, 0, 0.04) !important;
+            background: rgba(0, 0, 0, 0.03) !important;
             border-left: 1px solid rgba(0, 0, 0, 0.05) !important;
         }
 
@@ -169,7 +169,7 @@
 
                 <div class="dash-row unified-button group hover:shadow-lg transition-all">
                     <button onclick="goToGuide()" class="flex-1 flex items-center gap-4 p-5 hover:bg-white/5 dark:hover:bg-white/5 transition-all text-left active:scale-[0.98]">
-                        <div class="w-10 h-10 bg-indigo-500/10 text-indigo-400 rounded-xl flex items-center justify-center">
+                        <div class="w-10 h-10 bg-indigo-500/10 text-indigo-400 rounded-xl flex items-center justify-center group-hover:bg-indigo-500/20">
                             <i class="bi bi-book-half"></i>
                         </div>
                         <span class="text-sm font-bold text-slate-300">Soulwinning guide</span>
@@ -232,7 +232,7 @@
             </div>
             
             <div class="px-2 space-y-12">
-                <select id="churchFilter" class="w-full bg-[#0f172a] border border-white/10 px-6 py-4 rounded-2xl text-xs font-bold text-white outline-none text-center appearance-none shadow-inner">
+                <select id="churchFilter" class="w-full bg-[#0f172a] border border-white/10 px-6 py-4 rounded-2xl text-xs font-bold mb-10 text-white outline-none text-center appearance-none shadow-inner">
                     <option value="all">All My Churches</option>
                 </select>
 
