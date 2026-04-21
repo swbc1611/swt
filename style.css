@@ -33,21 +33,33 @@ body { font-family: 'Inter', sans-serif; transition: background-color 0.3s ease;
     border: 1px solid transparent;
 }
 /*.badge-role { border-color: var(--primary); color: var(--primary); background: rgba(79, 70, 229, 0.1); }*/
-/* --- Standardized Role Badge (Vibrant Theme) --- */
-.badge-role { 
-    --role-color: #818cf8; /* Bright Electric Indigo */
-    border: 1px solid var(--role-color) !important; 
-    color: var(--role-color) !important; 
+/* --- Final Hardened Role Badge --- */
+.badge-role {
+    --role-color: #818cf8; /* Vibrant Electric Indigo */
+    
+    display: inline-block !important;
+    padding: 4px 16px !important; /* Vertical and Horizontal padding */
+    border: 1px solid var(--role-color) !important;
+    border-radius: 9999px !important; /* This creates the pill shape */
+    
+    color: var(--role-color) !important;
     background: rgba(129, 140, 248, 0.1) !important;
-    text-transform: uppercase;
-    font-weight: 900;
-    letter-spacing: 0.2em;
+    
+    font-size: 10px !important;
+    font-weight: 900 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.3em !important;
+    line-height: 1.5 !important;
+    
+    box-shadow: 0 0 15px rgba(129, 140, 248, 0.1) !important;
+    white-space: nowrap !important;
 }
 
-/* Light Mode Hardening */
+/* Light Mode Visibility */
 #main-html:not(.dark) .badge-role {
-    --role-color: #4f46e5; /* Deep Indigo for readability on white */
+    --role-color: #4f46e5;
     background: rgba(79, 70, 229, 0.05) !important;
+    border-color: rgba(79, 70, 229, 0.2) !important;
 }
 
 .badge-church { border-color: var(--church); color: var(--church); background: rgba(16, 185, 129, 0.1); }
