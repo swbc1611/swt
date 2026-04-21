@@ -210,14 +210,49 @@
         };
 
         onAuthStateChanged(auth, async (user) => {
-            if (!user) { window.location.replace("index.html"); return; }
-            const cachedData = sessionStorage.getItem('userContext');
-            if (cachedData) {
-                userProfile = JSON.parse(cachedData);
-                if (userProfile.role !== 'pastor') { window.location.replace("index.html"); return; }
-                setupHeader();
-            } else { 
-                await fetchFreshProfile(user.uid); 
+            // 1. Instant kick if no user
+            if (!user) { 
+                sessionStorage.clear(); 
+                window.location.replace("index.html"); 
+                return; 
+            }
+        
+            try {
+                let profile;
+                const cachedData = sessionStorage.getItem('userContext');
+        
+                if (cachedData) {
+                    profile = JSON.parse(cachedData);
+                } else {
+                    // Fetching fresh if cache is empty
+                    const snap = await getDoc(doc(db, "profiles", user.uid));
+                    if (!snap.exists()) { 
+                        window.location.replace("index.html"); 
+                        return; 
+                    }
+                    profile = snap.data();
+                    // Sync the cache for the next page
+                    sessionStorage.setItem('userContext', JSON.stringify(profile));
+                }
+        
+                // 2. THE HARD GATE (Standardized)
+                // This catches members even if they manually navigate to the URL
+                if (profile.role !== 'pastor') {
+                    console.warn("Restricted Access: Pastor Role Required.");
+                    sessionStorage.clear(); // Clear unauthorized session
+                    window.location.replace("index.html");
+                    return; 
+                }
+        
+                // 3. AUTHORIZED LOGIC
+                userProfile = profile;
+                
+                // Populate your UI (Header, Tables, etc.)
+                setupHeader(); // or renderChurchUI(), refreshUI(), etc.
+        
+            } catch (e) {
+                console.error("Security Guard Error:", e);
+                window.location.replace("index.html");
             }
         });
 
