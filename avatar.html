@@ -215,9 +215,10 @@
             // Check session storage first, else fetch profile
             const cachedData = sessionStorage.getItem('userContext');
             let profile;
-            
+                       
             if (cachedData) {
                 profile = JSON.parse(cachedData);
+                renderHeader(userProfile.displayName, userProfile.role, userProfile.churchNames || {});
             } else {
                 const profileSnap = await getDoc(doc(db, "profiles", user.uid));
                 if (!profileSnap.exists()) return;
@@ -228,23 +229,23 @@
             document.getElementById('role-display').innerText = profile.role.toUpperCase();
 
             // RENDER CHURCH TAGS
-            const tagContainer = document.getElementById('church-list-tags');
-            let tagsHtml = "";
+            //const tagContainer = document.getElementById('church-list-tags');
+            //let tagsHtml = "";
             
             // If church names are already in the context, use them, otherwise fetch
-            if (profile.churchNames) {
-                Object.values(profile.churchNames).forEach(name => {
-                    tagsHtml += `<span class="badge-base badge-church">${name}</span>`;
-                });
-            } else {
-                for (const code of (profile.churchId || [])) {
-                    const d = await getDoc(doc(db, "churches", code));
-                    if (d.exists()) {
-                        tagsHtml += `<span class="badge-base badge-church">${d.data().name}</span>`;
-                    }
-                }
-            }
-            tagContainer.innerHTML = tagsHtml || `<span class="text-slate-500 text-[10px]">No Church Assigned</span>`;
+            //if (profile.churchNames) {
+            //    Object.values(profile.churchNames).forEach(name => {
+            //        tagsHtml += `<span class="badge-base badge-church">${name}</span>`;
+            //    });
+            //} else {
+            //    for (const code of (profile.churchId || [])) {
+            //        const d = await getDoc(doc(db, "churches", code));
+            //        if (d.exists()) {
+            //            tagsHtml += `<span class="badge-base badge-church">${d.data().name}</span>`;
+            //        }
+            //    }
+            //}
+            //tagContainer.innerHTML = tagsHtml || `<span class="text-slate-500 text-[10px]">No Church Assigned</span>`;
 
             // STATS CALCULATION
             const q = query(collection(db, "salvations"), where("userId", "==", user.uid));
