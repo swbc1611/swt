@@ -129,17 +129,34 @@
 
         const initTheme = () => {
             const isDark = localStorage.getItem('theme') === 'dark';
-            if (isDark) document.getElementById('main-html').classList.add('dark');
+            if (isDark) {
+                document.getElementById('main-html').classList.add('dark');
+                document.getElementById('sun-icon')?.classList.remove('hidden');
+                document.getElementById('moon-icon')?.classList.add('hidden');
+            }
         };
         initTheme();
 
         window.showToast = (msg) => {
             const t = document.getElementById('toast');
+            if(!t) return;
             t.innerText = msg;
             t.classList.remove('opacity-0', 'translate-y-10');
-            setTimeout(() => t.classList.add('opacity-0', 'translate-y-10'), 3000);
+            t.classList.add('opacity-100', 'translate-y-0');
+            setTimeout(() => {
+                t.classList.remove('opacity-100', 'translate-y-0');
+                t.classList.add('opacity-0', 'translate-y-10');
+            }, 3000);
         };
 
+        window.toggleDarkMode = () => {
+            const html = document.getElementById('main-html');
+            const isDark = html.classList.toggle('dark');
+            document.getElementById('sun-icon')?.classList.toggle('hidden', !isDark);
+            document.getElementById('moon-icon')?.classList.toggle('hidden', isDark);
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        };
+      
         onAuthStateChanged(auth, async (user) => {
             if (!user) return window.location.replace('index.html');
             
