@@ -73,3 +73,31 @@ select {
     transition: all 0.3s; z-index: 40; border: none; cursor: pointer;
 }
 .fab-button:hover { transform: rotate(90deg); background-color: #4338ca; }
+
+/* --- Date & Month Icon Customization --- */
+
+/* 1. Base style for the calendar icon */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="month"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    border-radius: 4px;
+    margin-right: 2px;
+    opacity: 0.6;
+    transition: opacity 0.2s ease;
+}
+
+/* 2. Hover effect */
+input[type="date"]::-webkit-calendar-picker-indicator:hover,
+input[type="month"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+}
+
+/* 3. DARK MODE COMPLIANCE: Invert the icon color to white */
+.dark input[type="date"]::-webkit-calendar-picker-indicator,
+.dark input[type="month"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+}
+
+/* Optional: If you want to change the icon to a specific color (like Indigo) 
+   you can use a sepia/hue-rotate filter combo, but standard white/slate is 
+   usually best for dashboard visibility. */
