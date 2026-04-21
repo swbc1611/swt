@@ -161,25 +161,49 @@
         };
       
         onAuthStateChanged(auth, async (user) => {
+            // 1. Basic Auth Guard
             if (!user) return window.location.replace('index.html');
             
-            const cachedData = sessionStorage.getItem('userContext');
-            if (cachedData) {
-                userProfile = JSON.parse(cachedData);
-                renderHeader(userProfile.displayName, userProfile.role, userProfile.churchNames || {});
-            } else {
-                const snap = await getDoc(doc(db, "profiles", user.uid));
-                if (!snap.exists() || snap.data().role !== 'pastor') return window.location.replace('index.html');
-                userProfile = snap.data();
-                const churches = {};
-                for(const id of userProfile.churchId) {
-                    const c = await getDoc(doc(db, "churches", id));
-                    if(c.exists()) churches[id] = c.data().name;
+            try {
+                const cachedData = sessionStorage.getItem('userContext');
+                let profile;
+        
+                if (cachedData) {
+                    profile = JSON.parse(cachedData);
+                } else {
+                    const snap = await getDoc(doc(db, "profiles", user.uid));
+                    // 2. Fresh Fetch Guard
+                    if (!snap.exists()) return window.location.replace('index.html');
+                    profile = snap.data();
+                    
+                    // Fetch church names for initial setup
+                    const churches = {};
+                    for(const id of (profile.churchId || [])) {
+                        const c = await getDoc(doc(db, "churches", id));
+                        if(c.exists()) churches[id] = c.data().name;
+                    }
+                    profile.churchNames = churches;
+                    sessionStorage.setItem('userContext', JSON.stringify(profile));
                 }
-                userProfile.churchNames = churches;
-                renderHeader(userProfile.displayName, userProfile.role, churches);
+        
+                // 3. THE HARD GATE: Centralized Role Check
+                // This stops Members with cached data from seeing the page
+                if (profile.role !== 'pastor') {
+                    console.error("Unauthorized role detected. Redirecting...");
+                    sessionStorage.clear(); // Wipe the cache to be safe
+                    window.location.replace('index.html');
+                    return;
+                }
+        
+                // 4. AUTHORIZED: UI Logic
+                userProfile = profile;
+                renderHeader(userProfile.displayName, userProfile.role, userProfile.churchNames || {});
+                await populateChurchDropdown();
+        
+            } catch (error) {
+                console.error("Security Check Error:", error);
+                window.location.replace('index.html');
             }
-            await populateChurchDropdown();
         });
 
         function renderHeader(name, role, churches) {
