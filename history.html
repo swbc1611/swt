@@ -94,7 +94,7 @@
                     <button id="type-Event" onclick="setActiveType('Event')" class="type-btn flex-1 py-4 bg-slate-100 dark:bg-slate-800/40 text-slate-500 rounded-xl text-[10px] font-bold uppercase transition-all">Event</button>
                 </div>
             </div>
-            
+
             <div>
                 <label class="block text-[11px] font-black text-slate-500 uppercase mb-4 tracking-widest text-center">Quick Presets</label>
                 <div class="flex gap-2">
@@ -102,7 +102,7 @@
                     <button id="btn-week" onclick="setActivePreset('week')" class="preset-btn flex-1 py-4 bg-slate-100 dark:bg-slate-800/50 text-slate-500 rounded-xl text-[10px] font-bold uppercase transition-all">Week</button>
                     <button id="btn-month" onclick="setActivePreset('month')" class="preset-btn flex-1 py-4 bg-indigo-600 text-white rounded-xl text-[10px] font-bold uppercase shadow-lg shadow-indigo-500/50 transition-all">Month</button>
                 </div>
-            </div>            
+            </div>
 
             <div>
                 <label class="block text-[11px] font-black text-slate-500 uppercase mb-4 tracking-widest text-center">Custom Selection</label>
@@ -121,12 +121,12 @@
         </div>
 
         <div id="results-area" class="hidden mt-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <div class="grid grid-cols-2 gap-4 mb-10 max-w-sm mx-auto text-center">
-                <div class="bg-white dark:bg-[#111827] p-8 rounded-[1.5rem] border dark:border-slate-800 shadow-sm w-full">
+            <div class="grid grid-cols-2 gap-4 mb-10 text-center">
+                <div class="bg-white dark:bg-[#111827] p-8 rounded-[1.5rem] border dark:border-slate-800 shadow-sm">
                     <p class="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Logs</p>
-                    <span id="stat-reports" class="text-4xl font-black text-slate-900 dark:text-white">0</span>
+                    <span id="stat-reports" class="text-4xl font-black dark:text-white text-slate-900">0</span>
                 </div>
-                <div class="bg-white dark:bg-[#111827] p-8 rounded-[1.5rem] border dark:border-slate-800 shadow-sm w-full">
+                <div class="bg-white dark:bg-[#111827] p-8 rounded-[1.5rem] border dark:border-slate-800 shadow-sm">
                     <p class="text-[9px] font-black text-indigo-400 uppercase tracking-[0.2em] mb-1">Total Salvations</p>
                     <span id="stat-souls" class="text-4xl font-black text-indigo-500">0</span>
                 </div>
@@ -148,11 +148,11 @@
             </div>
 
             <div class="text-center mt-12 mb-20">
-                <button id="load-more-btn" onclick="fetchNextBatch()" class="hidden py-4 px-10 bg-slate-100 dark:bg-slate-800 border dark:border-slate-700 rounded-full text-[10px] font-black uppercase tracking-widest transition-all">Load More</button>
+                <button id="load-more-btn" onclick="fetchNextBatch()" class="hidden py-4 px-10 bg-slate-100 dark:bg-slate-800 border dark:border-slate-700 rounded-full text-[10px] font-black uppercase tracking-widest transition-all">Load More Records</button>
             </div>
         </div>
 
-        <div id="initial-message" class="text-center py-24 text-slate-400 italic text-[11px] uppercase tracking-widest opacity-50">Select a period to view logs.</div>
+        <div id="initial-message" class="text-center py-24 text-slate-400 italic text-[11px] uppercase tracking-widest opacity-50">Select a period to manage your logs.</div>
     </main>
 
     <div id="delete-confirm-modal" class="hidden fixed inset-0 z-[500] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
@@ -203,7 +203,7 @@
 
     <script type="module">
         import { db, auth } from './firebase-config.js';
-        import { collection, query, where, getDocs, orderBy, doc, deleteDoc, limit, startAfter, getAggregateFromServer, sum, count, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { collection, query, where, getDocs, orderBy, doc, deleteDoc, limit, startAfter, getAggregateFromServer, sum, count, getDoc, updateDoc, arrayRemove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         let userProfile = null;
@@ -221,7 +221,7 @@
             }
         };
         initTheme();
-        
+
         window.showToast = (msg) => {
             const t = document.getElementById('toast');
             if(!t) return;
@@ -236,11 +236,9 @@
 
         window.toggleDarkMode = () => {
             const html = document.getElementById('main-html');
-            const sun = document.getElementById('sun-icon');
-            const moon = document.getElementById('moon-icon');
             const isDark = html.classList.toggle('dark');
-            sun?.classList.toggle('hidden', !isDark);
-            moon?.classList.toggle('hidden', isDark);
+            document.getElementById('sun-icon')?.classList.toggle('hidden', !isDark);
+            document.getElementById('moon-icon')?.classList.toggle('hidden', isDark);
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
         };
 
@@ -249,25 +247,41 @@
             const dateInput = document.getElementById('customDate');
             const monthInput = document.getElementById('customMonth');
             dateInput.value = ""; monthInput.value = "";
+            [dateInput, monthInput].forEach(input => {
+                input.classList.remove('border-indigo-500', 'ring-2', 'ring-indigo-500/50', 'bg-indigo-500/10');
+            });
             const inactive = "preset-btn flex-1 py-4 bg-slate-100 dark:bg-slate-800/50 text-slate-500 rounded-xl text-[10px] font-bold uppercase transition-all duration-200 active:scale-95 border border-transparent";
             const active = "preset-btn flex-1 py-4 bg-indigo-600 text-white rounded-xl text-[10px] font-bold uppercase transition-all duration-200 active:scale-95 shadow-lg shadow-indigo-500/50 border border-transparent";
             document.querySelectorAll('.preset-btn').forEach(btn => btn.className = inactive);
-            document.getElementById(`btn-${p}`).className = active;
+            const activeBtn = document.getElementById(`btn-${p}`);
+            if (activeBtn) activeBtn.className = active;
         };
 
         window.setActiveType = (type) => {
             currentType = type;
-            const inactive = "type-btn flex-1 py-4 bg-slate-100 dark:bg-slate-800/50 text-slate-500 rounded-2xl text-[10px] font-black uppercase transition-all duration-200 active:scale-95 border border-transparent";
+            const inactive = "type-btn flex-1 py-4 bg-slate-100 dark:bg-slate-800/50 text-slate-500 rounded-xl text-[10px] font-black uppercase transition-all duration-200 active:scale-95 border border-transparent";
             const active = "type-btn flex-1 py-4 bg-indigo-600 text-white border border-transparent rounded-2xl text-[10px] font-bold uppercase transition-all duration-200 active:scale-95 shadow-lg shadow-indigo-600/20";
             document.querySelectorAll('.type-btn').forEach(btn => btn.className = inactive);
-            document.getElementById(`type-${type}`).className = active;
+            const activeBtn = document.getElementById(`type-${type}`);
+            if (activeBtn) activeBtn.className = active;
         };
 
+        // RESTORED: PASTOR.HTML STYLE HIGHLIGHTING
         window.handleCustomInput = (type) => {
             currentPreset = null;
+            const dateInput = document.getElementById('customDate');
+            const monthInput = document.getElementById('customMonth');
             document.querySelectorAll('.preset-btn').forEach(btn => btn.className = "preset-btn flex-1 py-4 bg-slate-100 dark:bg-slate-800/50 text-slate-500 rounded-2xl text-[10px] font-black uppercase border border-transparent");
-            if (type === 'date') document.getElementById('customMonth').value = "";
-            else document.getElementById('customDate').value = "";
+            
+            [dateInput, monthInput].forEach(el => el.classList.remove('border-indigo-500', 'ring-2', 'ring-indigo-500/50', 'bg-indigo-500/10'));
+
+            if (type === 'date') {
+                dateInput.classList.add('border-indigo-500', 'ring-2', 'ring-indigo-500/50', 'bg-indigo-500/10');
+                monthInput.value = "";
+            } else {
+                monthInput.classList.add('border-indigo-500', 'ring-2', 'ring-indigo-500/50', 'bg-indigo-500/10');
+                dateInput.value = "";
+            }
         };
 
         onAuthStateChanged(auth, async (user) => {
@@ -401,12 +415,21 @@
                 if(rL) rL.innerText = Math.max(0, parseInt(rL.innerText) - 1);
                 const row = document.getElementById(`row-${id}`);
                 if (row) { row.style.opacity = '0'; setTimeout(() => row.remove(), 300); }
+
+                const typeCheckQ = query(collection(db, "salvations"), where("userId", "==", auth.currentUser.uid), where("eventDate", ">=", eventDate.split('T')[0] + "T00:00"), where("eventDate", "<=", eventDate.split('T')[0] + "T23:59"), where("type", "==", type));
+                const typeSnap = await getAggregateFromServer(typeCheckQ, { remaining: count() });
+                if (typeSnap.data().remaining === 0) {
+                    const statsUpdate = {}; statsUpdate[`${type}_members`] = arrayRemove(auth.currentUser.uid);
+                    await updateDoc(doc(db, `churches/${userProfile.churchId[0]}/daily_stats`, eventDate.split('T')[0]), statsUpdate).catch(() => {});
+                    await updateDoc(doc(db, `churches/${userProfile.churchId[0]}/monthly_stats`, eventDate.substring(0, 7)), statsUpdate).catch(() => {});
+                }
+
                 closeDetailsModal(); closeDeleteModal(); showToast("Record deleted.");
             } catch (e) { showToast("Delete failed."); } 
             finally { finalBtn.disabled = false; finalBtn.innerText = "Delete Record"; }
         };
 
         window.fetchNextBatch = fetchNextBatch;
-    </script>    
+    </script>
 </body>
 </html>
