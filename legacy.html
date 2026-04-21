@@ -10,25 +10,36 @@
     <script>tailwind.config = { darkMode: 'class' }</script>
     <style>        
         button, .preset-btn, .type-btn, [role="button"] {
-            transition: all 0.2s ease-in-out !important;
+            transition: all 0.3s ease-in-out !important;
         }
         button:active, .preset-btn:active, .type-btn:active, [role="button"]:active {
-            transform: scale(0.95) !important;
-            box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.7) !important;
+            transform: scale(0.98) !important;
+            box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.1) !important;
             outline: none !important;
-        }
-        input, select, textarea {
-            background: rgba(245, 158, 11, 0.05) !important; 
-            border: 1px solid rgba(245, 158, 11, 0.1) !important;
-            outline: none !important;
-            transition: all 0.2s ease;
-        }
-        input:focus, select:focus, textarea:focus {
-            border-color: #f59e0b !important;
-            box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.1) !important;
         }
 
-        /* SURGICAL FIX: REMOVING ALL BOXY OUTLINES & BORDERS FOR MODAL AESTHETIC */
+        .dash-row {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            width: 100% !important;
+            border-radius: 1.25rem !important;
+            padding: 1.25rem !important;
+            margin-bottom: 0.75rem !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: rgba(30, 41, 59, 0.4) !important;
+            border: 1px solid rgba(255, 255, 255, 0.05) !important;
+        }
+
+        #main-html:not(.dark) .dash-row {
+            background: white !important;
+            border: 1px solid rgba(0, 0, 0, 0.05) !important;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03) !important;
+        }
+
+        #main-html:not(.dark) .dash-row span { color: #1e293b !important; }
+        #main-html:not(.dark) .dash-row i { color: #64748b !important; }
+
         .clean-input {
             border: none !important;
             background: transparent !important;
@@ -37,22 +48,23 @@
             padding: 0 !important;
             margin: 0 !important;
             appearance: none;
-            -webkit-tap-highlight-color: transparent;
         }
 
-        input::-webkit-outer-spin-button,
-        input::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
+        /* DASHBOARD INPUT STYLING */
+        input, select, textarea {
+            transition: all 0.3s ease !important;
         }
-        input[type=number] {
-            -moz-appearance: textfield;
+        
+        #main-html:not(.dark) .bg-[#111827], 
+        #main-html:not(.dark) .bg-[#0f172a] { 
+            background: white !important; 
+            border: 1px solid rgba(0,0,0,0.05) !important;
         }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 dark:bg-[#0f172a] dark:text-slate-100 transition-colors duration-300">
 
-    <nav class="bg-white dark:bg-slate-900 border-b dark:border-slate-800 px-6 py-4 flex justify-between items-center sticky top-0 z-10">
+    <nav class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b dark:border-slate-800 px-6 py-4 flex justify-between items-center sticky top-0 z-[100] w-full">
         <div class="flex items-center gap-2">
             <button onclick="window.history.back()" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 transition-all mr-2">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-slate-600 dark:text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M15 19l-7-7 7-7" /></svg>
@@ -62,88 +74,99 @@
             </div>
             <h1 class="text-lg brand-text"><span class="brand-word-1">Soulwinning</span><span class="brand-word-2">Tracker</span></h1>
         </div>
-        <div class="flex items-center gap-2">
-            <button onclick="toggleDarkMode()" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 transition-all">
-                <svg id="sun-icon" class="w-5 h-5 hidden text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M3 12h2.25m.386-6.364l1.591 1.591M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" /></svg>
-                <svg id="moon-icon" class="w-5 h-5 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" /></svg>
-            </button>
-        </div>
+        <button onclick="toggleDarkMode()" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 transition-all">
+            <svg id="sun-icon" class="w-5 h-5 hidden text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M3 12h2.25m.386-6.364l1.591 1.591M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" /></svg>
+            <svg id="moon-icon" class="w-5 h-5 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" /></svg>
+        </button>
     </nav>
 
-    <main class="max-w-4xl mx-auto p-6 pb-32 text-center">
-        <header class="mb-10">
-            <div id="role-display" class="badge-base badge-role mb-2 uppercase text-[10px] tracking-widest font-bold">PASTOR</div>
+    <main class="max-w-4xl mx-auto p-6 pb-32">
+        <header class="mb-12 flex flex-col items-center text-center">
+            <div id="role-display" class="mb-4 px-4 py-1 rounded-full bg-indigo-500/10 text-indigo-500 border border-indigo-500/20 uppercase tracking-[0.3em] text-[10px] font-black">PASTOR</div>
             <h2 id="user-display-name" class="text-4xl font-extrabold tracking-tight mb-3">...</h2>
             <div id="church-list-tags" class="flex flex-wrap justify-center gap-2 mt-2"></div>
             
-            <h3 class="text-2xl font-bold mt-8 text-amber-500 uppercase tracking-tighter">Church Legacy</h3>
-            <p class="text-xs text-slate-400 mt-1 uppercase tracking-widest font-bold">Institutional Data Sync</p>
+            <h3 class="text-2xl font-black mt-10 text-indigo-500 uppercase tracking-tighter">Church Legacy</h3>
+            <p class="text-[10px] text-slate-400 mt-1 uppercase tracking-[0.3em] font-black opacity-60">Institutional Data Sync</p>
         </header>
 
-        <div class="bg-white dark:bg-[#111827] border-2 border-amber-500/20 rounded-[2.5rem] p-8 shadow-sm mb-10 max-w-sm mx-auto">
-            <div class="space-y-8">
-                <div class="flex flex-col gap-2 text-left">
-                    <label class="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-2 text-center">Period Selection</label>
-                    <input id="histPeriod" type="month" class="p-4 rounded-2xl bg-slate-50 dark:bg-[#1e293b] border dark:border-slate-700/50 dark:text-white font-bold text-sm outline-none text-center uppercase tracking-widest">
+        <div class="space-y-12 mb-20 px-2">
+            <div>
+                <label class="block text-[11px] font-black text-slate-500 uppercase mb-4 tracking-widest text-center">Church Identity</label>
+                <select id="churchSelector" onchange="loadLegacyList()" class="w-full bg-slate-100 dark:bg-[#0f172a] border border-transparent p-5 rounded-2xl text-xs font-bold text-center outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/50 appearance-none">
+                    <option value="" disabled selected>Select Church Context...</option>
+                </select>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="flex flex-col gap-4">
+                    <label class="text-[11px] font-black text-slate-500 uppercase tracking-widest text-center">Historical Period</label>
+                    <input id="histPeriod" type="month" class="w-full p-5 rounded-2xl bg-slate-100 dark:bg-[#0f172a] border border-transparent dark:text-white font-bold text-xs outline-none text-center uppercase tracking-widest focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/50">
                 </div>
 
-                <div class="flex flex-col gap-2">
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-2 tracking-widest ml-2">Salvation Total</label>
-                    <div class="flex items-center justify-between mb-6 bg-slate-50 dark:bg-[#1e293b] p-3 rounded-3xl border dark:border-slate-700/50">
-                        <button onclick="stepCount(-10)" class="w-14 h-14 flex-shrink-0 rounded-2xl bg-white dark:bg-slate-700 font-bold text-xl hover:bg-slate-100 dark:text-white transition-all active:scale-95 flex items-center justify-center shadow-sm border dark:border-slate-600">-</button>
-                        
-                        <input id="histCount" type="number" value="0" min="0" max="99999"
-                            class="w-full text-center text-5xl font-light text-amber-500 clean-input [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                            oninput="limitInput(this)">
-                        
-                        <button onclick="stepCount(10)" class="w-14 h-14 flex-shrink-0 rounded-2xl bg-amber-500 text-white font-bold text-xl hover:bg-amber-600 transition-all active:scale-95 flex items-center justify-center shadow-lg shadow-amber-500/30">+</button>
+                <div class="flex flex-col gap-4">
+                    <label class="text-[11px] font-black text-slate-500 uppercase tracking-widest text-center">Salvation Total</label>
+                    <div class="flex items-center justify-between bg-slate-100 dark:bg-[#0f172a] p-3 rounded-2xl border border-transparent">
+                        <button onclick="stepCount(-10)" class="w-12 h-12 rounded-xl bg-white dark:bg-slate-800 font-bold text-lg hover:bg-slate-50 dark:text-white shadow-sm">-</button>
+                        <input id="histCount" type="number" value="0" min="0" max="99999" class="w-full text-center text-4xl font-black text-indigo-500 clean-input">
+                        <button onclick="stepCount(10)" class="w-12 h-12 rounded-xl bg-indigo-600 text-white font-bold text-lg hover:bg-indigo-700 shadow-lg shadow-indigo-500/30">+</button>
                     </div>
                 </div>
-
-                <div class="flex flex-col gap-2 text-left">
-                    <label class="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-2 text-center">Reference Note</label>
-                    <textarea id="histNote" placeholder="Notes (e.g., Logbook 2018)" class="p-4 rounded-2xl bg-slate-50 dark:bg-[#1e293b] border dark:border-slate-700/50 dark:text-white text-xs italic resize-none h-20 outline-none"></textarea>
-                </div>
-
-                <button id="saveBtn" onclick="saveLegacyData()" class="w-full py-5 bg-amber-500 text-white rounded-2xl font-black uppercase text-[11px] tracking-widest shadow-lg shadow-amber-500/30 active:scale-95 transition-all">
-                    Update Church Record
-                </button>
             </div>
+
+            <div>
+                <label class="text-[11px] font-black text-slate-500 uppercase tracking-widest mb-4 block text-center">Reference Note</label>
+                <textarea id="histNote" placeholder="Notes (e.g., Physical Logbook 2015-2020)" class="w-full p-5 rounded-2xl bg-slate-100 dark:bg-[#0f172a] border border-transparent dark:text-white text-xs italic resize-none h-24 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/50"></textarea>
+            </div>
+
+            <button id="saveBtn" onclick="saveLegacyData()" class="w-full py-6 bg-indigo-600 text-white rounded-2xl font-black uppercase text-[11px] tracking-[0.2em] shadow-xl shadow-indigo-600/20 active:scale-95 transition-all">
+                Synchronize Church Records
+            </button>
         </div>
 
-        <div class="w-full py-4 text-center">
-            <label class="text-[12px] font-black text-slate-400 uppercase tracking-[0.4em] block leading-none">Record Ledger</label>
+        <div class="flex items-center gap-4 mb-8 px-4">
+            <div class="h-[1px] flex-1 bg-white/5 dark:bg-white/5"></div>
+            <label class="text-[11px] font-black text-slate-400 dark:text-slate-200 uppercase tracking-[0.4em]">Record Ledger</label>
+            <div class="h-[1px] flex-1 bg-white/5 dark:bg-white/5"></div>
         </div>
 
-        <div id="legacy-list" class="w-full space-y-4 mt-6">
-            <div class="text-center py-20 text-slate-400 italic font-bold uppercase tracking-widest text-[10px]">Gathering history...</div>
+        <div id="legacy-list" class="w-full space-y-3">
+            <div class="text-center py-20 text-slate-400 italic font-black uppercase tracking-widest text-[10px] opacity-40">Select a church to view history...</div>
         </div>
     </main>
 
-    <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 bg-slate-900 dark:bg-amber-600 text-white px-6 py-3 rounded-2xl shadow-2xl opacity-0 translate-y-10 transition-all duration-500 z-[150] pointer-events-none text-sm font-bold"></div>
+    <div id="delete-confirm-modal" class="hidden fixed inset-0 z-[500] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 border dark:border-slate-800 w-full max-w-xs rounded-[2rem] p-8 shadow-2xl text-center">
+            <div class="w-12 h-12 bg-red-100 dark:bg-red-900/30 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="bi bi-exclamation-triangle-fill text-xl"></i>
+            </div>
+            <h3 class="text-xl font-bold dark:text-white mb-2">Delete Record?</h3>
+            <p class="text-[11px] text-slate-500 mb-8">This action cannot be undone.</p>
+            <div class="flex flex-col gap-2">
+                <button id="final-delete-btn" class="w-full py-4 bg-red-600 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest">Delete Record</button>
+                <button onclick="closeDeleteModal()" class="w-full py-4 text-slate-500 font-bold uppercase text-[10px]">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 bg-slate-900 dark:bg-indigo-600 text-white px-6 py-3 rounded-2xl shadow-2xl opacity-0 translate-y-10 transition-all duration-500 z-[600] pointer-events-none text-sm font-bold border border-white/10"></div>
 
     <script type="module">
         import { db, auth } from './firebase-config.js';
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { doc, setDoc, getDocs, deleteDoc, collection, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { doc, setDoc, getDocs, deleteDoc, collection, query, where, serverTimestamp, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        let userProfile = JSON.parse(sessionStorage.getItem('userContext') || "{}");
+        let userProfile = null;
 
         const initTheme = () => {
-            const isDark = localStorage.getItem('theme') === 'dark' || 
-                          (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            const isDark = localStorage.getItem('theme') === 'dark';
             const html = document.getElementById('main-html');
             const sun = document.getElementById('sun-icon');
             const moon = document.getElementById('moon-icon');
-
-            if (isDark) {
-                html.classList.add('dark');
-                if(sun) sun.classList.remove('hidden');
-                if(moon) moon.classList.add('hidden');
-            } else {
-                html.classList.remove('dark');
-                if(sun) sun.classList.add('hidden');
-                if(moon) moon.classList.remove('hidden');
+            if (isDark) { 
+                html.classList.add('dark'); sun?.classList.remove('hidden'); moon?.classList.add('hidden'); 
+            } else { 
+                html.classList.remove('dark'); sun?.classList.add('hidden'); moon?.classList.remove('hidden'); 
             }
         };
         initTheme();
@@ -156,8 +179,8 @@
             const sun = document.getElementById('sun-icon');
             const moon = document.getElementById('moon-icon');
             const isDark = html.classList.toggle('dark');
-            if(sun) sun.classList.toggle('hidden', !isDark);
-            if(moon) moon.classList.toggle('hidden', isDark);
+            sun?.classList.toggle('hidden', !isDark);
+            moon?.classList.toggle('hidden', isDark);
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
         };
 
@@ -185,84 +208,139 @@
         };
 
         onAuthStateChanged(auth, async (user) => {
-            if (!user || userProfile.role !== 'pastor') { window.location.replace("index.html"); return; }
-            document.getElementById('user-display-name').innerText = userProfile.displayName;
-            
-            const tagContainer = document.getElementById('church-list-tags');
-            let tagsHtml = "";
-            Object.values(userProfile.churchNames || {}).forEach(name => {
-                tagsHtml += `<span class="bg-amber-100 dark:bg-amber-900/30 text-amber-600 px-3 py-1 rounded-full text-[10px] font-bold uppercase">${name}</span>`;
-            });
-            tagContainer.innerHTML = tagsHtml;
-
-            loadLegacyList();
+            if (!user) { window.location.replace("index.html"); return; }
+            const cachedData = sessionStorage.getItem('userContext');
+            if (cachedData) {
+                userProfile = JSON.parse(cachedData);
+                if (userProfile.role !== 'pastor') { window.location.replace("index.html"); return; }
+                setupHeader();
+            } else { 
+                await fetchFreshProfile(user.uid); 
+            }
         });
 
+        async function fetchFreshProfile(uid) {
+            const snap = await getDoc(doc(db, "profiles", uid));
+            if (snap.exists()) {
+                userProfile = snap.data();
+                if (userProfile.role !== 'pastor') { window.location.replace("index.html"); return; }
+                const churches = {};
+                for(const code of (userProfile.churchId || [])) {
+                    const d = await getDoc(doc(db, "churches", code));
+                    if(d.exists()) churches[code] = d.data().name;
+                }
+                userProfile.churchNames = churches;
+                setupHeader();
+                sessionStorage.setItem('userContext', JSON.stringify(userProfile));
+            }
+        }
+
+        function setupHeader() {
+            document.getElementById('user-display-name').innerText = userProfile.displayName;
+            const tagContainer = document.getElementById('church-list-tags');
+            const selector = document.getElementById('churchSelector');
+            let tagsHtml = "";
+            selector.innerHTML = '<option value="" disabled selected>Select Church Context...</option>';
+            
+            Object.entries(userProfile.churchNames || {}).forEach(([id, name]) => {
+                tagsHtml += `<span class="bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest">${name}</span>`;
+                const opt = document.createElement('option');
+                opt.value = id; opt.innerText = name;
+                selector.appendChild(opt);
+            });
+            tagContainer.innerHTML = tagsHtml;
+            
+            // Auto-select first church if only one exists
+            if (userProfile.churchId.length === 1) {
+                selector.value = userProfile.churchId[0];
+                loadLegacyList();
+            }
+        }
+
         window.saveLegacyData = async () => {
+            const churchId = document.getElementById('churchSelector').value;
             const periodValue = document.getElementById('histPeriod').value;
+            if(!churchId) return showToast("⚠️ Select a Church");
             if(!periodValue) return showToast("⚠️ Select a period");
             
             const [year, month] = periodValue.split('-').map(n => parseInt(n));
-            const count = parseInt(document.getElementById('histCount').value);
+            const countValue = parseInt(document.getElementById('histCount').value);
             const note = document.getElementById('histNote').value.trim();
 
-            if (!count || count < 1) return showToast("⚠️ Valid count required");
+            if (!countValue || countValue < 1) return showToast("⚠️ Valid count required");
 
             const btn = document.getElementById('saveBtn');
-            btn.disabled = true; btn.innerText = "SAVING...";
+            btn.disabled = true; btn.innerText = "SYNCHRONIZING...";
 
             try {
-                const docId = `${userProfile.churchId[0]}_${year}_${month}`;
+                const docId = `${churchId}_${year}_${month}`;
                 await setDoc(doc(db, "churchHistoricalTotals", docId), {
-                    churchId: userProfile.churchId[0],
-                    month, year, salvationCount: count, note,
+                    churchId: churchId,
+                    month, year, salvationCount: countValue, note,
                     type: "Legacy",
                     updatedBy: auth.currentUser.uid,
                     lastUpdated: serverTimestamp()
                 }, { merge: true });
 
-                showToast("✅ Record Updated");
+                showToast("✅ Record Synchronized");
                 loadLegacyList();
                 document.getElementById('histCount').value = "0";
                 document.getElementById('histNote').value = "";
             } catch (e) { showToast("❌ Sync Error"); }
-            finally { btn.disabled = false; btn.innerText = "UPDATE CHURCH RECORD"; }
+            finally { btn.disabled = false; btn.innerText = "SYNCHRONIZE CHURCH RECORDS"; }
         };
 
         window.loadLegacyList = async () => {
+            const churchId = document.getElementById('churchSelector').value;
             const list = document.getElementById('legacy-list');
-            const churchId = userProfile.churchId[0];
+            if(!churchId) return;
+            
+            list.innerHTML = '<div class="text-center py-10 italic text-[10px] uppercase font-black tracking-widest opacity-30">Reading Records...</div>';
+            
             try {
                 const q = query(collection(db, "churchHistoricalTotals"), where("churchId", "==", churchId));
                 const snap = await getDocs(q);
                 let html = "";
                 const docs = snap.docs.map(d => ({id: d.id, ...d.data()})).sort((a,b) => (b.year - a.year) || (b.month - a.month));
+                
                 docs.forEach(d => {
                     const mName = new Date(2000, d.month - 1).toLocaleString('en-US', {month:'long'});
                     html += `
-                        <div class="bg-white dark:bg-[#111827] p-6 rounded-[2rem] border dark:border-slate-800 flex items-center justify-between shadow-sm border-l-4 border-amber-500">
+                        <div class="dash-row group">
                             <div class="text-left">
-                                <h4 class="text-[10px] font-black uppercase tracking-widest text-slate-400">${mName} ${d.year}</h4>
-                                <p class="text-2xl font-black text-amber-500">${d.salvationCount.toLocaleString()}</p>
-                                ${d.note ? `<p class="text-[10px] text-slate-500 italic mt-1 truncate max-w-[200px]">"${d.note}"</p>` : ''}
+                                <h4 class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 mb-1">${mName} ${d.year}</h4>
+                                <div class="flex items-baseline gap-2">
+                                    <span class="text-2xl font-black text-indigo-500">${d.salvationCount.toLocaleString()}</span>
+                                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest opacity-50">Legacy Souls</span>
+                                </div>
+                                ${d.note ? `<p class="text-[10px] text-slate-500 italic mt-2 opacity-60">"${d.note}"</p>` : ''}
                             </div>
-                            <button onclick="deleteLegacy('${d.id}')" class="w-12 h-12 flex items-center justify-center rounded-2xl bg-red-500/10 text-red-500 active:scale-90 transition-all border border-red-500/10">
-                                <i class="bi bi-trash3-fill"></i>
+                            <button onclick="confirmDeleteLegacy('${d.id}')" class="w-10 h-10 flex items-center justify-center rounded-xl bg-red-500/10 text-red-500 active:scale-90 transition-all border border-red-500/10">
+                                <i class="bi bi-trash3-fill text-sm"></i>
                             </button>
                         </div>`;
                 });
-                list.innerHTML = html || `<p class="text-center py-20 opacity-30 uppercase font-black text-[10px] tracking-widest">No history recorded</p>`;
+                list.innerHTML = html || `<p class="text-center py-20 opacity-20 uppercase font-black text-[10px] tracking-widest">No history recorded for this church</p>`;
             } catch(e) { list.innerHTML = "Load Error"; }
         };
 
-        window.deleteLegacy = async (id) => {
-            if(!confirm("Permanently remove this historical record?")) return;
+        window.confirmDeleteLegacy = (id) => {
+            const modal = document.getElementById('delete-confirm-modal');
+            const btn = document.getElementById('final-delete-btn');
+            modal.classList.remove('hidden');
+            btn.onclick = () => deleteLegacy(id);
+        };
+
+        window.closeDeleteModal = () => document.getElementById('delete-confirm-modal').classList.add('hidden');
+
+        async function deleteLegacy(id) {
             try {
                 await deleteDoc(doc(db, "churchHistoricalTotals", id));
                 showToast("🗑️ Record Removed");
+                closeDeleteModal();
                 loadLegacyList();
             } catch(e) { showToast("Delete Error"); }
-        };
+        }
     </script>
 </body>
 </html>
