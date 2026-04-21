@@ -139,30 +139,33 @@ input[type="month"]::-webkit-calendar-picker-indicator {
     z-index: 10; /* Ensures it is above the background SVG but below modal overlays */
 }
 
-/* --- Force Center Alignment for Date/Month --- */
+/* --- Brute Force Mobile Centering --- */
 
-input[type="date"],
-input[type="month"] {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    text-align: center !important;
-}
-
-/* Targets the internal text container in Chrome/Safari mobile */
+/* 1. Target the internal edit container */
 input[type="date"]::-webkit-datetime-edit,
 input[type="month"]::-webkit-datetime-edit {
-    display: flex !important;
-    justify-content: center !important;
+    display: inline-flex !important;
     width: 100% !important;
-    /* Reset internal padding that pushes text to the left */
-    padding-left: 2rem !important; 
+    justify-content: center !important;
+    padding: 0 !important; /* Kills the native left-push */
+    margin: 0 !important;
 }
 
-/* Ensure individual fields (DD, MM, YYYY) are centered */
+/* 2. Target the wrapper of the Day/Month/Year fields */
 input[type="date"]::-webkit-datetime-edit-fields-wrapper,
 input[type="month"]::-webkit-datetime-edit-fields-wrapper {
-    display: flex !important;
+    display: inline-flex !important;
     justify-content: center !important;
-    margin: 0 auto !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* 3. Compensate for the custom icon on the right */
+input[type="date"],
+input[type="month"] {
+    /* We add a small left padding to balance the 3.5rem right padding 
+       used for the icon, ensuring the text is visually centered. */
+    padding-left: 3.5rem !important; 
+    text-align: center !important;
 }
