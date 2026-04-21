@@ -121,26 +121,22 @@
     <nav class="bg-white dark:bg-slate-900 border-b dark:border-slate-800 px-6 py-4 flex justify-between items-center sticky top-0 z-10">
         <div class="flex items-center gap-2">
             <button onclick="window.history.back()" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 transition-all mr-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-slate-600 dark:text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M15 19l-7-7 7-7" /></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-slate-600 dark:text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path d="M15 19l-7-7 7-7" />
+                </svg>
             </button>
             <div class="w-10 h-8 bg-indigo-600 rounded-lg flex items-center justify-center overflow-hidden">
                 <span class="font-bold text-white text-[10px] leading-none text-center">SWT</span>
             </div>
             <h1 class="text-lg brand-text"><span class="brand-word-1">Soulwinning</span><span class="brand-word-2">Tracker</span></h1>
         </div>
-        <div class="flex items-center gap-2">
-            <button onclick="toggleDarkMode()" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 transition-all">
-                <svg id="sun-icon" class="w-5 h-5 hidden text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M3 12h2.25m.386-6.364l1.591 1.591M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" /></svg>
-                <svg id="moon-icon" class="w-5 h-5 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" /></svg>
-            </button>
-        </div>
     </nav>
-    
+
     <main class="max-w-4xl mx-auto p-4 md:p-8 text-center flex flex-col items-center min-h-[90vh] justify-center">
         
-       <header class="mb-12 flex flex-col items-center text-center">
-            <div id="role-display" class="mb-4 px-4 py-1 rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/20 uppercase tracking-[0.3em] text-[10px] font-black shadow-[0_0_15px_rgba(245,158,11,0.1)]">...</div>
-            <h2 id="user-display-name" class="text-4xl font-extrabold tracking-tight mb-3 text-slate-900 dark:text-white">...</h2>
+        <header class="mb-10 w-full">
+            <div id="role-display" class="badge-base badge-role mb-2 uppercase tracking-widest font-bold mx-auto">...</div>
+            <h2 id="user-display-name" class="text-3xl md:text-4xl font-extrabold tracking-tight mb-3 px-4">...</h2>
             <div id="church-list-tags" class="flex flex-wrap justify-center gap-2 mt-2"></div>
         </header>
 
@@ -191,34 +187,15 @@
             { id: 5, title: "Paladin",    color: "#fbbf24" }  
         ];
 
-        const initTheme = () => {
-            const isDark = localStorage.getItem('theme') === 'dark';
-            if (isDark) {
-                document.getElementById('main-html').classList.add('dark');
-                document.getElementById('sun-icon')?.classList.remove('hidden');
-                document.getElementById('moon-icon')?.classList.add('hidden');
-            }
-        };
-        initTheme();
-       
-        window.toggleDarkMode = () => {
-            const html = document.getElementById('main-html');
-            const isDark = html.classList.toggle('dark');
-            document.getElementById('sun-icon')?.classList.toggle('hidden', !isDark);
-            document.getElementById('moon-icon')?.classList.toggle('hidden', isDark);
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
-        };
-        
         onAuthStateChanged(auth, async (user) => {
             if (!user) { window.location.replace("index.html"); return; }
             
             // Check session storage first, else fetch profile
             const cachedData = sessionStorage.getItem('userContext');
             let profile;
-                       
+            
             if (cachedData) {
                 profile = JSON.parse(cachedData);
-                renderHeader(userProfile.displayName, userProfile.role, userProfile.churchNames || {});
             } else {
                 const profileSnap = await getDoc(doc(db, "profiles", user.uid));
                 if (!profileSnap.exists()) return;
@@ -229,23 +206,23 @@
             document.getElementById('role-display').innerText = profile.role.toUpperCase();
 
             // RENDER CHURCH TAGS
-            //const tagContainer = document.getElementById('church-list-tags');
-            //let tagsHtml = "";
+            const tagContainer = document.getElementById('church-list-tags');
+            let tagsHtml = "";
             
             // If church names are already in the context, use them, otherwise fetch
-            //if (profile.churchNames) {
-            //    Object.values(profile.churchNames).forEach(name => {
-            //        tagsHtml += `<span class="badge-base badge-church">${name}</span>`;
-            //    });
-            //} else {
-            //    for (const code of (profile.churchId || [])) {
-            //        const d = await getDoc(doc(db, "churches", code));
-            //        if (d.exists()) {
-            //            tagsHtml += `<span class="badge-base badge-church">${d.data().name}</span>`;
-            //        }
-            //    }
-            //}
-            //tagContainer.innerHTML = tagsHtml || `<span class="text-slate-500 text-[10px]">No Church Assigned</span>`;
+            if (profile.churchNames) {
+                Object.values(profile.churchNames).forEach(name => {
+                    tagsHtml += `<span class="badge-base badge-church">${name}</span>`;
+                });
+            } else {
+                for (const code of (profile.churchId || [])) {
+                    const d = await getDoc(doc(db, "churches", code));
+                    if (d.exists()) {
+                        tagsHtml += `<span class="badge-base badge-church">${d.data().name}</span>`;
+                    }
+                }
+            }
+            tagContainer.innerHTML = tagsHtml || `<span class="text-slate-500 text-[10px]">No Church Assigned</span>`;
 
             // STATS CALCULATION
             const q = query(collection(db, "salvations"), where("userId", "==", user.uid));
@@ -253,16 +230,6 @@
             calculateProgression(aggSnap.data().total || 0, profile.gender || 'male');
         });
 
-        function renderHeader(name, role, churches) {
-            document.getElementById('user-display-name').innerText = name || "...";
-            const roleEl = document.getElementById('role-display');
-            if(roleEl) roleEl.innerText = (role || "Member").toUpperCase();
-            const tagContainer = document.getElementById('church-list-tags');
-            let tagsHtml = "";
-            Object.values(churches).forEach(c => tagsHtml += `<span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest">${c}</span>`);
-            tagContainer.innerHTML = tagsHtml;
-        }
-        
         function calculateProgression(totalSouls, gender) {
             let soulsLeft = totalSouls;
             let currentIdx = 0;
