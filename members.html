@@ -50,36 +50,38 @@
             <p class="text-[10px] text-slate-400 mt-1 uppercase tracking-[0.3em] font-black opacity-60">Activate or Deactivate Member Access</p>
         </header>
 
-        <div class="bg-white dark:bg-slate-900 border dark:border-slate-800 rounded-2xl p-6 shadow-sm mb-10 max-w-sm mx-auto text-center">
-            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-3 tracking-widest">Manage Church</label>
-            <select id="churchSelect" class="w-full bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 px-4 py-3 rounded-2xl text-xs font-bold mb-4 pr-10 dark:text-white outline-none">
+        <div class="mb-10 max-w-sm mx-auto text-center">
+            <select id="churchSelect" class="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-white/5 p-4 rounded-2xl text-[12px] font-bold text-slate-900 dark:text-white outline-none mb-4 text-center appearance-none cursor-pointer">
                 <option value="" disabled selected>Choose a church...</option>
             </select>
-            <button id="load-btn" onclick="fetchMembers()" class="w-full py-4 bg-indigo-600 text-white rounded-2xl text-[10px] font-bold uppercase active:scale-95 transition-all shadow-lg shadow-indigo-500/50">Load Member List</button>
+            
+            <button id="load-btn" onclick="fetchMembers()" class="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-xl shadow-indigo-600/30 active:scale-95 transition-all">
+                Load Member List
+            </button>
         </div>
 
         <div id="management-area" class="hidden">
             <div class="mb-8 relative max-w-md mx-auto">
-                <input type="text" id="searchInput" onkeyup="filterMembers()" placeholder="Fuzzy search names..." class="w-full p-4 pl-12 bg-white dark:bg-slate-900 border dark:border-slate-800 rounded-2xl shadow-sm outline-none focus:ring-2 focus:ring-indigo-500 transition-all dark:text-white text-sm">
+                <input type="text" id="searchInput" onkeyup="filterMembers()" placeholder="Fuzzy search names..." class="w-full p-4 pl-12 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/5 rounded-2xl shadow-sm outline-none focus:ring-2 focus:ring-indigo-500 transition-all dark:text-white text-sm">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 absolute left-4 top-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
             </div>
 
-            <section class="bg-white dark:bg-slate-900 rounded-2xl border dark:border-slate-800 overflow-hidden shadow-sm">
-                <div class="px-6 py-4 border-b bg-slate-50 dark:bg-slate-800/50">
+            <section class="bg-white dark:bg-[#0f172a] rounded-2xl border border-slate-200 dark:border-white/5 overflow-hidden shadow-sm">
+                <div class="px-6 py-4 border-b dark:border-white/5 bg-slate-50 dark:bg-slate-800/50">
                     <h3 id="roster-header-title" class="font-black text-[10px] uppercase text-slate-400 text-center tracking-[0.2em] transition-all duration-500">
                         Church Roster
                     </h3>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left">
-                        <thead class="text-[10px] text-slate-400 uppercase border-b dark:border-slate-800">
+                        <thead class="text-[10px] text-slate-400 uppercase border-b dark:border-white/5">
                             <tr>
                                 <th class="px-6 py-4">Member Info</th>
                                 <th class="px-6 py-4 text-center">Status</th>
                                 <th class="px-6 py-4 text-right">Details</th>
                             </tr>
                         </thead>
-                        <tbody id="member-list" class="divide-y dark:divide-slate-800 text-sm"></tbody>
+                        <tbody id="member-list" class="divide-y dark:divide-white/5 text-sm font-bold"></tbody>
                     </table>
                 </div>
             </section>
@@ -91,28 +93,28 @@
     </main>
 
     <div id="member-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-6 hidden z-[120]">
-        <div class="modal-content bg-white dark:bg-slate-900 w-full max-w-sm rounded-[2.5rem] p-8 border dark:border-slate-800 shadow-2xl">
+        <div class="modal-content bg-white dark:bg-[#0f172a] w-full max-w-sm rounded-[2.5rem] p-8 border border-slate-200 dark:border-white/5 shadow-2xl">
             <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-bold dark:text-white">Account Access</h3>
+                <h3 class="text-xl font-bold dark:text-white uppercase tracking-tight">Account Access</h3>
                 <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600"><i class="bi bi-x-lg"></i></button>
             </div>
             <div class="space-y-4 text-left mb-8">
                 <div>
-                    <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Full Name</label>
+                    <label class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Full Name</label>
                     <p id="det-name" class="text-sm font-bold dark:text-white">---</p>
                 </div>
                 <div>
-                    <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Email Address</label>
+                    <label class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Email Address</label>
                     <p id="det-email" class="text-sm text-slate-500">---</p>
                 </div>
                 <div>
-                    <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Account Role</label>
-                    <p id="det-role" class="text-[10px] font-black uppercase text-indigo-600">---</p>
+                    <label class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Account Role</label>
+                    <p id="det-role" class="text-[10px] font-black uppercase text-indigo-500">---</p>
                 </div>
             </div>
             <div class="flex gap-3">
-                <button onclick="closeModal()" class="flex-1 py-4 bg-slate-100 dark:bg-slate-800 text-slate-500 font-bold uppercase text-[10px] rounded-2xl">Close</button>
-                <button id="det-action-btn" class="flex-1 py-4 font-bold uppercase text-[10px] rounded-2xl transition-all active:scale-95">---</button>
+                <button onclick="closeModal()" class="flex-1 py-4 bg-slate-100 dark:bg-slate-800 text-slate-500 font-black uppercase text-[10px] rounded-2xl">Close</button>
+                <button id="det-action-btn" class="flex-1 py-4 font-black uppercase text-[10px] rounded-2xl transition-all active:scale-95">---</button>
             </div>
         </div>
     </div>
@@ -168,7 +170,6 @@
                 const snap = await getDoc(doc(db, "profiles", user.uid));
                 if (!snap.exists() || snap.data().role !== 'pastor') return window.location.replace('index.html');
                 userProfile = snap.data();
-                // Minimalist church name fetch if no cache
                 const churches = {};
                 for(const id of userProfile.churchId) {
                     const c = await getDoc(doc(db, "churches", id));
@@ -236,13 +237,13 @@
         function renderList(members) {
             const listBody = document.getElementById('member-list');
             listBody.innerHTML = members.map(m => `
-                <tr id="user-row-${m.id}" class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                <tr id="user-row-${m.id}" class="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
                     <td class="px-6 py-4">
                         <p class="font-bold dark:text-white leading-tight">${m.displayName}</p>
                         <p class="text-[10px] text-slate-400">${m.email}</p>
                     </td>
                     <td class="px-6 py-4 text-center">
-                        <span class="px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider ${m.status === 'active' ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400'}">
+                        <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider ${m.status === 'active' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}">
                             ${m.status || 'inactive'}
                         </span>
                     </td>
@@ -252,7 +253,7 @@
                         </button>
                     </td>
                 </tr>
-            `).join('') || '<tr><td colspan="3" class="text-center py-10 text-slate-400">No members found.</td></tr>';
+            `).join('') || '<tr><td colspan="3" class="text-center py-10 text-slate-400 font-black uppercase text-[10px] tracking-widest opacity-40">No members found.</td></tr>';
         }
 
         window.viewMemberDetails = (m) => {
@@ -262,7 +263,7 @@
             const actionBtn = document.getElementById('det-action-btn');
             const isActive = m.status === 'active';
             actionBtn.innerText = isActive ? 'Deactivate Account' : 'Activate Account';
-            actionBtn.className = `flex-1 py-4 font-bold uppercase text-[10px] rounded-2xl transition-all ${isActive ? 'bg-rose-50 text-rose-500 border border-rose-100' : 'bg-indigo-50 text-indigo-600 border border-indigo-100'}`;
+            actionBtn.className = `flex-1 py-4 font-black uppercase text-[10px] rounded-2xl transition-all ${isActive ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20' : 'bg-indigo-500/10 text-indigo-500 border border-indigo-500/20'}`;
             actionBtn.onclick = () => toggleStatus(m.id, m.status, m.displayName);
             document.getElementById('member-modal').classList.remove('hidden');
         };
