@@ -50,7 +50,6 @@
             appearance: none;
         }
 
-        /* DASHBOARD INPUT STYLING */
         input, select, textarea {
             transition: all 0.3s ease !important;
         }
@@ -82,7 +81,7 @@
 
     <main class="max-w-4xl mx-auto p-6 pb-32">
         <header class="mb-12 flex flex-col items-center text-center">
-            <div id="role-display" class="mb-4 px-4 py-1 rounded-full bg-indigo-500/10 text-indigo-500 border border-indigo-500/20 uppercase tracking-[0.3em] text-[10px] font-black">PASTOR</div>
+            <div id="role-display" class="mb-4 px-4 py-1 rounded-full bg-amber-500/5 text-amber-500 border border-amber-500/30 uppercase tracking-[0.3em] text-[10px] font-black">PASTOR</div>
             <h2 id="user-display-name" class="text-4xl font-extrabold tracking-tight mb-3">...</h2>
             <div id="church-list-tags" class="flex flex-wrap justify-center gap-2 mt-2"></div>
             
@@ -93,7 +92,7 @@
         <div class="space-y-12 mb-20 px-2">
             <div>
                 <label class="block text-[11px] font-black text-slate-500 uppercase mb-4 tracking-widest text-center">Church Identity</label>
-                <select id="churchSelector" onchange="loadLegacyList()" class="w-full bg-slate-100 dark:bg-[#0f172a] border border-transparent p-5 rounded-2xl text-xs font-bold text-center outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/50 appearance-none">
+                <select id="churchSelector" onchange="loadLegacyList()" class="w-full bg-slate-100 dark:bg-[#0f172a] border border-slate-200 dark:border-white/10 p-5 rounded-2xl text-xs font-bold text-center outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/50 appearance-none">
                     <option value="" disabled selected>Select Church Context...</option>
                 </select>
             </div>
@@ -101,13 +100,13 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div class="flex flex-col gap-4">
                     <label class="text-[11px] font-black text-slate-500 uppercase tracking-widest text-center">Historical Period</label>
-                    <input id="histPeriod" type="month" class="w-full p-5 rounded-2xl bg-slate-100 dark:bg-[#0f172a] border border-transparent dark:text-white font-bold text-xs outline-none text-center uppercase tracking-widest focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/50">
+                    <input id="histPeriod" type="month" class="w-full p-5 rounded-2xl bg-slate-100 dark:bg-[#0f172a] border border-slate-200 dark:border-white/10 dark:text-white font-bold text-xs outline-none text-center uppercase tracking-widest focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/50">
                 </div>
 
                 <div class="flex flex-col gap-4">
                     <label class="text-[11px] font-black text-slate-500 uppercase tracking-widest text-center">Salvation Total</label>
-                    <div class="flex items-center justify-between bg-slate-100 dark:bg-[#0f172a] p-3 rounded-2xl border border-transparent">
-                        <button onclick="stepCount(-10)" class="w-12 h-12 rounded-xl bg-white dark:bg-slate-800 font-bold text-lg hover:bg-slate-50 dark:text-white shadow-sm">-</button>
+                    <div class="flex items-center justify-between bg-slate-100 dark:bg-[#0f172a] p-3 rounded-2xl border border-slate-200 dark:border-white/10">
+                        <button onclick="stepCount(-10)" class="w-12 h-12 rounded-xl bg-white dark:bg-slate-800 font-bold text-lg hover:bg-slate-50 dark:text-white shadow-sm border border-slate-200 dark:border-white/5">-</button>
                         <input id="histCount" type="number" value="0" min="0" max="99999" class="w-full text-center text-4xl font-black text-indigo-500 clean-input">
                         <button onclick="stepCount(10)" class="w-12 h-12 rounded-xl bg-indigo-600 text-white font-bold text-lg hover:bg-indigo-700 shadow-lg shadow-indigo-500/30">+</button>
                     </div>
@@ -116,7 +115,7 @@
 
             <div>
                 <label class="text-[11px] font-black text-slate-500 uppercase tracking-widest mb-4 block text-center">Reference Note</label>
-                <textarea id="histNote" placeholder="Notes (e.g., Physical Logbook 2015-2020)" class="w-full p-5 rounded-2xl bg-slate-100 dark:bg-[#0f172a] border border-transparent dark:text-white text-xs italic resize-none h-24 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/50"></textarea>
+                <textarea id="histNote" placeholder="Notes (e.g., Physical Logbook 2015-2020)" class="w-full p-5 rounded-2xl bg-slate-100 dark:bg-[#0f172a] border border-slate-200 dark:border-white/10 dark:text-white text-xs italic resize-none h-24 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/50"></textarea>
             </div>
 
             <button id="saveBtn" onclick="saveLegacyData()" class="w-full py-6 bg-indigo-600 text-white rounded-2xl font-black uppercase text-[11px] tracking-[0.2em] shadow-xl shadow-indigo-600/20 active:scale-95 transition-all">
@@ -125,9 +124,9 @@
         </div>
 
         <div class="flex items-center gap-4 mb-8 px-4">
-            <div class="h-[1px] flex-1 bg-white/5 dark:bg-white/5"></div>
+            <div class="h-[1px] flex-1 bg-black/5 dark:bg-white/5"></div>
             <label class="text-[11px] font-black text-slate-400 dark:text-slate-200 uppercase tracking-[0.4em]">Record Ledger</label>
-            <div class="h-[1px] flex-1 bg-white/5 dark:bg-white/5"></div>
+            <div class="h-[1px] flex-1 bg-black/5 dark:bg-white/5"></div>
         </div>
 
         <div id="legacy-list" class="w-full space-y-3">
@@ -243,14 +242,14 @@
             selector.innerHTML = '<option value="" disabled selected>Select Church Context...</option>';
             
             Object.entries(userProfile.churchNames || {}).forEach(([id, name]) => {
-                tagsHtml += `<span class="bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest">${name}</span>`;
+                // EMERALD CHURCH TAGS
+                tagsHtml += `<span class="bg-emerald-500/5 text-emerald-500 border border-emerald-500/30 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest">${name}</span>`;
                 const opt = document.createElement('option');
                 opt.value = id; opt.innerText = name;
                 selector.appendChild(opt);
             });
             tagContainer.innerHTML = tagsHtml;
             
-            // Auto-select first church if only one exists
             if (userProfile.churchId.length === 1) {
                 selector.value = userProfile.churchId[0];
                 loadLegacyList();
