@@ -252,6 +252,16 @@
             calculateProgression(aggSnap.data().total || 0, profile.gender || 'male');
         });
 
+        function renderHeader(name, role, churches) {
+            document.getElementById('user-display-name').innerText = name || "...";
+            const roleEl = document.getElementById('role-display');
+            if(roleEl) roleEl.innerText = (role || "Member").toUpperCase();
+            const tagContainer = document.getElementById('church-list-tags');
+            let tagsHtml = "";
+            Object.values(churches).forEach(c => tagsHtml += `<span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest">${c}</span>`);
+            tagContainer.innerHTML = tagsHtml;
+        }
+        
         function calculateProgression(totalSouls, gender) {
             let soulsLeft = totalSouls;
             let currentIdx = 0;
