@@ -516,23 +516,46 @@
 
         onAuthStateChanged(auth, async (user) => {
             if (!user) { sessionStorage.clear(); window.location.replace("index.html"); return; }
+        
             try {
+                let profile;
                 const cachedData = sessionStorage.getItem('userContext');
+        
                 if (cachedData) {
-                    userProfile = JSON.parse(cachedData);
-                    document.getElementById('user-display-name').innerText = userProfile.displayName || "Pastor";
-                    await renderChurchUI(); 
+                    profile = JSON.parse(cachedData);
                 } else {
                     const snap = await getDoc(doc(db, "profiles", user.uid));
                     if (!snap.exists()) { window.location.replace("index.html"); return; }
-                    userProfile = snap.data();
-                    if (userProfile.role !== 'pastor') { window.location.replace("index.html"); return; }
-                    document.getElementById('user-display-name').innerText = userProfile.displayName || "Pastor";
+                    profile = snap.data();
+                    sessionStorage.setItem('userContext', JSON.stringify(profile));
+                }
+        
+                // --- THE HARD GATE (Must be outside the if/else) ---
+                if (profile.role !== 'pastor') {
+                    console.error("Access Denied: Unauthorized Role");
+                    sessionStorage.clear(); // Clear the member's cache so they can't trick it
+                    window.location.replace("index.html");
+                    return; 
+                }
+        
+                // --- AUTHORIZED LOGIC ---
+                userProfile = profile;
+                document.getElementById('user-display-name').innerText = userProfile.displayName || "Pastor";
+                
+                // Use your cached UI loader or refresh logic
+                if (cachedData) {
+                    await renderChurchUI();
+                } else {
                     await refreshUI();
                 }
+        
                 setActivePreset('month');
                 setActiveType('all');
-            } catch (e) { console.error(e); }
+        
+            } catch (e) { 
+                console.error("Auth Guard Error:", e);
+                window.location.replace("index.html"); 
+            }
         });
 
         async function refreshUI() {
