@@ -6,6 +6,7 @@
     <title>Record Prospect - Soulwinning Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <script>tailwind.config = { darkMode: 'class' }</script>
     <style>
         input, textarea {
@@ -76,15 +77,14 @@
                     <input type="tel" id="p-phone" required placeholder="Enter contact number..." class="w-full p-4 rounded-2xl dark:text-white">
                 </div>
 
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="text-[8px] font-black text-indigo-500 uppercase tracking-widest ml-1 mb-1 block">SW Date</label>
-                        <input type="date" id="p-date" required class="w-full p-4 rounded-2xl dark:text-white">
-                    </div>
-                    <div>
-                        <label class="text-[8px] font-black text-indigo-500 uppercase tracking-widest ml-1 mb-1 block">SW Location</label>
-                        <input type="text" id="p-location" required placeholder="Village/City" class="w-full p-4 rounded-2xl dark:text-white">
-                    </div>
+                <div>
+                    <label class="text-[10px] font-black text-indigo-500 uppercase tracking-widest ml-1 mb-1 block">SW Date</label>
+                    <input type="date" id="p-date" required class="w-full p-4 rounded-2xl dark:text-white text-center">
+                </div>
+
+                <div>
+                    <label class="text-[10px] font-black text-indigo-500 uppercase tracking-widest ml-1 mb-1 block">SW Location</label>
+                    <input type="text" id="p-location" required placeholder="Village/City" class="w-full p-4 rounded-2xl dark:text-white">
                 </div>
 
                 <div class="p-4 bg-indigo-50/50 dark:bg-indigo-900/10 border border-indigo-100 dark:border-indigo-900/20 rounded-xl flex items-center gap-3">
