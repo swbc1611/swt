@@ -37,9 +37,6 @@
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03) !important;
         }
 
-        #main-html:not(.dark) .dash-row span { color: #1e293b !important; }
-        #main-html:not(.dark) .dash-row i { color: #64748b !important; }
-
         .clean-input {
             border: none !important;
             background: transparent !important;
@@ -48,6 +45,16 @@
             padding: 0 !important;
             margin: 0 !important;
             appearance: none;
+        }
+
+        /* HIDDEN SPINNERS FIX */
+        input[type=number]::-webkit-outer-spin-button,
+        input[type=number]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
         }
 
         input, select, textarea {
@@ -85,47 +92,45 @@
             <h2 id="user-display-name" class="text-4xl font-extrabold tracking-tight mb-3">...</h2>
             <div id="church-list-tags" class="flex flex-wrap justify-center gap-2 mt-2"></div>
             
-            <h3 class="text-2xl font-black mt-10 text-indigo-500 uppercase tracking-tighter">Church Historical Data</h3>
+            <h3 class="text-2xl font-black mt-10 text-indigo-500 uppercase tracking-tighter">CHURCH HISTORICAL DATA</h3>
             <p class="text-[10px] text-slate-400 mt-1 uppercase tracking-[0.3em] font-black opacity-60">Institutional Data Sync</p>
         </header>
 
         <div class="space-y-12 mb-20 px-2">
             <div>
-                <label class="block text-[11px] font-black text-slate-500 uppercase mb-4 tracking-widest text-center">Select Church</label>
+                <label class="block text-[11px] font-black text-slate-500 uppercase mb-4 tracking-widest text-center">SELECT CHURCH</label>
                 <select id="churchSelector" onchange="loadLegacyList()" class="w-full bg-slate-100 dark:bg-[#0f172a] border border-slate-200 dark:border-white/10 p-5 rounded-2xl text-xs font-bold text-center outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/50 appearance-none">
-                    <option value="" disabled selected>Select Church...</option>
+                    <option value="" disabled selected>Select Church Context...</option>
                 </select>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="flex flex-col gap-4">
-                    <label class="text-[11px] font-black text-slate-500 uppercase tracking-widest text-center">Historical Period</label>
-                    <input id="histPeriod" type="month" class="w-full p-5 rounded-2xl bg-slate-100 dark:bg-[#0f172a] border border-slate-200 dark:border-white/10 dark:text-white font-bold text-xs outline-none text-center uppercase tracking-widest focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/50">
-                </div>
+            <div class="flex flex-col gap-4">
+                <label class="text-[11px] font-black text-slate-500 uppercase tracking-widest text-center">HISTORICAL PERIOD</label>
+                <input id="histPeriod" type="month" class="w-full p-5 rounded-2xl bg-slate-100 dark:bg-[#0f172a] border border-slate-200 dark:border-white/10 dark:text-white font-bold text-xs outline-none text-center uppercase tracking-widest focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/50">
+            </div>
 
-                <div class="flex flex-col gap-4">
-                    <label class="text-[11px] font-black text-slate-500 uppercase tracking-widest text-center">Historical Salvation Total</label>
-                    <div class="flex items-center justify-between bg-slate-100 dark:bg-[#0f172a] p-3 rounded-2xl border border-slate-200 dark:border-white/10">
-                        <button onclick="stepCount(-10)" class="w-12 h-12 rounded-xl bg-white dark:bg-slate-800 font-bold text-lg hover:bg-slate-50 dark:text-white shadow-sm border border-slate-200 dark:border-white/5">-</button>
-                        <input id="histCount" type="number" value="0" min="0" max="99999" class="w-full text-center text-4xl font-black text-indigo-500 clean-input">
-                        <button onclick="stepCount(10)" class="w-12 h-12 rounded-xl bg-indigo-600 text-white font-bold text-lg hover:bg-indigo-700 shadow-lg shadow-indigo-500/30">+</button>
-                    </div>
+            <div class="flex flex-col gap-4">
+                <label class="text-[11px] font-black text-slate-500 uppercase tracking-widest text-center">HISTORICAL SALVATION TOTAL</label>
+                <div class="flex items-center justify-between bg-slate-100 dark:bg-[#0f172a] p-3 rounded-2xl border border-slate-200 dark:border-white/10">
+                    <button onclick="stepCount(-10)" class="w-12 h-12 rounded-xl bg-white dark:bg-slate-800 font-bold text-lg hover:bg-slate-50 dark:text-white shadow-sm border border-slate-200 dark:border-white/5">-</button>
+                    <input id="histCount" type="number" value="0" min="0" max="99999" class="w-full text-center text-4xl font-black text-indigo-500 clean-input">
+                    <button onclick="stepCount(10)" class="w-12 h-12 rounded-xl bg-indigo-600 text-white font-bold text-lg hover:bg-indigo-700 shadow-lg shadow-indigo-500/30">+</button>
                 </div>
             </div>
 
             <div>
-                <label class="text-[11px] font-black text-slate-500 uppercase tracking-widest mb-4 block text-center">Reference Note</label>
+                <label class="text-[11px] font-black text-slate-500 uppercase tracking-widest mb-4 block text-center">REFERENCE NOTE</label>
                 <textarea id="histNote" placeholder="Notes (e.g., Physical Logbook 2015-2020)" class="w-full p-5 rounded-2xl bg-slate-100 dark:bg-[#0f172a] border border-slate-200 dark:border-white/10 dark:text-white text-xs italic resize-none h-24 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/50"></textarea>
             </div>
 
             <button id="saveBtn" onclick="saveLegacyData()" class="w-full py-6 bg-indigo-600 text-white rounded-2xl font-black uppercase text-[11px] tracking-[0.2em] shadow-xl shadow-indigo-600/20 active:scale-95 transition-all">
-                Add Historical Data
+                ADD HISTORICAL DATA
             </button>
         </div>
 
         <div class="flex items-center gap-4 mb-8 px-4">
             <div class="h-[1px] flex-1 bg-black/5 dark:bg-white/5"></div>
-            <label class="text-[11px] font-black text-slate-400 dark:text-slate-200 uppercase tracking-[0.4em]">Record Ledger</label>
+            <label class="text-[11px] font-black text-slate-400 dark:text-slate-200 uppercase tracking-[0.4em]">RECORD LEDGER</label>
             <div class="h-[1px] flex-1 bg-black/5 dark:bg-white/5"></div>
         </div>
 
@@ -153,7 +158,7 @@
     <script type="module">
         import { db, auth } from './firebase-config.js';
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { doc, setDoc, getDocs, deleteDoc, collection, query, where, serverTimestamp, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { doc, setDoc, getDocs, deleteDoc, collection, query, where, orderBy, serverTimestamp, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         let userProfile = null;
 
@@ -187,12 +192,6 @@
             const el = document.getElementById('histCount');
             const newVal = (parseInt(el.value) || 0) + val;
             el.value = newVal < 0 ? 0 : newVal;
-        };
-
-        window.limitInput = (el) => {
-            let val = parseInt(el.value);
-            if (val < 0 || isNaN(val)) el.value = 0;
-            if (val > 99999) el.value = 99999;
         };
 
         window.showToast = (msg) => {
@@ -286,7 +285,7 @@
                 document.getElementById('histCount').value = "0";
                 document.getElementById('histNote').value = "";
             } catch (e) { showToast("❌ Sync Error"); }
-            finally { btn.disabled = false; btn.innerText = "SYNCHRONIZE CHURCH RECORDS"; }
+            finally { btn.disabled = false; btn.innerText = "ADD HISTORICAL DATA"; }
         };
 
         window.loadLegacyList = async () => {
@@ -297,12 +296,18 @@
             list.innerHTML = '<div class="text-center py-10 italic text-[10px] uppercase font-black tracking-widest opacity-30">Reading Records...</div>';
             
             try {
-                const q = query(collection(db, "churchHistoricalTotals"), where("churchId", "==", churchId));
+                // ADDED ORDERBY (REQUIRES INDEX VIA CONSOLE LINK)
+                const q = query(
+                    collection(db, "churchHistoricalTotals"), 
+                    where("churchId", "==", churchId),
+                    orderBy("year", "desc"),
+                    orderBy("month", "desc")
+                );
                 const snap = await getDocs(q);
                 let html = "";
-                const docs = snap.docs.map(d => ({id: d.id, ...d.data()})).sort((a,b) => (b.year - a.year) || (b.month - a.month));
                 
-                docs.forEach(d => {
+                snap.forEach(snapDoc => {
+                    const d = snapDoc.data();
                     const mName = new Date(2000, d.month - 1).toLocaleString('en-US', {month:'long'});
                     html += `
                         <div class="dash-row group">
@@ -314,13 +319,16 @@
                                 </div>
                                 ${d.note ? `<p class="text-[10px] text-slate-500 italic mt-2 opacity-60">"${d.note}"</p>` : ''}
                             </div>
-                            <button onclick="confirmDeleteLegacy('${d.id}')" class="w-10 h-10 flex items-center justify-center rounded-xl bg-red-500/10 text-red-500 active:scale-90 transition-all border border-red-500/10">
+                            <button onclick="confirmDeleteLegacy('${snapDoc.id}')" class="w-10 h-10 flex items-center justify-center rounded-xl bg-red-500/10 text-red-500 active:scale-90 transition-all border border-red-500/10">
                                 <i class="bi bi-trash3-fill text-sm"></i>
                             </button>
                         </div>`;
                 });
                 list.innerHTML = html || `<p class="text-center py-20 opacity-20 uppercase font-black text-[10px] tracking-widest">No history recorded for this church</p>`;
-            } catch(e) { list.innerHTML = "Load Error"; }
+            } catch(e) { 
+                console.error("Firestore Error:", e);
+                list.innerHTML = `<div class="text-center py-10 text-red-500 font-bold">Load Error: Check Browser Console for Index Link</div>`; 
+            }
         };
 
         window.confirmDeleteLegacy = (id) => {
