@@ -101,3 +101,32 @@ input[type="month"]::-webkit-calendar-picker-indicator:hover {
 /* Optional: If you want to change the icon to a specific color (like Indigo) 
    you can use a sepia/hue-rotate filter combo, but standard white/slate is 
    usually best for dashboard visibility. */
+
+/* --- Mobile Icon Standardizer --- */
+
+input[type="date"],
+input[type="month"] {
+    /* Forces the browser to treat it as a standard input area */
+    -webkit-appearance: none; 
+    appearance: none;
+    min-height: 1.2em; /* Ensures consistency across OS versions */
+}
+
+/* Forces the calendar icon to stay visible and allows our filters to work */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="month"]::-webkit-calendar-picker-indicator {
+    display: block !important;
+    -webkit-appearance: none;
+    /* Re-establishes the standard calendar icon as the background */
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="15" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>');
+    background-repeat: no-repeat;
+    background-size: contain;
+    width: 18px;
+    height: 18px;
+}
+
+/* DARK MODE: Flip the SVG icon to white */
+.dark input[type="date"]::-webkit-calendar-picker-indicator,
+.dark input[type="month"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+}
