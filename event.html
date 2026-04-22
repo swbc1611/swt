@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Outreach PoC - Soulwinning Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        body { background-color: #0f172a; color: white; font-family: sans-serif; }
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 1.5rem;
+        }
+        .shimmer-btn {
+            position: relative;
+            overflow: hidden;
+        }
+        .shimmer-btn::after {
+            content: "";
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: rotate(45deg);
+            animation: shimmer 3s infinite;
+        }
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+    </style>
+</head>
+<body class="p-6 pb-32">
+
+    <header class="max-w-2xl mx-auto mb-10 text-center">
+        <h1 class="text-3xl font-black tracking-tighter text-indigo-400 uppercase">Outreach Board</h1>
+        <p class="text-[10px] text-slate-400 uppercase tracking-[0.3em] font-bold mt-2">Coordinate the Harvest Field</p>
+    </header>
+
+    <div id="event-container" class="max-w-lg mx-auto space-y-6">
+        </div>
+
+    <button onclick="openCreateModal()" class="fixed bottom-10 right-6 w-16 h-16 bg-indigo-600 rounded-full shadow-2xl flex items-center justify-center active:scale-90 transition-transform z-50">
+        <i class="bi bi-plus-lg text-2xl"></i>
+    </button>
+
+    <div id="createModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center p-6 hidden">
+        <div class="bg-slate-900 w-full max-w-sm rounded-[2.5rem] p-8 border border-white/10 shadow-2xl">
+            <h3 class="text-xl font-bold mb-6 text-center">Setup Outreach</h3>
+            
+            <div class="space-y-4">
+                <input id="eventTitle" type="text" placeholder="Event Title (e.g. School Ministry)" class="w-full p-4 bg-slate-800 rounded-2xl outline-none text-sm border border-white/5">
+                
+                <div class="flex gap-2">
+                    <input id="eventDate" type="date" class="flex-1 p-4 bg-slate-800 rounded-2xl outline-none text-xs border border-white/5">
+                    <input id="eventTime" type="time" class="flex-1 p-4 bg-slate-800 rounded-2xl outline-none text-xs border border-white/5">
+                </div>
+
+                <div class="relative">
+                    <input id="eventLocation" type="text" placeholder="Search Location..." class="w-full p-4 bg-slate-800 rounded-2xl outline-none text-sm border border-white/5 pr-12">
+                    <i class="bi bi-geo-alt-fill absolute right-4 top-4 text-indigo-500"></i>
+                </div>
+
+                <input id="eventGoal" type="number" placeholder="Soulwinners Needed" class="w-full p-4 bg-slate-800 rounded-2xl outline-none text-sm border border-white/5">
+            </div>
+
+            <div class="flex gap-3 mt-8">
+                <button onclick="closeCreateModal()" class="flex-1 py-4 text-slate-400 font-bold uppercase text-[10px]">Cancel</button>
+                <button onclick="saveEventPoC()" class="flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-bold uppercase text-[10px] shadow-lg shadow-indigo-500/20">Post Board</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // MOCK DATA FOR PoC
+        let events = [
+            {
+                id: 1,
+                title: "Angeles High Outreach",
+                date: "2026-05-12",
+                time: "09:00 AM",
+                location: "Angeles City, Pampanga",
+                mapsUrl: "https://www.google.com/maps",
+                goal: 10,
+                joined: ["User1", "User2", "User3"]
+            }
+        ];
+
+        function renderEvents() {
+            const container = document.getElementById('event-container');
+            container.innerHTML = events.map(ev => `
+                <div class="glass-card p-6 relative overflow-hidden">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <span class="text-[9px] font-black text-indigo-400 uppercase tracking-widest bg-indigo-500/10 px-2 py-1 rounded-md">Upcoming Outreach</span>
+                            <h3 class="text-xl font-black mt-2 uppercase tracking-tight">${ev.title}</h3>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-xs font-bold text-slate-300">${ev.time}</p>
+                            <p class="text-[10px] text-slate-500 font-bold uppercase">${ev.date}</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-3 mb-6 p-3 bg-slate-800/50 rounded-xl border border-white/5 cursor-pointer hover:bg-slate-800 transition-colors" onclick="window.open('${ev.mapsUrl}', '_blank')">
+                        <div class="w-10 h-10 bg-indigo-500/10 rounded-lg flex items-center justify-center">
+                            <i class="bi bi-geo-alt-fill text-indigo-500"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Meet At</p>
+                            <p class="text-xs font-bold truncate">${ev.location}</p>
+                        </div>
+                        <i class="bi bi-box-arrow-up-right text-slate-600 text-xs"></i>
+                    </div>
+
+                    <div class="mb-6">
+                        <div class="flex justify-between text-[10px] font-black uppercase tracking-widest mb-2">
+                            <span class="text-slate-400">Deployment Progress</span>
+                            <span class="text-indigo-400">${ev.joined.length} / ${ev.goal} Laborers</span>
+                        </div>
+                        <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+                            <div class="h-full bg-indigo-500 transition-all duration-1000" style="width: ${(ev.joined.length/ev.goal)*100}%"></div>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-2">
+                        <button onclick="simulateJoin(${ev.id})" class="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-black uppercase text-[10px] active:scale-95 transition-all shadow-lg shadow-indigo-500/20">
+                            Join Field
+                        </button>
+                        <button onclick="shareToMessenger('${ev.title}', '${ev.time}', '${ev.location}')" class="w-12 h-12 bg-slate-800 rounded-xl flex items-center justify-center text-slate-400 hover:text-white transition-colors">
+                            <i class="bi bi-share-fill"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openCreateModal() { document.getElementById('createModal').classList.remove('hidden'); }
+        function closeCreateModal() { document.getElementById('createModal').classList.add('hidden'); }
+
+        function saveEventPoC() {
+            const title = document.getElementById('eventTitle').value;
+            const loc = document.getElementById('eventLocation').value;
+            const goal = document.getElementById('eventGoal').value;
+            const date = document.getElementById('eventDate').value;
+            const time = document.getElementById('eventTime').value;
+
+            if(!title || !loc) return alert("Fill in details");
+
+            const newEv = {
+                id: Date.now(),
+                title: title,
+                date: date,
+                time: time,
+                location: loc,
+                mapsUrl: "https://www.google.com/maps",
+                goal: parseInt(goal) || 10,
+                joined: []
+            };
+
+            events.unshift(newEv);
+            renderEvents();
+            closeCreateModal();
+        }
+
+        function simulateJoin(id) {
+            const ev = events.find(e => e.id === id);
+            if(ev) {
+                ev.joined.push("New User");
+                renderEvents();
+            }
+        }
+
+        function shareToMessenger(title, time, loc) {
+            const text = `📍 OUTREACH ALERT\n\n🎯 ${title.toUpperCase()}\n⏰ Time: ${time}\n🗺️ Meeting at: ${loc}\n\nJoin us on the SWT App!`;
+            navigator.clipboard.writeText(text).then(() => {
+                alert("Invite text copied! Paste it in your Facebook Group Chat.");
+            });
+        }
+
+        // Initial Render
+        renderEvents();
+    </script>
+</body>
+</html>
