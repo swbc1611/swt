@@ -104,6 +104,15 @@
                     </select>
                 </div>
             </div>
+
+            <div>
+                <label class="block text-[10px] font-black text-slate-500 uppercase mb-4 tracking-widest text-center">Assign to Category</label>
+                <div class="flex gap-2">
+                    <button id="type-Regular" onclick="setActiveType('Regular')" class="type-btn flex-1 py-4 bg-indigo-600 text-white rounded-xl text-[10px] font-bold uppercase shadow-lg shadow-indigo-600/20 border border-transparent">Regular</button>
+                    <button id="type-School" onclick="setActiveType('School')" class="type-btn flex-1 py-4 bg-slate-100 dark:bg-slate-800/40 text-slate-500 rounded-xl text-[10px] font-bold uppercase border border-transparent">School</button>
+                    <button id="type-Event" onclick="setActiveType('Event')" class="type-btn flex-1 py-4 bg-slate-100 dark:bg-slate-800/40 text-slate-500 rounded-xl text-[10px] font-bold uppercase border border-transparent">Event</button>
+                </div>
+            </div>
             
             <div class="flex flex-col gap-4 relative z-0"> <label class="text-[11px] font-black text-slate-500 uppercase tracking-widest text-center">HISTORICAL PERIOD</label>
                 <input id="histPeriod" type="month" class="w-full p-5 rounded-2xl bg-slate-100 dark:bg-[#0f172a] border border-slate-200 dark:border-white/10 dark:text-white font-bold text-xs outline-none text-center uppercase tracking-widest focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/50">
@@ -165,6 +174,7 @@
         import { doc, setDoc, getDocs, deleteDoc, collection, query, where, orderBy, serverTimestamp, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         let userProfile = null;
+        let currentType = 'Regular'; // Default entry type
 
         const initTheme = () => {
             const isDark = localStorage.getItem('theme') === 'dark';
@@ -192,6 +202,17 @@
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
         };
 
+        // UI TYPE HANDLER
+        window.setActiveType = (type) => {
+            currentType = type;
+            const inactive = "type-btn flex-1 py-4 bg-slate-100 dark:bg-slate-800/40 text-slate-500 rounded-xl text-[10px] font-bold uppercase border border-transparent";
+            const active = "type-btn flex-1 py-4 bg-indigo-600 text-white rounded-xl text-[10px] font-bold uppercase shadow-lg shadow-indigo-600/20 border border-transparent";
+            
+            document.querySelectorAll('.type-btn').forEach(btn => btn.className = inactive);
+            const activeBtn = document.getElementById(`type-${type}`);
+            if (activeBtn) activeBtn.className = active;
+        };
+
         window.stepCount = (val) => {
             const el = document.getElementById('histCount');
             const newVal = (parseInt(el.value) || 0) + val;
@@ -210,7 +231,6 @@
         };
 
         onAuthStateChanged(auth, async (user) => {
-            // 1. Instant kick if no user
             if (!user) { 
                 sessionStorage.clear(); 
                 window.location.replace("index.html"); 
@@ -224,53 +244,29 @@
                 if (cachedData) {
                     profile = JSON.parse(cachedData);
                 } else {
-                    // Fetching fresh if cache is empty
                     const snap = await getDoc(doc(db, "profiles", user.uid));
                     if (!snap.exists()) { 
                         window.location.replace("index.html"); 
                         return; 
                     }
                     profile = snap.data();
-                    // Sync the cache for the next page
                     sessionStorage.setItem('userContext', JSON.stringify(profile));
                 }
         
-                // 2. THE HARD GATE (Standardized)
-                // This catches members even if they manually navigate to the URL
                 if (profile.role !== 'pastor') {
-                    console.warn("Restricted Access: Pastor Role Required.");
-                    sessionStorage.clear(); // Clear unauthorized session
+                    sessionStorage.clear();
                     window.location.replace("index.html");
                     return; 
                 }
         
-                // 3. AUTHORIZED LOGIC
                 userProfile = profile;
-                
-                // Populate your UI (Header, Tables, etc.)
-                setupHeader(); // or renderChurchUI(), refreshUI(), etc.
+                setupHeader();
         
             } catch (e) {
                 console.error("Security Guard Error:", e);
                 window.location.replace("index.html");
             }
         });
-
-        async function fetchFreshProfile(uid) {
-            const snap = await getDoc(doc(db, "profiles", uid));
-            if (snap.exists()) {
-                userProfile = snap.data();
-                if (userProfile.role !== 'pastor') { window.location.replace("index.html"); return; }
-                const churches = {};
-                for(const code of (userProfile.churchId || [])) {
-                    const d = await getDoc(doc(db, "churches", code));
-                    if(d.exists()) churches[code] = d.data().name;
-                }
-                userProfile.churchNames = churches;
-                setupHeader();
-                sessionStorage.setItem('userContext', JSON.stringify(userProfile));
-            }
-        }
 
         function setupHeader() {
             document.getElementById('user-display-name').innerText = userProfile.displayName;
@@ -280,7 +276,6 @@
             selector.innerHTML = '<option value="" disabled selected>Select Church Context...</option>';
             
             Object.entries(userProfile.churchNames || {}).forEach(([id, name]) => {
-                // EMERALD CHURCH TAGS
                 tagsHtml += `<span class="bg-emerald-500/5 text-emerald-500 border border-emerald-500/30 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest">${name}</span>`;
                 const opt = document.createElement('option');
                 opt.value = id; opt.innerText = name;
@@ -310,16 +305,17 @@
             btn.disabled = true; btn.innerText = "SYNCHRONIZING...";
 
             try {
-                const docId = `${churchId}_${year}_${month}`;
+                // SURGICAL FIX: Include type in Doc ID to prevent collisions
+                const docId = `${churchId}_${year}_${month}_${currentType}`;
                 await setDoc(doc(db, "churchHistoricalTotals", docId), {
                     churchId: churchId,
                     month, year, salvationCount: countValue, note,
-                    type: "Legacy",
+                    type: currentType, // Use the selected category
                     updatedBy: auth.currentUser.uid,
                     lastUpdated: serverTimestamp()
                 }, { merge: true });
 
-                showToast("✅ Record Synchronized");
+                showToast(`✅ ${currentType} Record Synchronized`);
                 loadLegacyList();
                 document.getElementById('histCount').value = "0";
                 document.getElementById('histNote').value = "";
@@ -335,7 +331,6 @@
             list.innerHTML = '<div class="text-center py-10 italic text-[10px] uppercase font-black tracking-widest opacity-30">Reading Records...</div>';
             
             try {
-                // ADDED ORDERBY (REQUIRES INDEX VIA CONSOLE LINK)
                 const q = query(
                     collection(db, "churchHistoricalTotals"), 
                     where("churchId", "==", churchId),
@@ -354,7 +349,7 @@
                                 <h4 class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 mb-1">${mName} ${d.year}</h4>
                                 <div class="flex items-baseline gap-2">
                                     <span class="text-2xl font-black text-indigo-500">${d.salvationCount.toLocaleString()}</span>
-                                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest opacity-50">Legacy Souls</span>
+                                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest opacity-50">${d.type || 'Legacy'} Souls</span>
                                 </div>
                                 ${d.note ? `<p class="text-[10px] text-slate-500 italic mt-2 opacity-60">"${d.note}"</p>` : ''}
                             </div>
