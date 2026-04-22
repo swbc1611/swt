@@ -240,8 +240,8 @@
         function calculateProgression(totalSouls, gender) {
             let soulsLeft = totalSouls;
             let currentIdx = 0;
-            const staircase = [100, 150, 200, 250, 999999]; 
-
+            const staircase = [100, 150, 200, 250]; // Thresholds for leveling up
+        
             for (let i = 0; i < staircase.length; i++) {
                 if (soulsLeft >= staircase[i]) {
                     soulsLeft -= staircase[i];
@@ -254,24 +254,45 @@
                     break;
                 }
             }
-
-            const rank = RANKS[Math.min(currentIdx, RANKS.length - 1)];
+        
+            // Handle MAX RANK scenario
+            if (currentIdx >= RANKS.length - 1) {
+                document.getElementById('xp-current').innerText = soulsLeft;
+                document.getElementById('xp-next').innerText = "MAX";
+                document.getElementById('xp-fill').style.width = `100%`;
+                currentIdx = RANKS.length - 1; // Clamp to Paladin
+            }
+        
+            const rank = RANKS[currentIdx];
             document.documentElement.style.setProperty('--rank-glow-color', rank.color);
             document.getElementById('rank-lvl-name').innerText = rank.title;
             document.getElementById('rank-lvl-name').style.color = rank.color;
             document.getElementById('rank-line').style.backgroundColor = rank.color;
-
+        
             updateAvatarImage(rank.id, gender);
         }
 
         function updateAvatarImage(rankId, gender) {
             const img = document.getElementById('avatar-img');
             const loader = document.getElementById('bible-loader');
+            
+            // Construct Path
             img.src = `${gender === 'female' ? 'f' : 'm'}${rankId}.webp`;
+        
             img.onload = () => {
                 loader.classList.add('opacity-0');
                 setTimeout(() => loader.classList.add('hidden'), 500);
                 img.classList.remove('opacity-0');
+            };
+        
+            // SURGICAL FIX: Handle missing assets so the screen isn't stuck on "Loading"
+            img.onerror = () => {
+                console.error("Avatar asset missing.");
+                loader.innerHTML = '<i class="bi bi-person-circle text-5xl text-slate-500"></i>';
+                setTimeout(() => {
+                    loader.classList.add('opacity-0');
+                    setTimeout(() => loader.classList.add('hidden'), 500);
+                }, 1000);
             };
         }
     </script>
