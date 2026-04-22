@@ -66,6 +66,21 @@
             transition: background 1s ease;
         }
 
+        .divine-frame::before {
+            content: "";
+            position: absolute;
+            inset: -50%;
+            background: linear-gradient(45deg, transparent 45%, rgba(255,255,255,0.3) 50%, transparent 55%);
+            animation: shimmer 5s infinite linear;
+            z-index: 11;
+            pointer-events: none;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) translateY(-100%); }
+            100% { transform: translateX(100%) translateY(100%); }
+        }
+        
         .avatar-viewport {
             position: relative;
             width: 100%;
@@ -104,8 +119,8 @@
             background: radial-gradient(circle, transparent 50%, rgba(0,0,0,0.7) 120%);
             z-index: 35;
             pointer-events: none;
-        }
-
+        }        
+        
         body::-webkit-scrollbar { display: none; }
     </style>
     <script>
