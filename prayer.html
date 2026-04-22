@@ -233,7 +233,7 @@
                             </div>
                         </div>`;
                 });
-                list.innerHTML = html || `<div class="text-center opacity-40 py-20 uppercase font-black tracking-widest text-[10px]">${currentPrayerFilter === 'mine' ? 'You have no active requests' : 'No active petitions'}</div>`;
+                list.innerHTML = html || `<div class="text-center opacity-40 py-20 uppercase font-black tracking-widest text-[10px]">${currentPrayerFilter === 'mine' ? 'You have no active requests' : 'No active requests'}</div>`;
             } catch (e) { list.innerHTML = "Error loading."; }
         };
         
