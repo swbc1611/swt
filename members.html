@@ -309,11 +309,7 @@
             const term = document.getElementById('searchInput').value.toLowerCase();
             renderList(allMembers.filter(m => m.displayName.toLowerCase().includes(term) || m.email.toLowerCase().includes(term)));
         };
-
-        window.toggleDarkMode = () => {
-            const isDark = document.getElementById('main-html').classList.toggle('dark');
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
-        };
+       
         window.closeModal = () => document.getElementById('member-modal').classList.add('hidden');
     </script>
 </body>
