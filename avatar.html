@@ -23,7 +23,8 @@
             50% { opacity: 0.9; filter: blur(50px); transform: translate(-50%, -50%) scale(1.05); }
         }
     
-        @keyframes shimmer {
+        /* HARROWED SHIMMER: Increased opacity and width for visibility */
+        @keyframes shimmer-sweep {
             0% { transform: translate(-150%, -150%) rotate(45deg); }
             100% { transform: translate(150%, 150%) rotate(45deg); }
         }
@@ -60,7 +61,6 @@
             height: 100%;
             border-radius: 4rem;
             padding: 6px; 
-            /* Beveled Metallic Gradient */
             background: linear-gradient(135deg, 
                 oklch(from var(--rank-glow-color) 0.9 c h) 0%, 
                 var(--rank-glow-color) 35%, 
@@ -70,26 +70,26 @@
             z-index: 10;
             box-shadow: 0 20px 40px rgba(0,0,0,0.6);
             transition: background 1s ease;
-            overflow: hidden; /* Clips the shimmer to the frame */
+            overflow: hidden; /* CRITICAL: Clips the glint */
         }
     
-        /* SPECULAR SHIMMER EFFECT */
+        /* THE VISIBLE GLINT: Fixed positioning and z-index */
         .divine-frame::before {
             content: "";
             position: absolute;
-            width: 200%;
-            height: 200%;
-            top: -50%;
-            left: -50%;
+            width: 100%;
+            height: 300%; /* Extra height to cover the rotation */
+            top: -100%;
+            left: -100%;
             background: linear-gradient(
                 rgba(255,255,255,0) 0%,
-                rgba(255,255,255,0) 45%,
-                rgba(255,255,255,0.4) 50%,
-                rgba(255,255,255,0) 55%,
+                rgba(255,255,255,0) 40%,
+                rgba(255,255,255,0.6) 50%, 
+                rgba(255,255,255,0) 60%,
                 rgba(255,255,255,0) 100%
             );
-            animation: shimmer 6s infinite ease-in-out;
-            z-index: 11;
+            animation: shimmer-sweep 4s infinite ease-in-out;
+            z-index: 15; /* Sits exactly on the frame border */
             pointer-events: none;
         }
         
@@ -103,8 +103,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 20;
-            /* INNER BEVEL: Makes the avatar look recessed */
+            z-index: 20; /* High enough to stay above the shimmer */
             box-shadow: 
                 inset 0 0 20px rgba(0,0,0,1),
                 inset 0 0 10px oklch(from var(--rank-glow-color) 0.4 c h);
