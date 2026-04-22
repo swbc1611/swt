@@ -58,9 +58,8 @@
         function initMap() {
             map = L.map('map').setView(defaultPos, 13);
             
-            // Dark Mode Map Style
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-                attribution: '&copy; OpenStreetMap'
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                attribution: '© OpenStreetMap'
             }).addTo(map);
 
             marker = L.marker(defaultPos, { draggable: true }).addTo(map);
