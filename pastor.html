@@ -605,7 +605,7 @@
                 const isAllTime = currentPreset === 'alltime';
 
                 if (isAllTime) {
-                    dateLabel.innerText = "All-Time Church Impact";
+                    dateLabel.innerText = "All-Time Church Totals";
                 } else if (cDate) { 
                     startLimit = cDate + "T00:00"; endLimit = cDate + "T23:59"; 
                     dateLabel.innerText = new Date(cDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }); 
