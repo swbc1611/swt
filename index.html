@@ -95,7 +95,15 @@
 
                 <div>
                     <label class="text-[10px] font-bold text-slate-400 uppercase ml-4 mb-1 block text-center">Password</label>
-                    <input id="password" type="password" placeholder="••••••••" class="w-full p-4 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-2xl outline-none text-sm dark:text-white focus:border-indigo-500 transition-all">
+                    <div class="relative group">
+                        <input id="password" type="password" placeholder="••••••••" 
+                            class="w-full p-4 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-2xl outline-none text-sm dark:text-white focus:border-indigo-500 transition-all pr-12">
+                        
+                        <button type="button" onclick="togglePasswordVisibility()" 
+                            class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-indigo-500 transition-colors p-1">
+                            <i id="password-icon" class="bi bi-eye-fill text-lg"></i>
+                        </button>
+                    </div>
                     
                     <div id="forgot-password-container" class="text-right pr-4 mt-2">
                         <button onclick="forgotPassword()" class="text-[10px] font-bold text-slate-400 hover:text-indigo-600 uppercase transition-all">Forgot Password?</button>
@@ -391,6 +399,19 @@
         });
 
         if (localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark');
+
+        window.togglePasswordVisibility = () => {
+            const passwordInput = document.getElementById('password');
+            const icon = document.getElementById('password-icon');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.replace('bi-eye-fill', 'bi-eye-slash-fill');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.replace('bi-eye-slash-fill', 'bi-eye-fill');
+            }
+        };
     </script>
 </body>
 </html>
