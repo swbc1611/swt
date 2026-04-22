@@ -164,8 +164,11 @@
         window.toggleDarkMode = () => {
             const html = document.getElementById('main-html');
             const isDark = html.classList.toggle('dark');
+            
+            // Explicit sync based on the new class state
             document.getElementById('sun-icon')?.classList.toggle('hidden', !isDark);
             document.getElementById('moon-icon')?.classList.toggle('hidden', isDark);
+            
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
         };
       
