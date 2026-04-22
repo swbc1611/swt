@@ -19,8 +19,10 @@
         }
         
         @keyframes soft-glow-pulse {
-            0%, 100% { opacity: 0.5; filter: blur(30px); transform: translate(-50%, -50%) scale(1); }
-            50% { opacity: 0.9; filter: blur(50px); transform: translate(-50%, -50%) scale(1.05); }
+            /* SURGICAL FIX: Blur reduced from 30px to 10px */
+            0%, 100% { opacity: 0.5; filter: blur(10px); transform: translate(-50%, -50%) scale(1); }
+            /* SURGICAL FIX: Peak blur reduced from 50px to 25px, scale tightened from 1.05 to 1.02 */
+            50% { opacity: 0.8; filter: blur(25px); transform: translate(-50%, -50%) scale(1.02); }
         }
     
         /* 1. CALIBRATED SHIMMER: Path adjusted to stay visible across the full diagonal */
@@ -38,20 +40,24 @@
             z-index: 10;
         }
     
-        /* OUTER GLOW */
+        /* 1. OUTER GLOW - Tightened and Refined */
         .avatar-container::after {
             content: "";
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 105%;
-            height: 105%;
+            /* SURGICAL FIX: Size reduced from 105% to 101% */
+            width: 101%;
+            height: 101%;
             background: var(--rank-glow-color);
             border-radius: 5rem;
             z-index: -1;
+            /* Animation preserved, but values updated below */
             animation: soft-glow-pulse 4s infinite ease-in-out;
             pointer-events: none;
             transition: background 1s ease;
+            /* Extra safety: ensure it starts centered before animation */
+            transform: translate(-50%, -50%);
         }
     
         /* DYNAMIC RANK-COLORED FRAME */
