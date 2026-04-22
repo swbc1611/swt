@@ -8,30 +8,22 @@
     <link rel="stylesheet" href="style.css">
     <script>tailwind.config = { darkMode: 'class' }</script>
     <style>
-        /* Prevents layout jump during auto-redirects */
         [id="auth-title"] { min-height: 2.25rem; }
         .disabled-toggle { opacity: 0.5; pointer-events: none; }
-        
-        button, 
-        .preset-btn, 
-        .type-btn,
-        [role="button"] {
-            transition: all 0.2s ease-in-out !important;
-        }
-        
-        button:active, 
-        .preset-btn:active, 
-        .type-btn:active,
-        [role="button"]:active {
+        button, .preset-btn, .type-btn, [role="button"] { transition: all 0.2s ease-in-out !important; }
+        button:active, .preset-btn:active, .type-btn:active, [role="button"]:active {
             transform: scale(0.95) !important;
             box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.7) !important;
             outline: none !important;
         }
-        
-    
     </style>
 </head>
 <body class="bg-slate-50 dark:bg-[#0f172a] flex items-center justify-center min-h-screen p-6 transition-colors duration-300">
+
+    <div id="sync-overlay" class="fixed inset-0 bg-slate-50 dark:bg-[#0f172a] z-[999] flex flex-col items-center justify-center hidden">
+        <div class="w-16 h-16 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin"></div>
+        <p class="mt-6 text-[10px] font-black uppercase tracking-[0.3em] text-indigo-500 animate-pulse">Synchronizing Account...</p>
+    </div>
 
     <div class="w-full max-w-sm text-center">
         <div class="flex flex-col items-center gap-6 mb-10">
@@ -48,21 +40,16 @@
 
         <div class="bg-white dark:bg-slate-900 p-8 rounded-[3rem] border dark:border-slate-800 shadow-xl text-left">
             <div class="space-y-4">
-                
                 <div id="role-selector-container" class="hidden mb-6">
                     <label class="text-[10px] font-bold text-slate-400 uppercase ml-4 mb-2 block text-center">I am a...</label>
                     <div class="flex bg-slate-100 dark:bg-slate-800/50 p-1 rounded-2xl gap-1">
                         <div class="flex-1">
                             <input type="radio" name="role" id="role-member" value="member" class="hidden peer" checked onchange="updateGenderAccess()">
-                            <label for="role-member" class="block w-full py-2.5 text-[10px] font-bold uppercase rounded-xl text-center cursor-pointer transition-all duration-200 text-slate-500 dark:text-slate-400 peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:shadow-lg peer-checked:shadow-indigo-500/20">
-                                Member
-                            </label>
+                            <label for="role-member" class="block w-full py-2.5 text-[10px] font-bold uppercase rounded-xl text-center cursor-pointer transition-all duration-200 text-slate-500 dark:text-slate-400 peer-checked:bg-indigo-600 peer-checked:text-white">Member</label>
                         </div>
                         <div class="flex-1">
                             <input type="radio" name="role" id="role-pastor" value="pastor" class="hidden peer" onchange="updateGenderAccess()">
-                            <label for="role-pastor" class="block w-full py-2.5 text-[10px] font-bold uppercase rounded-xl text-center cursor-pointer transition-all duration-200 text-slate-500 dark:text-slate-400 peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:shadow-lg peer-checked:shadow-indigo-500/20">
-                                Pastor
-                            </label>
+                            <label for="role-pastor" class="block w-full py-2.5 text-[10px] font-bold uppercase rounded-xl text-center cursor-pointer transition-all duration-200 text-slate-500 dark:text-slate-400 peer-checked:bg-indigo-600 peer-checked:text-white">Pastor</label>
                         </div>
                     </div>
                 </div>
@@ -72,28 +59,23 @@
                     <div id="gender-toggle-bg" class="flex bg-slate-100 dark:bg-slate-800/50 p-1 rounded-2xl gap-1">
                         <div class="flex-1">
                             <input type="radio" name="gender" id="gender-male" value="male" class="hidden peer" checked>
-                            <label for="gender-male" class="block w-full py-2.5 text-[10px] font-bold uppercase rounded-xl text-center cursor-pointer transition-all duration-200 text-slate-500 dark:text-slate-400 peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:shadow-lg peer-checked:shadow-indigo-500/20">
-                                Brother
-                            </label>
+                            <label for="gender-male" class="block w-full py-2.5 text-[10px] font-bold uppercase rounded-xl text-center cursor-pointer transition-all duration-200 text-slate-500 dark:text-slate-400 peer-checked:bg-indigo-600 peer-checked:text-white">Brother</label>
                         </div>
                         <div class="flex-1">
                             <input type="radio" name="gender" id="gender-female" value="female" class="hidden peer">
-                            <label for="gender-female" class="block w-full py-2.5 text-[10px] font-bold uppercase rounded-xl text-center cursor-pointer transition-all duration-200 text-slate-500 dark:text-slate-400 peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:shadow-lg peer-checked:shadow-indigo-500/20">
-                                Sister
-                            </label>
+                            <label for="gender-female" class="block w-full py-2.5 text-[10px] font-bold uppercase rounded-xl text-center cursor-pointer transition-all duration-200 text-slate-500 dark:text-slate-400 peer-checked:bg-indigo-600 peer-checked:text-white">Sister</label>
                         </div>
                     </div>
                 </div>
 
                 <div>
                     <label class="text-[10px] font-bold text-slate-400 uppercase ml-4 mb-1 block text-center">Email</label>
-                    <input id="email" type="email" placeholder="email@church.com" class="w-full p-4 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-2xl outline-none text-sm dark:text-white focus:border-indigo-500 transition-all">
+                    <input id="email" type="email" placeholder="email@church.com" class="w-full p-4 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-2xl outline-none text-sm dark:text-white focus:border-indigo-500">
                 </div>
 
                 <div>
                     <label class="text-[10px] font-bold text-slate-400 uppercase ml-4 mb-1 block text-center">Password</label>
-                    <input id="password" type="password" placeholder="••••••••" class="w-full p-4 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-2xl outline-none text-sm dark:text-white focus:border-indigo-500 transition-all">
-                    
+                    <input id="password" type="password" placeholder="••••••••" class="w-full p-4 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-2xl outline-none text-sm dark:text-white focus:border-indigo-500">
                     <div id="forgot-password-container" class="text-right pr-4 mt-2">
                         <button onclick="forgotPassword()" class="text-[10px] font-bold text-slate-400 hover:text-indigo-600 uppercase transition-all">Forgot Password?</button>
                     </div>
@@ -101,12 +83,10 @@
 
                 <div id="invite-container" class="hidden">
                     <label class="text-[10px] font-bold text-slate-400 uppercase ml-4 mb-1 block text-center">Invite Code</label>
-                    <input id="inviteCode" type="text" placeholder="ENTER CODE" class="w-full p-4 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-2xl outline-none text-sm font-mono font-bold dark:text-indigo-400 focus:border-indigo-500 transition-all uppercase">
+                    <input id="inviteCode" type="text" placeholder="ENTER CODE" class="w-full p-4 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-2xl outline-none text-sm font-mono font-bold dark:text-indigo-400 uppercase">
                 </div>
                 
-                <button id="auth-btn" onclick="handleAuth()" class="w-full py-4 bg-indigo-600 text-white rounded-2xl font-bold text-sm shadow-lg shadow-indigo-500/50 hover:bg-indigo-700 active:scale-95 transition-all mt-2">
-                    Continue
-                </button>
+                <button id="auth-btn" onclick="handleAuth()" class="w-full py-4 bg-indigo-600 text-white rounded-2xl font-bold text-sm shadow-lg shadow-indigo-500/50 hover:bg-indigo-700 active:scale-95 transition-all mt-2">Continue</button>
             </div>
 
             <div class="mt-6 pt-6 border-t dark:border-slate-800 text-center">
@@ -129,21 +109,14 @@
     <div id="verifyEmailModal" class="hidden fixed inset-0 z-[110] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 text-center">
         <div class="bg-white dark:bg-slate-900 border dark:border-slate-800 w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl">
             <div class="w-16 h-16 bg-yellow-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                <svg class="h-8 w-8 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
+                <svg class="h-8 w-8 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
             </div>
             <h2 class="text-xl font-bold dark:text-white mb-2">Verify Your Email</h2>
             <p class="text-sm text-slate-400 mb-6 font-medium">Please check your inbox and verify your email address to unlock your account.</p>
-            
             <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-6">
-                Did not receive verification Email? 
-                <button id="resendBtn" class="text-indigo-500 hover:underline">Resend now.</button>
+                Did not receive verification Email? <button id="resendBtn" class="text-indigo-500 hover:underline">Resend now.</button>
             </p>
-
-            <button onclick="closeVerifyModal()" class="w-full py-4 bg-slate-100 dark:bg-slate-800 dark:text-white rounded-2xl font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
-                Close & Logout
-            </button>
+            <button onclick="closeVerifyModal()" class="w-full py-4 bg-slate-100 dark:bg-slate-800 dark:text-white rounded-2xl font-bold text-sm hover:bg-slate-200 transition-all">Close & Logout</button>
         </div>
     </div>
 
@@ -151,45 +124,10 @@
 
     <script type="module">
         import { auth, db } from './firebase-config.js';
-        import { 
-            signInWithEmailAndPassword, 
-            createUserWithEmailAndPassword, 
-            onAuthStateChanged, 
-            sendPasswordResetEmail, 
-            signOut,
-            sendEmailVerification,
-            applyActionCode 
-        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, sendPasswordResetEmail, signOut, sendEmailVerification, applyActionCode } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { doc, getDoc, setDoc, serverTimestamp, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // --- 1. SWITCHBOARD ROUTER ---
-        const urlParams = new URLSearchParams(window.location.search);
-        const mode = urlParams.get('mode'); 
-        const actionCode = urlParams.get('oobCode'); 
-
-        if (mode && actionCode) {
-            if (mode === 'resetPassword') {
-                window.location.replace(`reset-password.html?oobCode=${actionCode}`);
-            } else if (mode === 'verifyEmail') {
-                const procModal = document.getElementById('processingModal');
-                procModal.classList.remove('hidden');
-
-                applyActionCode(auth, actionCode)
-                    .then(async () => {
-                        if (auth.currentUser) {
-                            await auth.currentUser.reload();
-                        }
-                        procModal.classList.add('hidden');
-                        showToast("Email verified successfully!");
-                    })
-                    .catch((error) => {
-                        procModal.classList.add('hidden');
-                        showToast("Verification link invalid or expired.");
-                        console.error(error);
-                    });
-            }
-        }
-
+        // --- 1. GLOBAL STATE ---
         let isSignUp = false;
         let isProcessing = false;
 
@@ -200,42 +138,51 @@
             setTimeout(() => t.classList.add('opacity-0', 'translate-y-10'), 3000);
         };
 
-        window.updateGenderAccess = () => {
-            const role = document.querySelector('input[name="role"]:checked').value;
-            const genderToggleBg = document.getElementById('gender-toggle-bg');
-            const maleRadio = document.getElementById('gender-male');
-
-            if (role === 'pastor') {
-                maleRadio.checked = true;
-                genderToggleBg.classList.add('disabled-toggle');
-            } else {
-                genderToggleBg.classList.remove('disabled-toggle');
-            }
-        };
-
-        // REDIRECT LISTENER / GATEKEEPER
+        // --- 2. AUTHENTICATION GATEKEEPER (HARDENED) ---
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // 1. Force the reload to get fresh server status
-                await user.reload();
+                const urlParams = new URLSearchParams(window.location.search);
+                const mode = urlParams.get('mode');
+                const isVerifying = mode === 'verifyEmail';
 
-                // 2. Check auth.currentUser (the refreshed object)
-                if (!auth.currentUser.emailVerified) {
+                // 2.1 SHOW SYNC OVERLAY IF VERIFYING FROM LINK
+                if (isVerifying) {
+                    document.getElementById('sync-overlay').classList.remove('hidden');
+                    // Wait for background token sync
+                    await new Promise(res => setTimeout(res, 2500));
+                }
+
+                // 2.2 FORCE FRESH STATUS
+                await user.reload();
+                const refreshedUser = auth.currentUser;
+
+                // 2.3 EMAIL VERIFICATION GATE
+                if (!refreshedUser.emailVerified) {
+                    document.getElementById('sync-overlay').classList.add('hidden');
                     document.getElementById('verifyEmailModal').classList.remove('hidden');
+                    // CRITICAL: Stop the session here so closing the modal doesn't bypass auth
+                    await signOut(auth);
+                    sessionStorage.clear();
                     return;
                 }
 
-                // Hide modals if verified
+                // 2.4 CLEANUP URL AFTER SYNC
+                if (urlParams.has('apiKey')) {
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                }
+
+                document.getElementById('sync-overlay').classList.add('hidden');
                 document.getElementById('verifyEmailModal').classList.add('hidden');
                 document.getElementById('processingModal').classList.add('hidden');
 
-                // 3. Firestore Checks
+                // 2.5 FIRESTORE ROUTING
                 const docSnap = await getDoc(doc(db, "profiles", user.uid));
                 if (docSnap.exists()) {
                     const userData = docSnap.data();
                     if (userData.status === 'inactive') {
                         showToast("Account deactivated.");
                         await signOut(auth);
+                        sessionStorage.clear();
                         return;
                     }
                     const role = userData.role;
@@ -246,56 +193,37 @@
             }
         });
 
-        window.toggleMode = () => {
-            isSignUp = !isSignUp;
-            const title = document.getElementById('auth-title');
-            title.innerHTML = isSignUp ? 
-                '<span class="brand-word-1 dark:text-white">Create</span><span class="brand-word-2">Account</span>' : 
-                '<span class="brand-word-1 dark:text-white">Soulwinning</span><span class="brand-word-2">Tracker</span>';
-            
-            document.getElementById('auth-subtitle').innerText = isSignUp ? "Join the harvest field" : "Sign in to report your labor";
-            document.getElementById('switch-text').innerText = isSignUp ? "Already have an account?" : "Don't have an account?";
-            document.getElementById('switch-btn').innerText = isSignUp ? "Sign In" : "Create One";
-            document.getElementById('forgot-password-container').classList.toggle('hidden', isSignUp);
-            
-            document.getElementById('role-selector-container').classList.toggle('hidden', !isSignUp);
-            document.getElementById('gender-selector-container').classList.toggle('hidden', !isSignUp);
-            document.getElementById('invite-container').classList.toggle('hidden', !isSignUp);
-            
-            if(isSignUp) updateGenderAccess();
-        };
+        // --- 3. SWITCHBOARD HANDLER (ACTION CODES) ---
+        const urlParams = new URLSearchParams(window.location.search);
+        const mode = urlParams.get('mode'); 
+        const actionCode = urlParams.get('oobCode'); 
 
-        // SURGICAL FIX: Map Firebase technical errors to friendly messages
-        const getFriendlyAuthError = (code) => {
-            switch (code) {
-                case 'auth/invalid-credential':
-                case 'auth/wrong-password':
-                case 'auth/user-not-found':
-                    return "❌ Invalid email or password. Please try again.";
-                case 'auth/invalid-email':
-                    return "❌ That email address doesn't look right.";
-                case 'auth/user-disabled':
-                    return "❌ This account has been disabled.";
-                case 'auth/too-many-requests':
-                    return "❌ Too many failed attempts. Please try again later.";
-                case 'auth/network-request-failed':
-                    return "❌ Connection error. Check your internet.";
-                case 'auth/email-already-in-use':
-                    return "❌ An account with this email already exists.";
-                case 'auth/weak-password':
-                    return "❌ Password should be at least 6 characters.";
-                default:
-                    return "❌ An unexpected error occurred. Please try again.";
+        if (mode && actionCode) {
+            if (mode === 'resetPassword') {
+                window.location.replace(`reset-password.html?oobCode=${actionCode}`);
+            } else if (mode === 'verifyEmail') {
+                document.getElementById('processingModal').classList.remove('hidden');
+                applyActionCode(auth, actionCode)
+                    .then(async () => {
+                        if (auth.currentUser) await auth.currentUser.reload();
+                        showToast("Email verified successfully!");
+                    })
+                    .catch((error) => {
+                        showToast("Verification link invalid or expired.");
+                        console.error(error);
+                    })
+                    .finally(() => {
+                        document.getElementById('processingModal').classList.add('hidden');
+                    });
             }
-        };
-        
+        }
+
+        // --- 4. AUTH LOGIC ---
         window.handleAuth = async () => {
             if (isProcessing) return;
-
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
             const btn = document.getElementById('auth-btn');
-            
             if(!email || !password) return showToast("Fields required.");
             
             isProcessing = true;
@@ -306,74 +234,70 @@
                     const inviteCode = document.getElementById('inviteCode').value.toUpperCase().trim();
                     const role = document.querySelector('input[name="role"]:checked').value;
                     const gender = document.querySelector('input[name="gender"]:checked').value;
-                    
                     if(!inviteCode) throw { code: 'custom/missing-code', message: "Invite code required." };
 
-                    const codeCollection = role === 'pastor' ? 'pastor_invites' : 'churches';
-                    const codeSnap = await getDoc(doc(db, codeCollection, inviteCode));
+                    const codeColl = role === 'pastor' ? 'pastor_invites' : 'churches';
+                    const codeSnap = await getDoc(doc(db, codeColl, inviteCode));
                     if (!codeSnap.exists()) throw { code: 'custom/invalid-code', message: "Invalid code." };
 
-                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                    await sendEmailVerification(userCredential.user);
-
-                    await setDoc(doc(db, "profiles", userCredential.user.uid), {
+                    const cred = await createUserWithEmailAndPassword(auth, email, password);
+                    await sendEmailVerification(cred.user);
+                    await setDoc(doc(db, "profiles", cred.user.uid), {
                         displayName: email.split('@')[0],
-                        email: email,
-                        role: role,
-                        gender: gender,
-                        status: 'active',
+                        email, role, gender, status: 'active',
                         churchId: (role === 'pastor') ? [] : [inviteCode],
                         createdAt: serverTimestamp()
                     });
 
-                    // SURGICAL FIX: Explicitly await the deletion to ensure consumption
-                    if (role === 'pastor') {
-                        try {
-                            await deleteDoc(doc(db, "pastor_invites", inviteCode));
-                        } catch (e) { console.error("Invite cleanup failed:", e); }
-                    }
-
+                    if (role === 'pastor') await deleteDoc(doc(db, "pastor_invites", inviteCode));
                     showToast("Account created! Verify email.");
-                    document.getElementById('verifyEmailModal').classList.remove('hidden');
-
                 } else {
-                    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-                    await userCredential.user.reload();
-                    
-                    if (!auth.currentUser.emailVerified) {
-                        document.getElementById('verifyEmailModal').classList.remove('hidden');
-                        isProcessing = false;
-                        btn.innerText = "Continue"; btn.disabled = false;
-                    }
+                    const cred = await signInWithEmailAndPassword(auth, email, password);
+                    await cred.user.reload();
                 }
             } catch (err) {
-                console.error(err);
                 isProcessing = false;
                 btn.innerText = "Continue"; btn.disabled = false;
-                
-                // Handle both custom and Firebase errors
-                const msg = err.code.startsWith('custom/') ? `❌ ${err.message}` : getFriendlyAuthError(err.code);
+                const msg = err.code?.startsWith('custom/') ? `❌ ${err.message}` : getFriendlyAuthError(err.code);
                 showToast(msg);
             }
         };
 
-        window.forgotPassword = async () => {
-            const email = document.getElementById('email').value.trim();
-            if (!email) return showToast("Enter your email.");
-            try {
-                await sendPasswordResetEmail(auth, email);
-                showToast("Reset link sent.");
-            } catch (err) { 
-                showToast(getFriendlyAuthError(err.code)); 
+        // --- 5. UI HELPERS ---
+        window.toggleMode = () => {
+            isSignUp = !isSignUp;
+            const title = document.getElementById('auth-title');
+            title.innerHTML = isSignUp ? 
+                '<span class="brand-word-1 dark:text-white">Create</span><span class="brand-word-2">Account</span>' : 
+                '<span class="brand-word-1 dark:text-white">Soulwinning</span><span class="brand-word-2">Tracker</span>';
+            document.getElementById('auth-subtitle').innerText = isSignUp ? "Join the harvest field" : "Sign in to report your labor";
+            document.getElementById('switch-btn').innerText = isSignUp ? "Sign In" : "Create One";
+            ['role-selector-container', 'gender-selector-container', 'invite-container'].forEach(id => {
+                document.getElementById(id).classList.toggle('hidden', !isSignUp);
+            });
+            document.getElementById('forgot-password-container').classList.toggle('hidden', isSignUp);
+            if(isSignUp) updateGenderAccess();
+        };
+
+        window.updateGenderAccess = () => {
+            const role = document.querySelector('input[name="role"]:checked').value;
+            const genderToggleBg = document.getElementById('gender-toggle-bg');
+            const maleRadio = document.getElementById('gender-male');
+            if (role === 'pastor') {
+                maleRadio.checked = true;
+                genderToggleBg.classList.add('disabled-toggle');
+            } else {
+                genderToggleBg.classList.remove('disabled-toggle');
             }
         };
 
         window.closeVerifyModal = async () => {
             document.getElementById('verifyEmailModal').classList.add('hidden');
-            isProcessing = false;
             const btn = document.getElementById('auth-btn');
             btn.innerText = "Continue"; btn.disabled = false;
+            isProcessing = false;
             await signOut(auth);
+            sessionStorage.clear();
         };
 
         document.getElementById('resendBtn').addEventListener('click', async () => {
@@ -384,6 +308,15 @@
                 } catch (err) { showToast("Wait a moment before resending."); }
             }
         });
+
+        const getFriendlyAuthError = (code) => {
+            const errors = {
+                'auth/invalid-credential': "❌ Invalid email or password.",
+                'auth/too-many-requests': "❌ Too many attempts. Try later.",
+                'auth/email-already-in-use': "❌ Email already registered."
+            };
+            return errors[code] || "❌ An unexpected error occurred.";
+        };
 
         if (localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark');
     </script>
