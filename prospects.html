@@ -191,7 +191,7 @@
         window.loadFollowUps = async () => {
             const list = document.getElementById('followup-list');
             if (!SCRIPT_URL || !PSK || !user) return;
-
+        
             try {
                 const res = await fetch(`${SCRIPT_URL}?key=${PSK}`);
                 const data = await res.json();
@@ -201,35 +201,52 @@
                     list.innerHTML = `<div class="text-center opacity-40 py-10 uppercase font-black tracking-widest text-[10px]">No Prospects Found</div>`;
                     return;
                 }
-
+        
                 myData.sort((a, b) => new Date(b["SW Date"]) - new Date(a["SW Date"]));
-
+        
                 let html = "";
                 myData.forEach((p, index) => {
                     const isAlt = index % 2 !== 0;
                     const themeBorder = isAlt ? 'border-sky-500/30' : 'border-cyan-400/30';
                     const themeBg = isAlt ? 'bg-sky-500' : 'bg-cyan-400';
                     const themeText = isAlt ? 'text-sky-400' : 'text-cyan-400';
+                    
+                    // SURGICAL FIX: Human-readable Date
+                    const rawDate = p["SW Date"] || "";
+                    const formattedDate = rawDate ? new Date(rawDate).toLocaleDateString(undefined, { 
+                        month: 'short', 
+                        day: 'numeric', 
+                        year: 'numeric' 
+                    }) : "Recent";
+        
                     const rawNum = p["Contact Number"] || "";
                     const maskedNum = rawNum.length > 6 ? rawNum.substring(0, 4) + "****" + rawNum.slice(-2) : "****";
-
+        
                     html += `
                         <div class="bg-white dark:bg-[#111827] w-full rounded-[2rem] border-2 ${themeBorder} relative text-left transition-all duration-300 overflow-hidden shadow-xl dark:shadow-cyan-500/5">
                             <div class="p-6 pl-8 relative">
                                 <div class="absolute left-0 top-4 bottom-4 w-1.5 rounded-r-full ${themeBg}"></div>
                                 <div class="flex justify-between items-start">
                                     <div class="flex-1">
-                                        <p class="text-[9px] font-black ${themeText} uppercase tracking-[0.2em] mb-1"><i class="bi bi-calendar3 mr-1"></i> ${p["SW Date"]}</p>
-                                        <h4 class="text-lg font-black dark:text-white uppercase tracking-tight leading-tight">${p["Prospect Name"]}</h4>
-                                        <div class="flex items-center gap-2 mt-1 mb-2">
-                                             <p id="num-${p.rowId}" class="text-xs font-mono text-slate-500 font-bold">${maskedNum}</p>
-                                             <button onclick="togglePrivacy('${p.rowId}', '${rawNum}')" class="text-slate-400 hover:text-indigo-500 transition-colors">
-                                                <i id="eye-${p.rowId}" class="bi bi-eye-slash text-xs"></i>
+                                        <p class="text-[10px] font-black ${themeText} uppercase tracking-[0.2em] mb-1">
+                                            <i class="bi bi-calendar3 mr-1"></i> ${formattedDate}
+                                        </p>
+                                        
+                                        <h4 class="text-xl font-black dark:text-white uppercase tracking-tight leading-tight mb-2">${p["Prospect Name"]}</h4>
+                                        
+                                        <div class="flex items-center gap-3 mt-1 mb-3">
+                                             <div class="flex items-center gap-2">
+                                                <i class="bi bi-telephone-fill ${themeText} text-sm opacity-70"></i>
+                                                <p id="num-${p.rowId}" class="text-lg font-mono text-slate-500 dark:text-slate-300 font-bold tracking-tight">${maskedNum}</p>
+                                             </div>
+                                             <button onclick="togglePrivacy('${p.rowId}', '${rawNum}')" class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-indigo-500 transition-all">
+                                                <i id="eye-${p.rowId}" class="bi bi-eye-slash text-sm"></i>
                                              </button>
                                         </div>
+        
                                         <div class="flex items-center gap-1.5 opacity-70">
                                             <i class="bi bi-geo-alt-fill ${themeText} text-[10px]"></i>
-                                            <p class="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">${p["SW Location"]}</p>
+                                            <p class="text-[11px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">${p["SW Location"]}</p>
                                         </div>
                                     </div>
                                     <div class="flex flex-col gap-2">
