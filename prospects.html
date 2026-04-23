@@ -195,6 +195,8 @@
             try {
                 const res = await fetch(`${SCRIPT_URL}?key=${PSK}`);
                 const data = await res.json();
+                
+                // SURGICAL FILTER: Ensure we match the UID correctly
                 const myData = data.filter(p => p["Soulwinner Name"] === user.uid);
                 
                 if (myData.length === 0) {
@@ -207,22 +209,20 @@
                 let html = "";
                 myData.forEach((p, index) => {
                     const isAlt = index % 2 !== 0;
-                    const themeBorder = isAlt ? 'border-sky-500/30' : 'border-cyan-400/30';
                     const themeBg = isAlt ? 'bg-sky-500' : 'bg-cyan-400';
                     const themeText = isAlt ? 'text-sky-400' : 'text-cyan-400';
+                    const themeBorder = isAlt ? 'border-sky-500/30' : 'border-cyan-400/30';
                     
-                    // User-friendly Date Formatting
+                    // Format Date for readability
                     const rawDate = p["SW Date"] || "";
                     const formattedDate = rawDate ? new Date(rawDate).toLocaleDateString(undefined, { 
-                        month: 'short', 
-                        day: 'numeric', 
-                        year: 'numeric' 
+                        month: 'short', day: 'numeric', year: 'numeric' 
                     }) : "Recent";
         
-                    // SURGICAL FIX: Apply Partial Masking immediately on load
+                    // SURGICAL MASK: Partial mask on initial load (1234****55)
                     const rawNum = p["Contact Number"] || "";
-                    const maskedNum = rawNum.length > 6 
-                        ? rawNum.substring(0, 4) + "****" + rawNum.slice(-2) 
+                    const maskedNum = (rawNum.length > 6) 
+                        ? `${rawNum.substring(0, 4)}****${rawNum.slice(-2)}` 
                         : rawNum;
         
                     html += `
@@ -231,7 +231,7 @@
                                 <div class="absolute left-0 top-4 bottom-4 w-1.5 rounded-r-full ${themeBg}"></div>
                                 <div class="flex justify-between items-start">
                                     <div class="flex-1">
-                                        <p class="text-[10px] font-black ${themeText} uppercase tracking-[0.2em] mb-2">
+                                        <p class="text-[10px] font-black ${themeText} uppercase tracking-[0.2em] mb-3">
                                             <i class="bi bi-calendar3 mr-1"></i> ${formattedDate}
                                         </p>
                                         
@@ -253,14 +253,19 @@
                                         </div>
                                     </div>
                                     <div class="flex flex-col gap-2">
-                                        <button onclick="confirmDelete('${p.rowId}')" class="w-10 h-10 flex items-center justify-center rounded-xl bg-rose-500/10 text-rose-500 border border-rose-500/20 active:scale-90"><i class="bi bi-trash3-fill"></i></button>
+                                        <button onclick="confirmDelete('${p.rowId}')" class="w-10 h-10 flex items-center justify-center rounded-xl bg-rose-500/10 text-rose-500 border border-rose-500/20 active:scale-90">
+                                            <i class="bi bi-trash3-fill"></i>
+                                        </button>
                                     </div>
                                 </div>
                             </div>
                         </div>`;
                 });
                 list.innerHTML = html;
-            } catch (e) { list.innerHTML = "Sync Error."; }
+            } catch (e) {
+                console.error("Sync Error:", e);
+                list.innerHTML = `<div class="text-center text-rose-500 py-10 uppercase font-bold text-[10px]">Sync Error. Check Network.</div>`;
+            }
         };
 
         window.confirmDelete = (rowId) => {
