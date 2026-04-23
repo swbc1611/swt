@@ -140,6 +140,9 @@
         let user = null;
         let userProfile = null;
         let pendingDeleteId = null;
+        
+        // TRACKER: Prevents redundant reloading when hiding/showing
+        let hasInitialLoaded = false;
     
         window.showToast = (msg) => {
             const t = document.getElementById('toast');
@@ -161,32 +164,32 @@
         };
         if(localStorage.getItem('theme') === 'dark') toggleDarkMode();
     
-       window.toggleFollowUpList = () => {
+        // --- ACCORDION TOGGLE LOGIC ---
+        window.toggleFollowUpList = () => {
             const container = document.getElementById('followup-container');
             const list = document.getElementById('followup-list');
             const btn = document.getElementById('list-toggle-btn');
             const isHidden = container.classList.contains('hidden');
-        
+    
             if (isHidden) {
-                // 1. Show container
                 container.classList.remove('hidden');
                 btn.innerText = 'Hide List';
                 
-                // 2. RESTORE LOADING ANIMATION
-                list.innerHTML = `
-                    <div class="flex flex-col items-center justify-center py-20 animate-pulse">
-                        <i class="bi bi-arrow-repeat text-indigo-500 text-2xl mb-4 animate-spin"></i>
-                        <p class="text-center text-slate-400 italic text-[10px] uppercase font-bold tracking-widest">Gathering follow-ups...</p>
-                    </div>`;
-                    
-                // 3. Trigger data fetch
-                loadFollowUps();
+                // Only show spinner and fetch if not already loaded OR if flagged for refresh
+                if (!hasInitialLoaded || list.innerHTML.includes("Gathering")) {
+                    list.innerHTML = `
+                        <div class="flex flex-col items-center justify-center py-20 animate-pulse">
+                            <i class="bi bi-arrow-repeat text-indigo-500 text-2xl mb-4 animate-spin"></i>
+                            <p class="text-center text-slate-400 italic text-[10px] uppercase font-bold tracking-widest">Gathering follow-ups...</p>
+                        </div>`;
+                    loadFollowUps();
+                }
             } else {
                 container.classList.add('hidden');
                 btn.innerText = 'Show List';
             }
         };
-        
+    
         onAuthStateChanged(auth, async (u) => {
             if (!u) return window.location.replace("index.html");
             if (!u.emailVerified) {
@@ -203,7 +206,6 @@
                     const config = configSnap.data();
                     SCRIPT_URL = config.prospectScriptUrl;
                     PSK = config.masterPsk;
-                    // REMOVED: Immediate loadFollowUps() call to keep it hidden
                 }
             } catch (e) { console.error("Gatekeeper error:", e); }
     
@@ -244,6 +246,7 @@
                 
                 if (myData.length === 0) {
                     list.innerHTML = `<div class="text-center opacity-40 py-10 uppercase font-black tracking-widest text-[10px]">No Follow-ups Found</div>`;
+                    hasInitialLoaded = true;
                     return;
                 }
         
@@ -302,6 +305,7 @@
                         </div>`;
                 });
                 list.innerHTML = html;
+                hasInitialLoaded = true; // Mark as loaded
             } catch (e) { 
                 console.error("Load error:", e);
                 list.innerHTML = `<div class="text-center py-10 uppercase font-black tracking-widest text-[10px]">Sync Error. Check Network.</div>`;
@@ -358,13 +362,16 @@
                 document.getElementById('prospect-form').reset();
                 document.getElementById('p-date').valueAsDate = new Date();
                 
-                // SURGICAL UX: Open list and refresh after saving
+                // FORCE UPDATE: Ensure list opens and refreshes with new data
                 const container = document.getElementById('followup-container');
-                const chevron = document.getElementById('list-chevron');
-                if (container.classList.contains('hidden')) {
+                const toggleBtn = document.getElementById('list-toggle-btn');
+                
+                if (container && container.classList.contains('hidden')) {
                     container.classList.remove('hidden');
-                    chevron.style.transform = 'rotate(180deg)';
                 }
+                if (toggleBtn) toggleBtn.innerText = 'Hide List';
+                
+                hasInitialLoaded = true; // Signal that we are performing a fresh pull
                 loadFollowUps();
             } catch (err) { showToast("Error saving."); }
             finally { btn.disabled = false; btn.innerText = "SAVE FOLLOW-UP"; }
