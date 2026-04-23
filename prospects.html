@@ -18,18 +18,8 @@
             border-color: #6366f1 !important;
             ring: 1px solid #6366f1 !important;
         }
-
-        button, 
-        .preset-btn, 
-        .type-btn,
-        [role="button"] {
-            transition: all 0.2s ease-in-out !important;
-        }
-        
-        button:active, 
-        .preset-btn:active, 
-        .type-btn:active,
-        [role="button"]:active {
+        button, .preset-btn, .type-btn, [role="button"] { transition: all 0.2s ease-in-out !important; }
+        button:active, .preset-btn:active, .type-btn:active, [role="button"]:active {
             transform: scale(0.95) !important;
             box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.7) !important;
             outline: none !important;
@@ -56,7 +46,7 @@
         </div>
     </nav>
 
-    <main class="flex-1 flex items-start justify-center p-6 py-8 relative z-10 overflow-y-auto">
+    <main class="flex-1 flex flex-col items-center p-6 py-8 relative z-10 overflow-y-auto">
         <div class="w-full max-w-xl flex flex-col items-center gap-8">
             
             <div class="flex flex-col items-center gap-3">
@@ -71,17 +61,14 @@
                     <label class="text-[10px] font-black text-indigo-500 uppercase tracking-widest ml-1 mb-1 block">Full Name</label>
                     <input type="text" id="p-name" required placeholder="Enter name..." class="w-full p-4 rounded-2xl dark:text-white">
                 </div>
-
                 <div>
                     <label class="text-[10px] font-black text-indigo-500 uppercase tracking-widest ml-1 mb-1 block">Contact Number</label>
                     <input type="tel" id="p-phone" required placeholder="Enter contact number..." class="w-full p-4 rounded-2xl dark:text-white">
                 </div>
-
                 <div>
                     <label class="text-[10px] font-black text-indigo-500 uppercase tracking-widest ml-1 mb-1 block">SW Date</label>
                     <input type="date" id="p-date" required class="w-full p-4 rounded-2xl dark:text-white text-center">
                 </div>
-
                 <div>
                     <label class="text-[10px] font-black text-indigo-500 uppercase tracking-widest ml-1 mb-1 block">SW Location</label>
                     <input type="text" id="p-location" required placeholder="Village/City" class="w-full p-4 rounded-2xl dark:text-white">
@@ -89,9 +76,7 @@
 
                 <div class="p-4 bg-indigo-50/50 dark:bg-indigo-900/10 border border-indigo-100 dark:border-indigo-900/20 rounded-xl flex items-center gap-3">
                     <div class="p-2 bg-indigo-600 rounded-lg shrink-0 shadow-lg shadow-indigo-500/20">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 16v-4m0-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16v-4m0-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                     </div>
                     <div>
                         <p class="text-[8px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest mb-0.5">Auto-Fill Active</p>
@@ -99,14 +84,38 @@
                     </div>
                 </div>
 
-                <button type="submit" id="submit-btn" 
-                    class="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all 
-                    hover:bg-indigo-700 hover:shadow-[0_6px_20px_rgba(99,102,241,0.3)] active:scale-95 shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-2 mt-2">
+                <button type="submit" id="submit-btn" class="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all hover:bg-indigo-700 hover:shadow-[0_6px_20px_rgba(99,102,241,0.3)] active:scale-95 shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-2 mt-2">
                     <span>Save Prospect</span>                    
                 </button>
             </form>
+
+            <div class="w-full mt-10">
+                <div class="w-full py-6 flex flex-col items-center justify-center">
+                    <label class="text-[13px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.4em] block text-center leading-none">My Follow-up List</label>
+                </div>
+                <div id="followup-list" class="w-full space-y-6 pb-24">
+                    <div class="flex flex-col items-center justify-center py-20 animate-pulse">
+                        <i class="bi bi-arrow-repeat text-indigo-500 text-2xl mb-4 animate-spin"></i>
+                        <p class="text-center text-slate-400 italic text-xs uppercase tracking-widest">Syncing with Sheet...</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
+
+    <div id="delete-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-6 hidden z-[200]">
+        <div class="bg-white dark:bg-slate-900 w-full max-w-xs rounded-[2.5rem] p-8 border dark:border-slate-800 shadow-2xl text-center">
+            <div class="w-12 h-12 bg-red-100 dark:bg-red-900/30 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="bi bi-exclamation-triangle-fill text-xl"></i>
+            </div>
+            <h3 class="text-xl font-bold dark:text-white mb-2">Remove Prospect?</h3>
+            <p class="text-[11px] text-slate-500 dark:text-slate-400 mb-8 leading-relaxed">This record will be permanently deleted from your follow-up sheet.</p>
+            <div class="flex flex-col gap-2">
+                <button id="final-confirm-btn" class="w-full py-4 bg-red-600 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest active:scale-95 transition-all">Confirm Delete</button>
+                <button onclick="closeDeleteModal()" class="w-full py-4 text-slate-500 font-bold uppercase text-[10px] tracking-widest">Cancel</button>
+            </div>
+        </div>
+    </div>
 
     <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 bg-slate-900 dark:bg-indigo-600 text-white px-6 py-3 rounded-2xl shadow-2xl opacity-0 translate-y-10 transition-all duration-500 z-[150] pointer-events-none text-sm font-bold border border-white/10"></div>
 
@@ -115,12 +124,11 @@
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // SURGICAL FIX: Removed hardcoded API strings
         let PSK = "";
         let SCRIPT_URL = "";
-        
-        let globalDisplayName = "Unknown User";
-        let globalChurchName = "No Church"; 
+        let user = null;
+        let userProfile = null;
+        let pendingDeleteId = null;
 
         window.showToast = (msg) => {
             const t = document.getElementById('toast');
@@ -141,89 +149,131 @@
         };
         if(localStorage.getItem('theme') === 'dark') toggleDarkMode();
 
-        onAuthStateChanged(auth, async (user) => {
-            if (!user) return window.location.replace("index.html");
-
-            // VERIFICATION GATE
-            if (!user.emailVerified) {
-                document.getElementById('prospect-form').innerHTML = `<div class="text-center opacity-40 py-20 uppercase font-black tracking-widest text-[10px]">Please verify your email to access Prospecting.</div>`;
+        onAuthStateChanged(auth, async (u) => {
+            if (!u) return window.location.replace("index.html");
+            if (!u.emailVerified) {
+                document.getElementById('prospect-form').innerHTML = `<div class="text-center opacity-40 py-20 uppercase font-black tracking-widest text-[10px]">Please verify your email.</div>`;
                 return;
             }
+            user = u;
+            userProfile = JSON.parse(sessionStorage.getItem('userContext') || "{}");
 
-            const cachedData = sessionStorage.getItem('userContext');
-            if (cachedData) {
-                const profile = JSON.parse(cachedData);
-                globalDisplayName = profile.displayName || user.displayName || user.email;
-                
-                if (profile.churchNames) {
-                    globalChurchName = Object.values(profile.churchNames)[0] || "General";
-                }
-            } else {
-                globalDisplayName = user.displayName || user.email || "Soulwinner";
-            }
-
-            // SURGICAL FETCH: Pull Config from Gatekeeper
             try {
                 const configSnap = await getDoc(doc(db, "system", "gatekeeper"));
                 if (configSnap.exists()) {
                     const config = configSnap.data();
                     SCRIPT_URL = config.prospectScriptUrl;
                     PSK = config.masterPsk;
+                    if(SCRIPT_URL && PSK) loadFollowUps();
                 }
-            } catch (e) {
-                console.error("Gatekeeper error:", e);
-                showToast("Configuration error. Try again.");
-            }
+            } catch (e) { console.error(e); }
 
-            document.getElementById('user-display').innerText = `Logged in as: ${globalDisplayName}`;
+            document.getElementById('user-display').innerText = `Logged in as: ${userProfile.displayName || user.email}`;
             document.getElementById('p-date').valueAsDate = new Date(); 
         });
 
+        window.loadFollowUps = async () => {
+            const list = document.getElementById('followup-list');
+            if (!SCRIPT_URL || !PSK || !user) return;
+
+            try {
+                const res = await fetch(`${SCRIPT_URL}?key=${PSK}`);
+                const data = await res.json();
+                
+                // Filter by UID stored in "Soulwinner Name" column
+                const myData = data.filter(p => p["Soulwinner Name"] === user.uid);
+                
+                if (myData.length === 0) {
+                    list.innerHTML = `<div class="text-center opacity-40 py-10 uppercase font-black tracking-widest text-[10px]">No Prospects Found</div>`;
+                    return;
+                }
+
+                myData.sort((a, b) => new Date(b["SW Date"]) - new Date(a["SW Date"]));
+
+                let html = "";
+                myData.forEach((p, index) => {
+                    const isAlt = index % 2 !== 0;
+                    const themeBorder = isAlt ? 'border-sky-500/30' : 'border-cyan-400/30';
+                    const themeBg = isAlt ? 'bg-sky-500' : 'bg-cyan-400';
+                    const themeText = isAlt ? 'text-sky-400' : 'text-cyan-400';
+
+                    html += `
+                        <div class="bg-white dark:bg-[#111827] w-full rounded-[2rem] border-2 ${themeBorder} relative text-left transition-all duration-300 overflow-hidden shadow-xl dark:shadow-cyan-500/5">
+                            <div class="p-6 pl-8 relative">
+                                <div class="absolute left-0 top-4 bottom-4 w-1.5 rounded-r-full ${themeBg}"></div>
+                                <div class="flex justify-between items-start">
+                                    <div class="flex-1">
+                                        <p class="text-[9px] font-black ${themeText} uppercase tracking-[0.2em] mb-1"><i class="bi bi-calendar3 mr-1"></i> ${p["SW Date"]}</p>
+                                        <h4 class="text-lg font-black dark:text-white uppercase tracking-tight leading-tight">${p["Prospect Name"]}</h4>
+                                        <div class="flex items-center gap-1.5 mt-2 opacity-70">
+                                            <i class="bi bi-geo-alt-fill ${themeText} text-[10px]"></i>
+                                            <p class="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">${p["SW Location"]}</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex flex-col gap-2">
+                                        <a href="tel:${p["Contact Number"]}" class="w-10 h-10 flex items-center justify-center rounded-xl ${themeBg} text-white shadow-lg active:scale-90"><i class="bi bi-telephone-fill"></i></a>
+                                        <button onclick="confirmDelete('${p.rowId}')" class="w-10 h-10 flex items-center justify-center rounded-xl bg-rose-500/10 text-rose-500 border border-rose-500/20 active:scale-90"><i class="bi bi-trash3-fill"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
+                });
+                list.innerHTML = html;
+            } catch (e) { list.innerHTML = "Sync Error."; }
+        };
+
+        window.confirmDelete = (rowId) => {
+            pendingDeleteId = rowId;
+            document.getElementById('delete-modal').classList.remove('hidden');
+        };
+
+        window.closeDeleteModal = () => {
+            document.getElementById('delete-modal').classList.add('hidden');
+            pendingDeleteId = null;
+        };
+
+        document.getElementById('final-confirm-btn').onclick = async () => {
+            if(!pendingDeleteId || !user) return;
+            const btn = document.getElementById('final-confirm-btn');
+            btn.disabled = true; btn.innerText = "DELETING...";
+            try {
+                await fetch(SCRIPT_URL, {
+                    method: 'POST', mode: 'no-cors',
+                    body: JSON.stringify({ psk: PSK, action: 'delete', rowId: parseInt(pendingDeleteId), uid: user.uid })
+                });
+                showToast("Prospect Deleted ✓");
+                closeDeleteModal();
+                loadFollowUps();
+            } catch (e) { showToast("Error deleting."); }
+            finally { btn.disabled = false; btn.innerText = "CONFIRM DELETE"; }
+        };
+
         document.getElementById('prospect-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-
-            // Safety Guard: Check if config loaded
-            if (!SCRIPT_URL || !PSK) {
-                showToast("System not ready. Please refresh.");
-                return;
-            }
+            if (!SCRIPT_URL || !PSK) return showToast("System Loading...");
 
             const btn = document.getElementById('submit-btn');
-            const originalText = btn.innerHTML;
-            
-            btn.disabled = true;
-            btn.innerText = "Processing...";
+            btn.disabled = true; btn.innerText = "SAVING...";
 
             const payload = {
                 psk: PSK,
+                action: "add",
                 name: document.getElementById('p-name').value,
                 contact: document.getElementById('p-phone').value,
                 swDate: document.getElementById('p-date').value,
                 swLocation: document.getElementById('p-location').value,
-                soulwinner: globalDisplayName,
-                church: globalChurchName 
+                soulwinner: user.uid,
+                church: userProfile.churchId?.[0] || "General"
             };
 
             try {
-                await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    body: JSON.stringify(payload)
-                });
-                
-                showToast(`Success! Recorded for ${globalChurchName} ✓`);
-                
+                await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+                showToast("Success! ✓");
                 document.getElementById('prospect-form').reset();
-                setTimeout(() => {
-                    window.history.back();
-                }, 1500);
-
-            } catch (err) {
-                showToast("Submission failed. Check connection.");
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = originalText;
-            }
+                document.getElementById('p-date').valueAsDate = new Date();
+                loadFollowUps(); // Refresh the list without leaving the page
+            } catch (err) { showToast("Error saving."); }
+            finally { btn.disabled = false; btn.innerText = "SAVE PROSPECT"; }
         });
     </script>
 </body>
