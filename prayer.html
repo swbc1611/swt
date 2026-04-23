@@ -111,18 +111,19 @@
     <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 bg-slate-900 dark:bg-indigo-600 text-white px-6 py-3 rounded-2xl shadow-2xl opacity-0 translate-y-10 transition-all duration-500 z-[150] pointer-events-none text-sm font-bold border border-white/10"></div>
 
     <script type="module">
-        import { auth } from './firebase-config.js';
+        import { auth, db } from './firebase-config.js';
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     
-        const API_URL = 'https://script.google.com/macros/s/AKfycbwkXN89BFagPdcWxvxjcIcgIAtdvQZJBqBJOTM5WDnTmRecYTQmZy5JScJxGJ1M7QZsOA/exec';
-        const PSK = 'sweeterthanhoney1611'; 
+        // SURGICAL FIX: Removed hardcoded API_URL and PSK.
+        let API_URL = '';
+        let PSK = ''; 
     
         let user = null;
         let userProfile = JSON.parse(sessionStorage.getItem('userContext') || "{}");
         let currentPrayerFilter = 'all';
         let pendingDeleteId = null;
     
-        // HELPER: Safely get the active church ID
         const getChurchId = () => (userProfile.churchId && userProfile.churchId.length > 0) ? userProfile.churchId[0] : null;
     
         window.showToast = (msg) => {
@@ -144,10 +145,35 @@
         };
         if(localStorage.getItem('theme') === 'dark') toggleDarkMode();
     
-        onAuthStateChanged(auth, (u) => {
+        onAuthStateChanged(auth, async (u) => {
             if (!u) { window.location.replace("index.html"); return; }
+            
+            // VERIFICATION GATE
+            if (!u.emailVerified) {
+                document.getElementById('prayer-list').innerHTML = `<div class="text-center opacity-40 py-20 uppercase font-black tracking-widest text-[10px]">Please verify your email to access the Prayer Board.</div>`;
+                return;
+            }
+
             user = u;
-            loadPrayers();
+
+            // SURGICAL FETCH: Get dynamic config from gatekeeper
+            try {
+                const configSnap = await getDoc(doc(db, "system", "gatekeeper"));
+                if (configSnap.exists()) {
+                    const config = configSnap.data();
+                    API_URL = config.prayerScriptUrl;
+                    PSK = config.masterPsk;
+                    
+                    if (API_URL && PSK) {
+                        loadPrayers();
+                    } else {
+                        document.getElementById('prayer-list').innerHTML = `<div class="text-center opacity-40 py-20 uppercase font-black tracking-widest text-[10px]">System Config Missing. Contact Admin.</div>`;
+                    }
+                }
+            } catch (e) {
+                console.error("Gatekeeper failed:", e);
+                showToast("System offline. Check connection.");
+            }
         });
     
         window.setPrayerFilter = (filter) => {
@@ -164,6 +190,7 @@
         };
         
         window.loadPrayers = async () => {
+            if (!API_URL || !PSK) return; // Guard clause
             const list = document.getElementById('prayer-list');
             const churchId = getChurchId();
     
@@ -173,7 +200,6 @@
             }
     
             try {
-                // SURGICAL CHANGE: Passing the church parameter to the Apps Script filter
                 const res = await fetch(`${API_URL}?key=${PSK}&church=${churchId}`);
                 let rawData = await res.json();
                 
@@ -243,6 +269,7 @@
             
             if(!req) return;
             if(!churchId) { showToast("No Church Assigned."); return; }
+            if(!API_URL) return;
     
             const btn = document.getElementById('postBtn');
             btn.disabled = true; btn.innerText = "POSTING...";
@@ -256,7 +283,7 @@
                         uid: user.uid, 
                         name: userProfile.displayName || "Brethren", 
                         request: req,
-                        church: churchId // SURGICAL ADDITION: Tagging with church ID
+                        church: churchId 
                     })
                 });
                 document.getElementById('prayerInput').value = "";
@@ -276,7 +303,7 @@
         };
     
         document.getElementById('final-confirm-btn').onclick = async () => {
-            if(!pendingDeleteId) return;
+            if(!pendingDeleteId || !API_URL) return;
             const btn = document.getElementById('final-confirm-btn');
             btn.disabled = true; btn.innerText = "REMOVING...";
             try {
