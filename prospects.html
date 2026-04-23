@@ -90,15 +90,19 @@
             </form>
 
             <div class="w-full mt-10">
-                <div class="flex items-center gap-4 mb-6 px-4">
-                    <div class="h-[1px] flex-1 bg-white/5"></div>
-                    <label class="text-[11px] font-black text-slate-400 dark:text-slate-200 uppercase tracking-[0.3em]">My Follow-up List</label>
-                    <div class="h-[1px] flex-1 bg-white/5"></div>
-                </div>
-                <div id="followup-list" class="w-full space-y-6 pb-24">
-                    <div class="flex flex-col items-center justify-center py-20 animate-pulse">
-                        <i class="bi bi-arrow-repeat text-indigo-500 text-2xl mb-4 animate-spin"></i>
-                        <p class="text-center text-slate-400 italic text-xs uppercase tracking-widest">Gathering follow-ups...</p>
+                <button onclick="toggleFollowUpList()" class="w-full py-4 flex items-center justify-between border-b dark:border-slate-800 group">
+                    <label class="text-[13px] font-black text-slate-400 dark:text-slate-200 uppercase tracking-[0.4em] leading-none cursor-pointer group-hover:text-indigo-500 transition-colors">
+                        My Follow-up List
+                    </label>
+                    <i id="list-chevron" class="bi bi-chevron-down text-slate-400 group-hover:text-indigo-500 transition-all duration-300"></i>
+                </button>
+
+                <div id="followup-container" class="hidden w-full pt-8">
+                    <div id="followup-list" class="w-full space-y-6 pb-24">
+                        <div class="flex flex-col items-center justify-center py-20 animate-pulse">
+                            <i class="bi bi-arrow-repeat text-indigo-500 text-2xl mb-4 animate-spin"></i>
+                            <p class="text-center text-slate-400 italic text-xs uppercase tracking-widest">Gathering follow-ups...</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -152,6 +156,22 @@
         };
         if(localStorage.getItem('theme') === 'dark') toggleDarkMode();
     
+        // SURGICAL FIX: Toggle Function for Accordion
+        window.toggleFollowUpList = () => {
+            const container = document.getElementById('followup-container');
+            const chevron = document.getElementById('list-chevron');
+            const isHidden = container.classList.contains('hidden');
+
+            if (isHidden) {
+                container.classList.remove('hidden');
+                chevron.style.transform = 'rotate(180deg)';
+                loadFollowUps(); // Load data only when opening
+            } else {
+                container.classList.add('hidden');
+                chevron.style.transform = 'rotate(0deg)';
+            }
+        };
+
         onAuthStateChanged(auth, async (u) => {
             if (!u) return window.location.replace("index.html");
             if (!u.emailVerified) {
@@ -168,7 +188,7 @@
                     const config = configSnap.data();
                     SCRIPT_URL = config.prospectScriptUrl;
                     PSK = config.masterPsk;
-                    if(SCRIPT_URL && PSK) loadFollowUps();
+                    // REMOVED: Immediate loadFollowUps() call to keep it hidden
                 }
             } catch (e) { console.error("Gatekeeper error:", e); }
     
@@ -183,7 +203,6 @@
             const eyeEl = document.getElementById(`eye-${rowId}`);
             if (!numEl || !eyeEl) return;
     
-            // Surgical Masking Logic
             const masked = fullNum.length > 6 
                 ? `${fullNum.substring(0, 4)}****${fullNum.slice(-2)}` 
                 : fullNum;
@@ -206,8 +225,6 @@
             try {
                 const res = await fetch(`${SCRIPT_URL}?key=${PSK}`);
                 const data = await res.json();
-                
-                // F: Soulwinner Name is index 5 in sheet, mapped to UID
                 const myData = data.filter(p => p["Soulwinner Name"] === user.uid);
                 
                 if (myData.length === 0) {
@@ -224,7 +241,6 @@
                     const themeBg = isAlt ? 'bg-sky-500' : 'bg-cyan-400';
                     const themeText = isAlt ? 'text-sky-400' : 'text-cyan-400';
                     
-                    // SURGICAL FIX: Robust Date Parsing
                     const rawDate = p["SW Date"] || "";
                     let formattedDate = "Recent";
                     if (rawDate) {
@@ -234,7 +250,6 @@
                         }) : rawDate;
                     }
         
-                    // SURGICAL FIX: Pre-calculated Partial Masking
                     const rawNum = String(p["Contact Number"] || "");
                     const maskedNum = rawNum.length > 6 
                         ? `${rawNum.substring(0, 4)}****${rawNum.slice(-2)}` 
@@ -249,9 +264,7 @@
                                         <p class="text-[10px] font-black ${themeText} uppercase tracking-[0.2em] mb-3">
                                             <i class="bi bi-calendar3 mr-1"></i> ${formattedDate}
                                         </p>
-                                        
                                         <h4 class="text-xl font-black dark:text-white uppercase tracking-tight leading-tight mb-2">${p["Prospect Name"]}</h4>
-                                        
                                         <div class="flex items-center gap-3 mt-1 mb-3">
                                              <div class="flex items-center gap-2">
                                                 <i class="bi bi-telephone-fill ${themeText} text-sm opacity-70"></i>
@@ -261,7 +274,6 @@
                                                 <i id="eye-${p.rowId}" class="bi bi-eye-slash text-sm"></i>
                                              </button>
                                         </div>
-        
                                         <div class="flex items-center gap-1.5 opacity-70">
                                             <i class="bi bi-geo-alt-fill ${themeText} text-[10px]"></i>
                                             <p class="text-[11px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">${p["SW Location"]}</p>
@@ -330,9 +342,17 @@
                 showToast("Success! ✓");
                 document.getElementById('prospect-form').reset();
                 document.getElementById('p-date').valueAsDate = new Date();
+                
+                // SURGICAL UX: Open list and refresh after saving
+                const container = document.getElementById('followup-container');
+                const chevron = document.getElementById('list-chevron');
+                if (container.classList.contains('hidden')) {
+                    container.classList.remove('hidden');
+                    chevron.style.transform = 'rotate(180deg)';
+                }
                 loadFollowUps();
             } catch (err) { showToast("Error saving."); }
-            finally { btn.disabled = false; btn.innerText = "SAVE PROSPECT"; }
+            finally { btn.disabled = false; btn.innerText = "SAVE FOLLOW-UP"; }
         });
     </script>
 </body>
