@@ -747,9 +747,9 @@
             } catch (e) { showToast("Failed."); }
         };
 
-        window.limitInput = (el) => { let val = parseInt(el.value); if (val > 999) el.value = 999; if (val < 1) el.value = 1; };
+        window.limitInput = (el) => { let val = parseInt(el.value); if (val > 999) el.value = 999; if (val < 1) el.value = 0; };
         window.increment = () => { const el = document.getElementById('soulCount'); if (parseInt(el.value) < 999) el.value = (parseInt(el.value) || 0) + 1; };
-        window.decrement = () => { const el = document.getElementById('soulCount'); if (parseInt(el.value) > 1) el.value = (parseInt(el.value) || 0) - 1; };
+        window.decrement = () => { const el = document.getElementById('soulCount'); if (parseInt(el.value) > 0) el.value = (parseInt(el.value) || 0) - 1; };
         
         window.addNewChurch = async () => {
             const n = document.getElementById('newChurchName').value.trim(); if(!n) return;
@@ -783,23 +783,51 @@
 
         window.handleDataSubmit = async () => {
             const type = document.getElementById('soulType').value;
-            if (!type || !userProfile?.churchId?.length) return showToast("Select type.");
-            const btn = document.getElementById('submit-btn'); btn.disabled = true;
+            
+            // SURGICAL FIX: Improved logic and specific error messaging
+            if (!type) return showToast("Please select a Soulwinning Type.");
+            if (!userProfile?.churchId?.length) {
+                console.error("Critical Error: Church ID missing from user profile.");
+                return showToast("Error: Church profile not found. Please refresh.");
+            }
+        
+            const btn = document.getElementById('submit-btn'); 
+            btn.disabled = true;
+        
             try {
                 const uid = auth.currentUser.uid; 
                 const churchId = userProfile.churchId[0];
                 const dt = document.getElementById('soulDateTime').value;
-                const dId = dt.split('T')[0]; const mId = dId.substring(0, 7);
+                const dId = dt.split('T')[0]; 
+                const mId = dId.substring(0, 7);
+        
+                // Standardized Zero-Handling
+                const soulCount = Number(document.getElementById('soulCount').value) || 0;
+        
                 await addDoc(collection(db, "salvations"), { 
-                    count: Number(document.getElementById('soulCount').value), 
-                    type, note: document.getElementById('soulNote').value, 
-                    eventDate: dt, userId: uid, churchId, timestamp: serverTimestamp() 
+                    count: soulCount, 
+                    type, 
+                    note: document.getElementById('soulNote').value, 
+                    eventDate: dt, 
+                    userId: uid, 
+                    churchId, 
+                    timestamp: serverTimestamp() 
                 });
-                const sU = {}; sU[`${type}_members`] = arrayUnion(uid);
+        
+                const sU = {}; 
+                sU[`${type}_members`] = arrayUnion(uid);
+        
                 await setDoc(doc(db, `churches/${churchId}/daily_stats`, dId), sU, { merge: true });
                 await setDoc(doc(db, `churches/${churchId}/monthly_stats`, mId), sU, { merge: true });
-                closeModal(); showToast("Saved!"); 
-            } catch(e) { showToast("Error."); } finally { btn.disabled = false; }
+        
+                closeModal(); 
+                showToast("Saved!"); 
+            } catch(e) { 
+                console.error("Submission Error:", e);
+                showToast("Error saving record."); 
+            } finally { 
+                btn.disabled = false; 
+            }
         };
     </script>
 </body>
