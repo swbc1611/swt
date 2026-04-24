@@ -395,28 +395,49 @@
         window.handleDataSubmit = async () => {
             const type = document.getElementById('soulType').value;
             if (!type) return showToast("Select a type.");
+            
             const btn = document.getElementById('submit-btn'); 
             btn.innerText = "Saving..."; btn.disabled = true;
+        
             try {
                 const uid = auth.currentUser.uid;
                 const churchId = userProfile.churchId[0];
                 const eventDateStr = document.getElementById('soulDateTime').value;
                 const dateId = eventDateStr.split('T')[0];
                 const monthId = dateId.substring(0, 7);
+        
+                // SURGICAL FIX: Allow 0 salvations. Default to 0 if input is empty.
+                const soulCount = Number(document.getElementById('soulCount').value) || 0;
+        
                 await addDoc(collection(db, "salvations"), {
-                    count: Number(document.getElementById('soulCount').value),
-                    type, note: document.getElementById('soulNote').value,
-                    eventDate: eventDateStr, userId: uid, churchId,
+                    count: soulCount,
+                    type, 
+                    note: document.getElementById('soulNote').value,
+                    eventDate: eventDateStr, 
+                    userId: uid, 
+                    churchId,
                     timestamp: serverTimestamp()
                 });
+        
+                // This part is critical: It still adds the user to the "Active" list 
+                // for the day/month even if they recorded 0 salvations.
                 const typeKey = `${type}_members`;
                 const statsUpdate = {};
                 statsUpdate[typeKey] = arrayUnion(uid);
+        
                 await setDoc(doc(db, `churches/${churchId}/daily_stats`, dateId), statsUpdate, { merge: true });
                 await setDoc(doc(db, `churches/${churchId}/monthly_stats`, monthId), statsUpdate, { merge: true });
-                closeModal(); showToast("Record Saved.");
-            } catch(e) { showToast("Error saving record."); } 
-            finally { btn.innerText = "Submit"; btn.disabled = false; }
+        
+                closeModal(); 
+                showToast("Record Saved.");
+            } catch(e) { 
+                console.error("Submission Error:", e);
+                showToast("Error saving record."); 
+            } 
+            finally { 
+                btn.innerText = "Submit"; 
+                btn.disabled = false; 
+            }
         };
 
         window.handleLogout = () => signOut(auth).then(() => { sessionStorage.clear(); window.location.replace("index.html"); });
@@ -430,9 +451,9 @@
         };
         window.openPassModal = () => document.getElementById('pass-modal').classList.remove('hidden');
         window.closePassModal = () => document.getElementById('pass-modal').classList.add('hidden');
-        window.limitInput = (el) => { let val = parseInt(el.value); if (val > 999) el.value = 999; if (val < 1) el.value = 1; };
+        window.limitInput = (el) => { let val = parseInt(el.value); if (val > 999) el.value = 999; if (val < 1) el.value = 0; };
         window.increment = () => { const el = document.getElementById('soulCount'); let c = parseInt(el.value) || 0; if (c < 999) el.value = c + 1; };
-        window.decrement = () => { const el = document.getElementById('soulCount'); let c = parseInt(el.value) || 0; if (c > 1) el.value = c - 1; };
+        window.decrement = () => { const el = document.getElementById('soulCount'); let c = parseInt(el.value) || 0; if (c > 0) el.value = c - 1; };
     </script>
 </body>
 </html>
