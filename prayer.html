@@ -103,7 +103,7 @@
             <p class="text-[11px] text-slate-500 dark:text-slate-400 mb-8 leading-relaxed">This action will permanently remove your request from the church board.</p>
             <div class="flex flex-col gap-2">
                 <button id="final-confirm-btn" class="w-full py-4 bg-red-600 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest active:scale-95 transition-all">Delete Request</button>
-                <button onclick="closeDeleteModal()" class="w-full py-4 text-slate-500 font-bold uppercase text-[10px] tracking-widest">Cancel</button>
+                <button id="cancel-delete-btn" onclick="closeDeleteModal()" class="w-full py-4 text-slate-500 font-bold uppercase text-[10px] tracking-widest">Cancel</button>
             </div>
         </div>
     </div>
@@ -115,7 +115,7 @@
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     
-        // SURGICAL FIX: Removed hardcoded API_URL and PSK.
+        // Dynamic config variables
         let API_URL = '';
         let PSK = ''; 
     
@@ -128,6 +128,7 @@
     
         window.showToast = (msg) => {
             const t = document.getElementById('toast');
+            if (!t) return;
             t.innerText = msg;
             t.classList.remove('opacity-0', 'translate-y-10');
             t.classList.add('opacity-100', 'translate-y-0');
@@ -139,8 +140,8 @@
     
         window.toggleDarkMode = () => {
             const isDark = document.getElementById('main-html').classList.toggle('dark');
-            document.getElementById('sun-icon').classList.toggle('hidden', !isDark);
-            document.getElementById('moon-icon').classList.toggle('hidden', isDark);
+            document.getElementById('sun-icon')?.classList.toggle('hidden', !isDark);
+            document.getElementById('moon-icon')?.classList.toggle('hidden', isDark);
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
         };
         if(localStorage.getItem('theme') === 'dark') toggleDarkMode();
@@ -148,15 +149,13 @@
         onAuthStateChanged(auth, async (u) => {
             if (!u) { window.location.replace("index.html"); return; }
             
-            // VERIFICATION GATE
             if (!u.emailVerified) {
                 document.getElementById('prayer-list').innerHTML = `<div class="text-center opacity-40 py-20 uppercase font-black tracking-widest text-[10px]">Please verify your email to access the Prayer Board.</div>`;
                 return;
             }
-
+    
             user = u;
-
-            // SURGICAL FETCH: Get dynamic config from gatekeeper
+    
             try {
                 const configSnap = await getDoc(doc(db, "system", "gatekeeper"));
                 if (configSnap.exists()) {
@@ -190,7 +189,7 @@
         };
         
         window.loadPrayers = async () => {
-            if (!API_URL || !PSK) return; // Guard clause
+            if (!API_URL || !PSK) return; 
             const list = document.getElementById('prayer-list');
             const churchId = getChurchId();
     
@@ -206,7 +205,7 @@
                 let data = (currentPrayerFilter === 'mine') 
                     ? rawData.filter(p => p.UserID == user.uid) 
                     : rawData;
-        
+    
                 const grouped = data.reduce((acc, curr) => {
                     if (!acc[curr.UserID]) { 
                         acc[curr.UserID] = { 
@@ -220,18 +219,17 @@
                     acc[curr.UserID].prayers.push(curr);
                     return acc;
                 }, {});
-        
+    
                 const sortedGroups = Object.values(grouped).sort((a, b) => b.lastActive - a.lastActive);
                 let html = "";
                 
                 sortedGroups.forEach((group, index) => {
                     group.prayers.sort((a, b) => new Date(b.Date) - new Date(a.Date));
                     const isAlt = index % 2 !== 0;
-                    const themeColor = isAlt ? 'sky-500' : 'cyan-400';
                     const themeBorder = isAlt ? 'border-sky-500/30' : 'border-cyan-400/30';
                     const themeBg = isAlt ? 'bg-sky-500' : 'bg-cyan-400';
                     const themeText = isAlt ? 'text-sky-400' : 'text-cyan-400';
-        
+    
                     html += `
                         <div class="bg-white dark:bg-[#111827] w-full rounded-3xl border-2 ${themeBorder} relative text-left mb-10 transition-all duration-300 overflow-hidden shadow-xl dark:shadow-cyan-500/5">
                             <div class="px-7 py-4 bg-slate-50 dark:bg-slate-800/40 flex items-center justify-between border-b ${themeBorder}">
@@ -245,7 +243,7 @@
                             </div>
                             <div class="flex flex-col">
                                 ${group.prayers.map((p, pIndex) => `
-                                    <div class="p-7 pl-9 relative ${pIndex % 2 !== 0 ? 'bg-black/5 dark:bg-white/5' : ''} ${pIndex !== group.prayers.length - 1 ? 'border-b border-white/5' : ''}">
+                                    <div id="row-${p.ID}" class="p-7 pl-9 relative ${pIndex % 2 !== 0 ? 'bg-black/5 dark:bg-white/5' : ''} ${pIndex !== group.prayers.length - 1 ? 'border-b border-white/5' : ''}">
                                         <div class="absolute left-0 top-4 bottom-4 w-1 rounded-r-full ${themeBg}"></div>
                                         <div class="flex justify-between items-start gap-6">
                                             <p class="text-sm text-slate-700 dark:text-slate-100 leading-relaxed font-semibold italic mb-4">"${p.Request}"</p>
@@ -302,35 +300,76 @@
             pendingDeleteId = null;
         };
     
+        // SURGICAL UPGRADE: delete handler with state locking and shake rollback
         document.getElementById('final-confirm-btn').onclick = async () => {
             if(!pendingDeleteId || !API_URL) return;
+            
             const btn = document.getElementById('final-confirm-btn');
-            btn.disabled = true; btn.innerText = "REMOVING...";
+            const cancelBtn = document.getElementById('cancel-delete-btn');
+            if (btn.disabled) return; 
+    
+            // Capture target and row locally
+            const targetId = pendingDeleteId;
+            const row = document.getElementById(`row-${targetId}`);
+            
+            // LOCK UI STATE
+            btn.disabled = true; 
+            btn.innerText = "REMOVING...";
+            if (cancelBtn) {
+                cancelBtn.disabled = true;
+                cancelBtn.style.opacity = "0.5";
+            }
+    
+            // OPTIMISTIC HIDE
+            if (row) {
+                row.style.opacity = "0.3";
+                row.style.pointerEvents = "none";
+            }
+    
             try {
                 await fetch(API_URL, {
                     method: 'POST', mode: 'no-cors',
-                    body: JSON.stringify({ key: PSK, action: 'delete', id: pendingDeleteId, uid: user.uid })
+                    body: JSON.stringify({ key: PSK, action: 'delete', id: targetId, uid: user.uid })
                 });
+    
                 showToast("Request Removed ✓");
                 closeDeleteModal();
-                setTimeout(() => loadPrayers(), 500);
-            } catch (e) { showToast("Error deleting."); }
-            finally { btn.disabled = false; btn.innerText = "DELETE REQUEST"; }
+                
+                if (row) {
+                    row.style.opacity = "0";
+                    setTimeout(() => loadPrayers(), 400); // Re-fetch to cleanup groupings properly
+                }
+            } catch (e) { 
+                showToast("Error deleting.");
+                // ROLLBACK WITH SHAKE
+                if (row) {
+                    row.style.opacity = "1";
+                    row.style.pointerEvents = "auto";
+                    row.classList.add('animate-shake');
+                    setTimeout(() => row.classList.remove('animate-shake'), 500);
+                }
+                // UNLOCK CANCEL
+                if (cancelBtn) {
+                    cancelBtn.disabled = false;
+                    cancelBtn.style.opacity = "1";
+                }
+            } finally { 
+                btn.disabled = false; 
+                btn.innerText = "DELETE REQUEST"; 
+            }
         };
-
+    
         window.goHome = () => {
             try {
                 const cachedData = sessionStorage.getItem('userContext');
                 if (cachedData) {
                     const profile = JSON.parse(cachedData);
-                    // Route based on role
                     if (profile.role === 'pastor') {
                         window.location.href = 'pastor.html';
                     } else {
                         window.location.href = 'member.html';
                     }
                 } else {
-                    // Fallback if session is cleared
                     window.location.href = 'index.html';
                 }
             } catch (e) {
