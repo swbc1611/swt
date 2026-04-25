@@ -170,3 +170,17 @@ input[type="month"] {
     padding-left: 3.5rem !important; 
     text-align: center !important;
 }
+
+/* SURGICAL ADD: Shake Animation for Rollback Feedback */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    50% { transform: translateX(6px); }
+    75% { transform: translateX(-6px); }
+}
+
+.animate-shake {
+    animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+    border-color: #ef4444 !important; /* Force red border during shake */
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.2) !important;
+}
