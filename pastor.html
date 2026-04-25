@@ -922,17 +922,22 @@
         };
 
         window.migrateWeeklyStats = async () => {
-            if (!user || !userProfile?.churchId?.[0]) return showToast("Auth required.");
+            // SURGICAL FIX: Get the actual current user from Firebase Auth directly
+            const activeUser = auth.currentUser;
+            
+            if (!activeUser || !userProfile?.churchId?.[0]) {
+                console.error("Auth State:", activeUser, "Profile:", userProfile);
+                return showToast("❌ Auth required. Please log in.");
+            }
             
             const churchId = userProfile.churchId[0];
-            const uid = user.uid;
-            const mondayDate = getMondayDate(); // Monday of current week
+            const uid = activeUser.uid;
+            const mondayDate = getMondayDate(); 
             const statsRef = doc(db, `churches/${churchId}/users/${uid}/weekly_stats`, "current_week");
         
             showToast("Starting Migration...");
         
             try {
-                // 1. Fetch all records from this week for the user
                 const q = query(
                     collection(db, "salvations"),
                     where("userId", "==", uid),
@@ -942,7 +947,6 @@
                 const snap = await getDocs(q);
                 const weeklyTotals = { mon: 0, tue: 0, wed: 0, thu: 0, fri: 0, sat: 0, sun: 0 };
         
-                // 2. Aggregate counts manually
                 snap.forEach(doc => {
                     const data = doc.data();
                     const dayKey = new Date(data.eventDate).toLocaleDateString('en-US', { weekday: 'short' }).toLowerCase();
@@ -951,18 +955,18 @@
                     }
                 });
         
-                // 3. Update the bucket
                 await setDoc(statsRef, {
                     ...weeklyTotals,
                     startDate: mondayDate,
                     timestamp: serverTimestamp()
                 }, { merge: true });
         
-                showToast("✅ Migration Complete! Refreshing chart...");
+                showToast("✅ Migration Complete!");
+                // Refresh the chart immediately
                 renderWeeklyChart(uid, churchId);
             } catch (e) {
                 console.error("Migration Error:", e);
-                showToast("❌ Migration Failed. Check console.");
+                showToast("❌ Migration Failed. Check rules.");
             }
         };
     </script>
