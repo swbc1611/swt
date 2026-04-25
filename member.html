@@ -285,36 +285,61 @@
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
             const mondayDate = getMondayDate();
-
+        
             try {
                 const docRef = doc(db, `churches/${churchId}/users/${uid}/weekly_stats`, "current_week");
                 const snap = await getDoc(docRef);
-                const data = snap.exists() ? snap.data() : {};
-                const isCurrentWeek = data.startDate === mondayDate;
-
+                let data = snap.exists() ? snap.data() : null;
+        
+                // --- SURGICAL TRIGGER: SELF-HEALING CHECK ---
+                // If no data exists OR data is from a previous week...
+                // We check if we need to "Heal" by looking for existing records from THIS week.
+                if (!data || data.startDate !== mondayDate) {
+                    console.log("Self-healing: Aggregating existing records for this week...");
+                    
+                    const q = query(
+                        collection(db, "salvations"),
+                        where("userId", "==", uid),
+                        where("eventDate", ">=", mondayDate)
+                    );
+                    const salvationSnap = await getDocs(q);
+                    
+                    const healedTotals = { mon: 0, tue: 0, wed: 0, thu: 0, fri: 0, sat: 0, sun: 0 };
+                    salvationSnap.forEach(d => {
+                        const sData = d.data();
+                        const dayKey = new Date(sData.eventDate).toLocaleDateString('en-US', { weekday: 'short' }).toLowerCase();
+                        if (healedTotals.hasOwnProperty(dayKey)) {
+                            healedTotals[dayKey] += Number(sData.count || 0);
+                        }
+                    });
+        
+                    // Save the healed data so we don't have to do this again
+                    data = {
+                        ...healedTotals,
+                        startDate: mondayDate,
+                        timestamp: serverTimestamp()
+                    };
+                    await setDoc(docRef, data, { merge: true });
+                }
+        
                 const weeklyData = [
-                    (isCurrentWeek ? data.mon : 0) || 0,
-                    (isCurrentWeek ? data.tue : 0) || 0,
-                    (isCurrentWeek ? data.wed : 0) || 0,
-                    (isCurrentWeek ? data.thu : 0) || 0,
-                    (isCurrentWeek ? data.fri : 0) || 0,
-                    (isCurrentWeek ? data.sat : 0) || 0,
-                    (isCurrentWeek ? data.sun : 0) || 0
+                    data.mon || 0, data.tue || 0, data.wed || 0,
+                    data.thu || 0, data.fri || 0, data.sat || 0, data.sun || 0
                 ];
-
+        
+                // --- REMAINDER OF RENDERING LOGIC (STAYS IDENTICAL) ---
                 const totalSalvations = weeklyData.reduce((a, b) => a + b, 0);
                 const totalBadge = document.getElementById('weekly-total-badge');
                 if (totalBadge) totalBadge.innerText = `WEEKLY TOTAL: ${totalSalvations}`;
-
+        
                 const isDarkMode = document.getElementById('main-html').classList.contains('dark');
                 const tickColor = isDarkMode ? '#64748b' : '#1e293b'; 
-
+        
                 const gradient = ctx.createLinearGradient(0, 0, 0, 150);
-                gradient.addColorStop(0, 'rgba(16, 185, 129, 1)');   // Emerald
+                gradient.addColorStop(0, 'rgba(16, 185, 129, 1)');   
                 gradient.addColorStop(1, 'rgba(16, 185, 129, 0.1)'); 
-
+        
                 if (window.myWeeklyChart) window.myWeeklyChart.destroy();
-
                 window.myWeeklyChart = new Chart(ctx, {
                     type: 'bar',
                     data: {
@@ -355,7 +380,7 @@
                         }
                     }
                 });
-            } catch (e) { console.error("Chart Render Failure:", e); }
+            } catch (e) { console.error("Chart Render/Heal Failure:", e); }
         };
 
         const initTheme = () => {
@@ -569,6 +594,8 @@
         window.limitInput = (el) => { let val = parseInt(el.value); if (val > 999) el.value = 999; if (val < 1) el.value = 0; };
         window.increment = () => { const el = document.getElementById('soulCount'); let c = parseInt(el.value) || 0; if (c < 999) el.value = c + 1; };
         window.decrement = () => { const el = document.getElementById('soulCount'); let c = parseInt(el.value) || 0; if (c > 0) el.value = c - 1; };
+
+        
     </script>
 </body>
 </html>
