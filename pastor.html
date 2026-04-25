@@ -105,7 +105,7 @@
                 <svg id="sun-icon" class="w-5 h-5 hidden text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M3 12h2.25m.386-6.364l1.591 1.591M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" /></svg>
                 <svg id="moon-icon" class="w-5 h-5 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" /></svg>
             </button>
-            <button onclick="handleLogout()" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:text-red-500 transition-all ml-2">
+            <button handleLogout()" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:text-red-500 transition-all ml-2">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
             </button>
         </div>
@@ -121,7 +121,14 @@
                 </button>
             </div>
             <div id="church-list-tags" class="flex flex-wrap justify-center gap-2 mt-2"></div>
-        </header>       
+            
+            <div class="w-full max-w-xl bg-white/5 dark:bg-slate-900/40 backdrop-blur-md rounded-[2.5rem] p-6 mt-8 mb-4 border border-white/10 shadow-2xl overflow-hidden">
+                <p class="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em] mb-6 text-center">Weekly Personal Progress</p>
+                <div class="h-40 w-full">
+                    <canvas id="weeklyChart"></canvas>
+                </div>
+            </div>
+        </header>        
         
         <div class="mb-12">
             <div class="flex items-center gap-4 mb-6 px-4">
@@ -404,12 +411,76 @@
     <script type="module">
         import { auth, db } from './firebase-config.js';
         import { onAuthStateChanged, signOut, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { doc, getDoc, setDoc, updateDoc, arrayUnion, addDoc, serverTimestamp, getAggregateFromServer, sum, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { doc, getDoc, setDoc, updateDoc, arrayUnion, addDoc, serverTimestamp, getAggregateFromServer, sum, collection, query, where, getDocs, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         let userProfile = null; 
         let churchNames = {};
         let currentPreset = 'month';
         let currentType = 'all';
+
+        // --- HELPER: GET MONDAY DATE OF CURRENT WEEK ---
+        const getMondayDate = (d = new Date()) => {
+            const date = new Date(d);
+            const day = date.getDay();
+            const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+            const monday = new Date(date.setDate(diff));
+            return monday.toISOString().split('T')[0];
+        };
+
+        // --- RENDER WEEKLY CHART (1 READ PER LOAD) ---
+        window.renderWeeklyChart = async (uid, churchId) => {
+            const canvas = document.getElementById('weeklyChart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const mondayDate = getMondayDate();
+
+            try {
+                const docRef = doc(db, `churches/${churchId}/users/${uid}/weekly_stats`, "current_week");
+                const snap = await getDoc(docRef);
+                const data = snap.exists() ? snap.data() : {};
+
+                // Stateless reset: Verify if stored data is from the current Monday-Sunday window
+                const isCurrentWeek = data.startDate === mondayDate;
+
+                const weeklyData = [
+                    (isCurrentWeek ? data.mon : 0) || 0,
+                    (isCurrentWeek ? data.tue : 0) || 0,
+                    (isCurrentWeek ? data.wed : 0) || 0,
+                    (isCurrentWeek ? data.thu : 0) || 0,
+                    (isCurrentWeek ? data.fri : 0) || 0,
+                    (isCurrentWeek ? data.sat : 0) || 0,
+                    (isCurrentWeek ? data.sun : 0) || 0
+                ];
+
+                if (window.myWeeklyChart) window.myWeeklyChart.destroy();
+
+                window.myWeeklyChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'],
+                        datasets: [{
+                            data: weeklyData,
+                            backgroundColor: 'rgba(99, 102, 241, 0.8)',
+                            borderRadius: 6,
+                            barThickness: 12
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { display: false, beginAtZero: true },
+                            x: {
+                                grid: { display: false },
+                                border: { display: false },
+                                ticks: { color: '#64748b', font: { size: 9, weight: '900' } }
+                            }
+                        }
+                    }
+                });
+            } catch (e) { console.error("Chart Error:", e); }
+        };
 
         const initYearSelector = () => {
             const yearSelect = document.getElementById('customYear');
@@ -523,7 +594,6 @@
                     profile = snap.data();
                 }
 
-                // --- PC SELF-HEALING SAFETY NET ---
                 if (!profile.churchNames || Object.keys(profile.churchNames).length === 0) {
                     const namesMap = {};
                     for (const code of (profile.churchId || [])) {
@@ -546,6 +616,11 @@
                 await renderChurchUI();
                 setActivePreset('month');
                 setActiveType('all');
+                
+                // SURGICAL INVOCATION: Render the weekly chart on load
+                if (userProfile.churchId && userProfile.churchId.length > 0) {
+                    renderWeeklyChart(user.uid, userProfile.churchId[0]);
+                }
         
             } catch (e) { 
                 console.error("Auth Guard Error:", e);
@@ -586,7 +661,6 @@
             tagContainer.innerHTML = tagsHtml;
         }
 
-        // --- MERGED REPORTING LOGIC WITH AGGREGATION ---
         window.loadStats = async () => {
             if (!userProfile?.churchId?.length) return showToast("No linked churches."); 
             const selCh = document.getElementById('churchFilter').value;
@@ -645,13 +719,11 @@
                 const totals = {}; const legacyTotals = {}; const participants = {}; const globalUnique = new Set();
 
                 for (const t of types) {
-                    // 1. AGGREGATED LIVE DATA
                     let qConstraints = [where("churchId", "in", churchIds), where("type", "==", t)];
                     if (!isAllTime) { qConstraints.push(where("eventDate", ">=", startLimit), where("eventDate", "<=", endLimit)); }
                     const liveSnap = await getAggregateFromServer(query(collection(db, "salvations"), ...qConstraints), { total: sum('count') });
                     totals[t] = liveSnap.data().total || 0;
 
-                    // 2. AGGREGATED LEGACY DATA
                     let legConstraints = [where("churchId", "in", churchIds), where("type", "==", t)];
                     if (!isAllTime) {
                         if (cYear) { legConstraints.push(where("year", "==", parseInt(cYear))); }
@@ -785,11 +857,10 @@
         window.handleDataSubmit = async () => {
             const type = document.getElementById('soulType').value;
             
-            // SURGICAL FIX: Improved logic and specific error messaging
             if (!type) return showToast("Please select a Soulwinning Type.");
             if (!userProfile?.churchId?.length) {
-                console.error("Critical Error: Church ID missing from user profile.");
-                return showToast("Error: Church profile not found. Please refresh.");
+                console.error("Critical Error: Church ID missing.");
+                return showToast("Error: Church profile not found.");
             }
         
             const btn = document.getElementById('submit-btn'); 
@@ -801,28 +872,47 @@
                 const dt = document.getElementById('soulDateTime').value;
                 const dId = dt.split('T')[0]; 
                 const mId = dId.substring(0, 7);
-        
-                // Standardized Zero-Handling
+                const dayKey = new Date(dt).toLocaleDateString('en-US', { weekday: 'short' }).toLowerCase();
+                const mondayDate = getMondayDate();
+
                 const soulCount = Number(document.getElementById('soulCount').value) || 0;
         
+                // 1. Log the individual record
                 await addDoc(collection(db, "salvations"), { 
-                    count: soulCount, 
-                    type, 
-                    note: document.getElementById('soulNote').value, 
-                    eventDate: dt, 
-                    userId: uid, 
-                    churchId, 
-                    timestamp: serverTimestamp() 
+                    count: soulCount, type, note: document.getElementById('soulNote').value, 
+                    eventDate: dt, userId: uid, churchId, timestamp: serverTimestamp() 
                 });
         
+                // 2. Update Daily/Monthly Attendance Stats
                 const sU = {}; 
                 sU[`${type}_members`] = arrayUnion(uid);
-        
                 await setDoc(doc(db, `churches/${churchId}/daily_stats`, dId), sU, { merge: true });
                 await setDoc(doc(db, `churches/${churchId}/monthly_stats`, mId), sU, { merge: true });
+
+                // 3. SURGICAL BUCKET UPDATE: Handle Personal Weekly Aggregate
+                const statsRef = doc(db, `churches/${churchId}/users/${uid}/weekly_stats`, "current_week");
+                const statsSnap = await getDoc(statsRef);
+                const statsData = statsSnap.exists() ? statsSnap.data() : {};
+
+                if (statsData.startDate !== mondayDate) {
+                    // NEW WEEK: Reset all days to zero and overwrite with current entry
+                    await setDoc(statsRef, {
+                        startDate: mondayDate,
+                        mon: 0, tue: 0, wed: 0, thu: 0, fri: 0, sat: 0, sun: 0,
+                        [dayKey]: soulCount,
+                        timestamp: serverTimestamp()
+                    });
+                } else {
+                    // SAME WEEK: Atomically increment the day's count
+                    await setDoc(statsRef, {
+                        [dayKey]: increment(soulCount),
+                        timestamp: serverTimestamp()
+                    }, { merge: true });
+                }
         
                 closeModal(); 
                 showToast("Saved!"); 
+                renderWeeklyChart(uid, churchId); // Immediate visual feedback
             } catch(e) { 
                 console.error("Submission Error:", e);
                 showToast("Error saving record."); 
@@ -830,7 +920,6 @@
                 btn.disabled = false; 
             }
         };
-
     </script>
 </body>
 </html>
