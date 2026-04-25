@@ -1,5 +1,4 @@
 /* style.css */
-/* SURGICAL FIX: Added 800 weight to the import string */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
 
 :root {
@@ -114,14 +113,7 @@ input[type="datetime-local"] {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' ry='2'%3E%3C/rect%3E%3Cline x1='16' y1='2' x2='16' y2='6'%3E%3C/line%3E%3Cline x1='8' y1='2' x2='8' y2='6'%3E%3C/line%3E%3Cline x1='3' y1='10' x2='21' y2='10'%3E%3C/line%3E%3C/svg%3E") !important;
 }
 
-/* 4. KILL NATIVE PICKER INDICATOR (Confined to Input) */
-input[type="date"], 
-input[type="month"],
-input[type="datetime-local"] {
-    position: relative !important; 
-    overflow: hidden !important; 
-}
-
+/* 4. KILL NATIVE PICKER INDICATOR */
 input[type="date"]::-webkit-calendar-picker-indicator,
 input[type="month"]::-webkit-calendar-picker-indicator,
 input[type="datetime-local"]::-webkit-calendar-picker-indicator {
@@ -139,9 +131,16 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
     z-index: 10;
 }
 
-/* --- Brute Force Mobile Centering --- */
+/* 5. CENTERING & INPUT WRAPPING */
+input[type="date"], 
+input[type="month"],
+input[type="datetime-local"] {
+    position: relative !important; 
+    overflow: hidden !important; 
+    padding-left: 3.5rem !important; 
+    text-align: center !important;
+}
 
-/* 1. Target the internal edit container */
 input[type="date"]::-webkit-datetime-edit,
 input[type="month"]::-webkit-datetime-edit,
 input[type="datetime-local"]::-webkit-datetime-edit {
@@ -152,7 +151,6 @@ input[type="datetime-local"]::-webkit-datetime-edit {
     margin: 0 !important;
 }
 
-/* 2. Target the wrapper of the fields */
 input[type="date"]::-webkit-datetime-edit-fields-wrapper,
 input[type="month"]::-webkit-datetime-edit-fields-wrapper,
 input[type="datetime-local"]::-webkit-datetime-edit-fields-wrapper {
@@ -163,12 +161,11 @@ input[type="datetime-local"]::-webkit-datetime-edit-fields-wrapper {
     padding: 0 !important;
 }
 
-/* 3. Compensate for the custom icon on the right */
-input[type="date"],
-input[type="month"],
-input[type="datetime-local"] {
-    padding-left: 3.5rem !important; 
-    text-align: center !important;
+/* 6. BRUTE FORCE ANDROID FIX: Remove Chevron and Spin Buttons */
+input[type="datetime-local"]::-webkit-inner-spin-button,
+input[type="datetime-local"]::-webkit-clear-button {
+    display: none !important;
+    -webkit-appearance: none !important;
 }
 
 /* SURGICAL ADD: Shake Animation for Rollback Feedback */
