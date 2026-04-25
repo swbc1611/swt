@@ -67,6 +67,30 @@
             scrollbar-width: thin;
             scrollbar-color: rgba(99, 102, 241, 0.3) transparent;
         }
+
+        /* SURGICAL FIX: Custom Calendar Icon for Log Modal (datetime-local) */
+
+        /* 1. Hide the default browser "blob" icon */
+        input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+            background: transparent;
+            cursor: pointer;
+            /* This makes the clickable area cover the right side of the input */
+            padding-left: 50px; 
+        }
+        
+        /* 2. Inject your style's icon as a background image */
+        input[type="datetime-local"] {
+            position: relative;
+            /* Using your Indigo-500 color for the icon */
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%236366f1' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1.25rem center;
+        }
+        
+        /* 3. Light Mode Support (Matches your Slate-500 inputs) */
+        #main-html:not(.dark) input[type="datetime-local"] {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2364748b' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z'/%3E%3C/svg%3E");
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 dark:bg-[#0f172a] dark:text-slate-100 transition-colors duration-300">
