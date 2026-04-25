@@ -122,11 +122,18 @@
             </div>
             <div id="church-list-tags" class="flex flex-wrap justify-center gap-2 mt-2"></div>
             
-            <div class="w-full bg-white dark:bg-slate-900/40 backdrop-blur-md rounded-[1.25rem] p-5 mb-6 border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-2xl transition-all duration-300 hover:shadow-md">
-                <div class="flex justify-between items-center mb-6 px-2">
-                    <p class="text-[10px] font-black text-slate-400 dark:text-indigo-400 uppercase tracking-[0.3em]">Weekly Personal Progress</p>
-                    <span id="weekly-total-badge" class="text-[10px] font-black px-2 py-0.5 rounded-full bg-slate-100 dark:bg-indigo-500/20 text-slate-600 dark:text-indigo-300 border border-slate-200 dark:border-indigo-500/30">WEEKLY TOTAL: 0</span>
+            <div class="w-full bg-white dark:bg-slate-900/40 backdrop-blur-md rounded-[1.25rem] p-5 mt-6 mb-6 border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-2xl transition-all duration-300">
+    
+                <div class="flex flex-col items-center justify-center mb-8 gap-3">
+                    <p class="text-[10px] font-black text-slate-400 dark:text-indigo-400 uppercase tracking-[0.3em]">
+                        Weekly Personal Progress
+                    </p>
+                    
+                    <span id="weekly-total-badge" class="text-[10px] font-black px-3 py-1 rounded-full bg-slate-100 dark:bg-indigo-500/20 text-slate-600 dark:text-indigo-300 border border-slate-200 dark:border-indigo-500/30 uppercase tracking-widest">
+                        WEEKLY TOTAL: 0
+                    </span>
                 </div>
+            
                 <div class="h-40 w-full px-2">
                     <canvas id="weeklyChart"></canvas>
                 </div>
@@ -462,14 +469,14 @@
         
                 // 4. Handle Theme-Specific Contrast
                 const isDarkMode = document.getElementById('main-html').classList.contains('dark');
-                const tickColor = isDarkMode ? '#64748b' : '#1e293b'; // High contrast for light mode
+                const tickColor = isDarkMode ? '#64748b' : '#1e293b'; 
         
-                // 5. Aesthetic Gradient Generator
+                // 5. Aesthetic Gradient Generator (SURGICAL CHANGE: Emerald Green)
                 const gradient = ctx.createLinearGradient(0, 0, 0, 150);
-                gradient.addColorStop(0, 'rgba(99, 102, 241, 1)');   // Deep Indigo
-                gradient.addColorStop(1, 'rgba(99, 102, 241, 0.1)'); // Faded Glow
+                gradient.addColorStop(0, 'rgba(16, 185, 129, 1)');   // Emerald-500
+                gradient.addColorStop(1, 'rgba(16, 185, 129, 0.1)'); // Faded Emerald Glow
         
-                // 6. Prevent "Ghosting" by destroying previous instance
+                // 6. Prevent "Ghosting" 
                 if (window.myWeeklyChart) window.myWeeklyChart.destroy();
         
                 window.myWeeklyChart = new Chart(ctx, {
@@ -479,7 +486,7 @@
                         datasets: [{
                             data: weeklyData,
                             backgroundColor: gradient,
-                            hoverBackgroundColor: '#818cf8',
+                            hoverBackgroundColor: '#34d399', // Emerald-400 on hover
                             borderRadius: 8,
                             borderSkipped: false,
                             barThickness: 16,
@@ -493,7 +500,7 @@
                             legend: { display: false },
                             tooltip: {
                                 enabled: true,
-                                backgroundColor: '#1e293b',
+                                backgroundColor: '#064e3b', // Deep Emerald background
                                 titleFont: { size: 10, weight: 'bold' },
                                 bodyFont: { size: 13, weight: '900' },
                                 padding: 12,
@@ -514,7 +521,7 @@
                                 grid: { display: false },
                                 border: { display: false },
                                 ticks: { 
-                                    color: tickColor, // Dynamic contrast
+                                    color: tickColor,
                                     font: { size: 9, weight: '900' },
                                     padding: 10
                                 }
