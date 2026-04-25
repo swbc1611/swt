@@ -444,41 +444,59 @@
             const mondayDate = getMondayDate();
         
             try {
-                // 1. Fetch the 1-Read Personal Bucket
                 const docRef = doc(db, `churches/${churchId}/users/${uid}/weekly_stats`, "current_week");
                 const snap = await getDoc(docRef);
-                const data = snap.exists() ? snap.data() : {};
-                
-                // 2. Stateless Reset Check
-                const isCurrentWeek = data.startDate === mondayDate;
+                let data = snap.exists() ? snap.data() : null;
+        
+                // --- SURGICAL TRIGGER: SELF-HEALING CHECK ---
+                // If no data exists OR data is from a previous week...
+                // We check if we need to "Heal" by looking for existing records from THIS week.
+                if (!data || data.startDate !== mondayDate) {
+                    console.log("Self-healing: Aggregating existing records for this week...");
+                    
+                    const q = query(
+                        collection(db, "salvations"),
+                        where("userId", "==", uid),
+                        where("eventDate", ">=", mondayDate)
+                    );
+                    const salvationSnap = await getDocs(q);
+                    
+                    const healedTotals = { mon: 0, tue: 0, wed: 0, thu: 0, fri: 0, sat: 0, sun: 0 };
+                    salvationSnap.forEach(d => {
+                        const sData = d.data();
+                        const dayKey = new Date(sData.eventDate).toLocaleDateString('en-US', { weekday: 'short' }).toLowerCase();
+                        if (healedTotals.hasOwnProperty(dayKey)) {
+                            healedTotals[dayKey] += Number(sData.count || 0);
+                        }
+                    });
+        
+                    // Save the healed data so we don't have to do this again
+                    data = {
+                        ...healedTotals,
+                        startDate: mondayDate,
+                        timestamp: serverTimestamp()
+                    };
+                    await setDoc(docRef, data, { merge: true });
+                }
         
                 const weeklyData = [
-                    (isCurrentWeek ? data.mon : 0) || 0,
-                    (isCurrentWeek ? data.tue : 0) || 0,
-                    (isCurrentWeek ? data.wed : 0) || 0,
-                    (isCurrentWeek ? data.thu : 0) || 0,
-                    (isCurrentWeek ? data.fri : 0) || 0,
-                    (isCurrentWeek ? data.sat : 0) || 0,
-                    (isCurrentWeek ? data.sun : 0) || 0
+                    data.mon || 0, data.tue || 0, data.wed || 0,
+                    data.thu || 0, data.fri || 0, data.sat || 0, data.sun || 0
                 ];
         
-                // 3. Update Weekly Total Badge
+                // --- REMAINDER OF RENDERING LOGIC (STAYS IDENTICAL) ---
                 const totalSalvations = weeklyData.reduce((a, b) => a + b, 0);
                 const totalBadge = document.getElementById('weekly-total-badge');
                 if (totalBadge) totalBadge.innerText = `WEEKLY TOTAL: ${totalSalvations}`;
         
-                // 4. Handle Theme-Specific Contrast
                 const isDarkMode = document.getElementById('main-html').classList.contains('dark');
                 const tickColor = isDarkMode ? '#64748b' : '#1e293b'; 
         
-                // 5. Aesthetic Gradient Generator (SURGICAL CHANGE: Emerald Green)
                 const gradient = ctx.createLinearGradient(0, 0, 0, 150);
-                gradient.addColorStop(0, 'rgba(16, 185, 129, 1)');   // Emerald-500
-                gradient.addColorStop(1, 'rgba(16, 185, 129, 0.1)'); // Faded Emerald Glow
+                gradient.addColorStop(0, 'rgba(16, 185, 129, 1)');   
+                gradient.addColorStop(1, 'rgba(16, 185, 129, 0.1)'); 
         
-                // 6. Prevent "Ghosting" 
                 if (window.myWeeklyChart) window.myWeeklyChart.destroy();
-        
                 window.myWeeklyChart = new Chart(ctx, {
                     type: 'bar',
                     data: {
@@ -486,7 +504,7 @@
                         datasets: [{
                             data: weeklyData,
                             backgroundColor: gradient,
-                            hoverBackgroundColor: '#34d399', // Emerald-400 on hover
+                            hoverBackgroundColor: '#34d399',
                             borderRadius: 8,
                             borderSkipped: false,
                             barThickness: 16,
@@ -500,38 +518,26 @@
                             legend: { display: false },
                             tooltip: {
                                 enabled: true,
-                                backgroundColor: '#064e3b', // Deep Emerald background
+                                backgroundColor: '#064e3b',
                                 titleFont: { size: 10, weight: 'bold' },
                                 bodyFont: { size: 13, weight: '900' },
                                 padding: 12,
                                 cornerRadius: 12,
                                 displayColors: false,
-                                callbacks: {
-                                    label: (context) => ` ${context.raw} Salvations`
-                                }
+                                callbacks: { label: (context) => ` ${context.raw} Salvations` }
                             }
                         },
                         scales: {
-                            y: { 
-                                display: false, 
-                                beginAtZero: true,
-                                suggestedMax: Math.max(...weeklyData) + 2 
-                            },
+                            y: { display: false, beginAtZero: true, suggestedMax: Math.max(...weeklyData) + 2 },
                             x: {
                                 grid: { display: false },
                                 border: { display: false },
-                                ticks: { 
-                                    color: tickColor,
-                                    font: { size: 9, weight: '900' },
-                                    padding: 10
-                                }
+                                ticks: { color: tickColor, font: { size: 9, weight: '900' }, padding: 10 }
                             }
                         }
                     }
                 });
-            } catch (e) { 
-                console.error("Chart Render Failure:", e); 
-            }
+            } catch (e) { console.error("Chart Render/Heal Failure:", e); }
         };
 
         const initYearSelector = () => {
