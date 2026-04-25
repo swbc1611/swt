@@ -122,8 +122,11 @@
             </div>
             <div id="church-list-tags" class="flex flex-wrap justify-center gap-2 mt-2"></div>
             
-            <div class="w-full bg-white/5 dark:bg-slate-900/40 backdrop-blur-md rounded-[1.25rem] p-5 mb-6 mt-4 border border-white/5 shadow-sm transition-all duration-300 hover:bg-slate-800/40">
-                <p class="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em] mb-6 text-center">Weekly Personal Progress</p>
+            <div class="w-full bg-white dark:bg-slate-900/40 backdrop-blur-md rounded-[1.25rem] p-5 mb-6 border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-2xl transition-all duration-300 hover:shadow-md">
+                <div class="flex justify-between items-center mb-6 px-2">
+                    <p class="text-[10px] font-black text-slate-400 dark:text-indigo-400 uppercase tracking-[0.3em]">Weekly Personal Progress</p>
+                    <span id="weekly-total-badge" class="text-[10px] font-black px-2 py-0.5 rounded-full bg-slate-100 dark:bg-indigo-500/20 text-slate-600 dark:text-indigo-300 border border-slate-200 dark:border-indigo-500/30">WEEKLY TOTAL: 0</span>
+                </div>
                 <div class="h-40 w-full px-2">
                     <canvas id="weeklyChart"></canvas>
                 </div>
@@ -434,9 +437,12 @@
             const mondayDate = getMondayDate();
         
             try {
+                // 1. Fetch the 1-Read Personal Bucket
                 const docRef = doc(db, `churches/${churchId}/users/${uid}/weekly_stats`, "current_week");
                 const snap = await getDoc(docRef);
                 const data = snap.exists() ? snap.data() : {};
+                
+                // 2. Stateless Reset Check
                 const isCurrentWeek = data.startDate === mondayDate;
         
                 const weeklyData = [
@@ -449,11 +455,21 @@
                     (isCurrentWeek ? data.sun : 0) || 0
                 ];
         
-                // --- SURGICAL ADD: GRADIENT GENERATOR ---
+                // 3. Update Weekly Total Badge
+                const totalSalvations = weeklyData.reduce((a, b) => a + b, 0);
+                const totalBadge = document.getElementById('weekly-total-badge');
+                if (totalBadge) totalBadge.innerText = `WEEKLY TOTAL: ${totalSalvations}`;
+        
+                // 4. Handle Theme-Specific Contrast
+                const isDarkMode = document.getElementById('main-html').classList.contains('dark');
+                const tickColor = isDarkMode ? '#64748b' : '#1e293b'; // High contrast for light mode
+        
+                // 5. Aesthetic Gradient Generator
                 const gradient = ctx.createLinearGradient(0, 0, 0, 150);
-                gradient.addColorStop(0, 'rgba(99, 102, 241, 1)');   // Solid Indigo
+                gradient.addColorStop(0, 'rgba(99, 102, 241, 1)');   // Deep Indigo
                 gradient.addColorStop(1, 'rgba(99, 102, 241, 0.1)'); // Faded Glow
         
+                // 6. Prevent "Ghosting" by destroying previous instance
                 if (window.myWeeklyChart) window.myWeeklyChart.destroy();
         
                 window.myWeeklyChart = new Chart(ctx, {
@@ -463,7 +479,7 @@
                         datasets: [{
                             data: weeklyData,
                             backgroundColor: gradient,
-                            hoverBackgroundColor: '#818cf8', // Lighter indigo on hover
+                            hoverBackgroundColor: '#818cf8',
                             borderRadius: 8,
                             borderSkipped: false,
                             barThickness: 16,
@@ -472,7 +488,7 @@
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        animation: { duration: 1500, easing: 'easeOutQuart' }, // Smooth slide-up
+                        animation: { duration: 1200, easing: 'easeOutQuart' },
                         plugins: { 
                             legend: { display: false },
                             tooltip: {
@@ -492,13 +508,13 @@
                             y: { 
                                 display: false, 
                                 beginAtZero: true,
-                                suggestedMax: Math.max(...weeklyData) + 2 // Space at the top
+                                suggestedMax: Math.max(...weeklyData) + 2 
                             },
                             x: {
                                 grid: { display: false },
                                 border: { display: false },
                                 ticks: { 
-                                    color: '#64748b', 
+                                    color: tickColor, // Dynamic contrast
                                     font: { size: 9, weight: '900' },
                                     padding: 10
                                 }
@@ -506,7 +522,9 @@
                         }
                     }
                 });
-            } catch (e) { console.error("Chart Error:", e); }
+            } catch (e) { 
+                console.error("Chart Render Failure:", e); 
+            }
         };
 
         const initYearSelector = () => {
