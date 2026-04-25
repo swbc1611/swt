@@ -119,7 +119,7 @@
                     </p>
                     
                     <span id="weekly-total-badge" class="text-[10px] font-black px-3 py-1 rounded-full bg-slate-100 dark:bg-indigo-500/20 text-slate-600 dark:text-indigo-300 border border-slate-200 dark:border-indigo-500/30 uppercase tracking-widest">
-                        MY WEEKLY TOTAL: 0
+                        TOTAL: 0
                     </span>
                 </div>
             
@@ -333,7 +333,7 @@
                 // --- REMAINDER OF RENDERING LOGIC (STAYS IDENTICAL) ---
                 const totalSalvations = weeklyData.reduce((a, b) => a + b, 0);
                 const totalBadge = document.getElementById('weekly-total-badge');
-                if (totalBadge) totalBadge.innerText = `WEEKLY TOTAL: ${totalSalvations}`;
+                if (totalBadge) totalBadge.innerText = `TOTAL: ${totalSalvations}`;
         
                 const isDarkMode = document.getElementById('main-html').classList.contains('dark');
                 const tickColor = isDarkMode ? '#64748b' : '#1e293b'; 
