@@ -272,7 +272,6 @@
                         ? `${rawNum.substring(0, 4)}****${rawNum.slice(-2)}` 
                         : rawNum;
         
-                    // SURGICAL ADD: rowId assigned to the container for Optimistic UI
                     html += `
                         <div id="row-${p.rowId}" class="bg-white dark:bg-[#111827] w-full rounded-2xl border-2 ${themeBorder} relative text-left transition-all duration-300 overflow-hidden shadow-xl dark:shadow-cyan-500/5">
                             <div class="p-6 pl-8 relative">
@@ -322,62 +321,56 @@
             pendingDeleteId = null;
         };
     
-        // SURGICAL UPGRADE: Immediate Modal Hiding & State Locking
+        // SURGICAL REPAIR: Correcting the delete logic to restore backend functionality
         document.getElementById('final-confirm-btn').onclick = async () => {
             if(!pendingDeleteId || !user) return;
-            
             const btn = document.getElementById('final-confirm-btn');
-            if (btn.disabled) return; // Critical: Prevent double execution
+            if (btn.disabled) return; 
             
-            const row = document.getElementById(`row-${pendingDeleteId}`);
+            // We capture the ID locally so it doesn't get lost if pendingDeleteId is cleared
+            const deleteTargetId = pendingDeleteId;
+            const row = document.getElementById(`row-${deleteTargetId}`);
             
-            // 1. Lock the Button and Hide the Modal Immediately
             btn.disabled = true; 
             btn.innerText = "DELETING...";
-            closeDeleteModal(); // This prevents the user from clicking 'Cancel'
-        
-            // 2. OPTIMISTIC UI: Dim the row instantly
+    
+            // OPTIMISTIC UI: Dim the row
             if (row) {
                 row.style.opacity = "0.3";
                 row.style.pointerEvents = "none";
             }
-        
+    
             try {
-                // 3. ATTEMPT BACKEND DELETE
-                // Note: Using no-cors with Apps Script won't throw on 404/500, 
-                // but it will catch network-level dropouts.
+                // RESTORED: Your original fetch pattern which is proven to work with your Apps Script
                 await fetch(SCRIPT_URL, {
                     method: 'POST', 
                     mode: 'no-cors',
                     body: JSON.stringify({ 
                         psk: PSK, 
                         action: 'delete', 
-                        rowId: parseInt(pendingDeleteId), 
+                        rowId: parseInt(deleteTargetId), 
                         uid: user.uid 
                     })
                 });
-        
-                // 4. SUCCESS TRANSITION
+    
+                // SUCCESS Path
+                showToast("Prospect Deleted ✓");
+                closeDeleteModal(); // Closed here after target is captured and request sent
+                
                 if (row) {
                     row.style.opacity = "0";
-                    // Allow time for the fade animation before removing from DOM
                     setTimeout(() => row.remove(), 300);
                 }
-                
-                showToast("Prospect Deleted ✓");
             } catch (e) { 
-                console.error("Delete Error:", e);
-                
-                // 5. SURGICAL ROLLBACK: Bring row back and shake if backend fails
+                // ROLLBACK Path
                 if (row) {
                     row.style.opacity = "1";
                     row.style.pointerEvents = "auto";
                     row.classList.add('animate-shake');
                     setTimeout(() => row.classList.remove('animate-shake'), 500);
                 }
-                showToast("Error deleting. Try again."); 
+                showToast("Error deleting."); 
             } finally { 
-                // 6. RESET STATE
                 btn.disabled = false; 
                 btn.innerText = "CONFIRM DELETE"; 
             }
