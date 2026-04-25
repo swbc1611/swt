@@ -121,13 +121,7 @@
                 </button>
             </div>
             <div id="church-list-tags" class="flex flex-wrap justify-center gap-2 mt-2"></div>
-        </header>
-
-        <div class="w-full max-w-xl bg-white/5 dark:bg-slate-900/40 backdrop-blur-md rounded-[2rem] p-6 mb-8 border border-white/10 shadow-xl">
-            <div class="h-40 w-full">
-                <canvas id="weeklyChart"></canvas>
-            </div>
-        </div>
+        </header>       
         
         <div class="mb-12">
             <div class="flex items-center gap-4 mb-6 px-4">
@@ -837,70 +831,6 @@
             }
         };
 
-        window.renderWeeklyChart = async (uid) => {
-            const ctx = document.getElementById('weeklyChart').getContext('2d');
-            
-            // 1. Calculate the bounds of the current week (Sun-Sat)
-            const now = new Date();
-            const sun = new Date(now);
-            sun.setDate(now.getDate() - now.getDay());
-            sun.setHours(0, 0, 0, 0);
-        
-            const sat = new Date(sun);
-            sat.setDate(sun.getDate() + 6);
-            sat.setHours(23, 59, 59, 999);
-        
-            try {
-                // 2. Query Firestore for PERSONAL salvations this week
-                const q = query(
-                    collection(db, "salvations"),
-                    where("userId", "==", uid),
-                    where("eventDate", ">=", sun.toISOString().split('T')[0]),
-                    where("eventDate", "<=", sat.toISOString().split('T')[0])
-                );
-        
-                const snap = await getDocs(q);
-                const weeklyData = [0, 0, 0, 0, 0, 0, 0]; // Sun, Mon, Tue, Wed, Thu, Fri, Sat
-        
-                snap.forEach(doc => {
-                    const data = doc.data();
-                    const dayIndex = new Date(data.eventDate).getDay();
-                    weeklyData[dayIndex] += Number(data.count || 0);
-                });
-        
-                // 3. Create the Aesthetic Chart
-                new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'],
-                        datasets: [{
-                            data: weeklyData,
-                            backgroundColor: 'rgba(99, 102, 241, 0.5)',
-                            borderColor: '#6366f1',
-                            borderWidth: 2,
-                            borderRadius: 8,
-                            borderSkipped: false,
-                            barThickness: 20
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: { legend: { display: false } },
-                        scales: {
-                            y: { display: false, beginAtZero: true },
-                            x: {
-                                grid: { display: false },
-                                ticks: {
-                                    color: '#94a3b8',
-                                    font: { size: 9, weight: 'bold' }
-                                }
-                            }
-                        }
-                    }
-                });
-            } catch (e) { console.error("Chart Error:", e); }
-        };
     </script>
 </body>
 </html>
