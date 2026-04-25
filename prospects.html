@@ -322,45 +322,53 @@
             pendingDeleteId = null;
         };
     
-        // SURGICAL UPGRADE: delete handler with state locking and shake rollback
+        // SURGICAL UPGRADE: Immediate Modal Hiding & State Locking
         document.getElementById('final-confirm-btn').onclick = async () => {
             if(!pendingDeleteId || !user) return;
             
             const btn = document.getElementById('final-confirm-btn');
-            if (btn.disabled) return; // Prevent double execution
+            if (btn.disabled) return; // Critical: Prevent double execution
             
             const row = document.getElementById(`row-${pendingDeleteId}`);
             
+            // 1. Lock the Button and Hide the Modal Immediately
             btn.disabled = true; 
             btn.innerText = "DELETING...";
-    
-            // OPTIMISTIC UI: Dim and disable row interactions
+            closeDeleteModal(); // This prevents the user from clicking 'Cancel'
+        
+            // 2. OPTIMISTIC UI: Dim the row instantly
             if (row) {
                 row.style.opacity = "0.3";
                 row.style.pointerEvents = "none";
             }
-    
+        
             try {
-                // Note: Using no-cors with Apps Script won't allow us to check res.ok, 
-                // but we catch network-level failures.
+                // 3. ATTEMPT BACKEND DELETE
+                // Note: Using no-cors with Apps Script won't throw on 404/500, 
+                // but it will catch network-level dropouts.
                 await fetch(SCRIPT_URL, {
-                    method: 'POST', mode: 'no-cors',
-                    body: JSON.stringify({ psk: PSK, action: 'delete', rowId: parseInt(pendingDeleteId), uid: user.uid })
+                    method: 'POST', 
+                    mode: 'no-cors',
+                    body: JSON.stringify({ 
+                        psk: PSK, 
+                        action: 'delete', 
+                        rowId: parseInt(pendingDeleteId), 
+                        uid: user.uid 
+                    })
                 });
-    
-                // Success Transition
+        
+                // 4. SUCCESS TRANSITION
                 if (row) {
                     row.style.opacity = "0";
+                    // Allow time for the fade animation before removing from DOM
                     setTimeout(() => row.remove(), 300);
                 }
                 
                 showToast("Prospect Deleted ✓");
-                closeDeleteModal();
-                // Optional: loadFollowUps() call is here if you want to be sure of sync, 
-                // but the row is already gone from UI.
             } catch (e) { 
                 console.error("Delete Error:", e);
-                // SURGICAL ROLLBACK: Bring row back and shake
+                
+                // 5. SURGICAL ROLLBACK: Bring row back and shake if backend fails
                 if (row) {
                     row.style.opacity = "1";
                     row.style.pointerEvents = "auto";
@@ -369,6 +377,7 @@
                 }
                 showToast("Error deleting. Try again."); 
             } finally { 
+                // 6. RESET STATE
                 btn.disabled = false; 
                 btn.innerText = "CONFIRM DELETE"; 
             }
