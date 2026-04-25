@@ -286,7 +286,12 @@
                 });
                 document.getElementById('prayerInput').value = "";
                 showToast("Request Shared ✓");
-                setTimeout(() => { btn.disabled = false; btn.innerText = "SHARE WITH THE BRETHREN"; loadPrayers(); }, 1000);
+                // To this (using .innerHTML):
+                setTimeout(() => { 
+                    btn.disabled = false; 
+                    btn.innerHTML = `<i class="bi bi-send-fill text-[10px] opacity-70 mr-2"></i> SHARE WITH THE BRETHREN`; 
+                    loadPrayers(); 
+                }, 1000);
             } catch (e) { showToast("Network Error."); btn.disabled = false; }
         };
     
