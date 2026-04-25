@@ -175,7 +175,6 @@
                 container.classList.remove('hidden');
                 btn.innerText = 'Hide List';
                 
-                // Only show spinner and fetch if not already loaded OR if flagged for refresh
                 if (!hasInitialLoaded || list.innerHTML.includes("Gathering")) {
                     list.innerHTML = `
                         <div class="flex flex-col items-center justify-center py-20 animate-pulse">
@@ -273,8 +272,9 @@
                         ? `${rawNum.substring(0, 4)}****${rawNum.slice(-2)}` 
                         : rawNum;
         
+                    // SURGICAL ADD: rowId assigned to the container for Optimistic UI
                     html += `
-                        <div class="bg-white dark:bg-[#111827] w-full rounded-2xl border-2 ${themeBorder} relative text-left transition-all duration-300 overflow-hidden shadow-xl dark:shadow-cyan-500/5">
+                        <div id="row-${p.rowId}" class="bg-white dark:bg-[#111827] w-full rounded-2xl border-2 ${themeBorder} relative text-left transition-all duration-300 overflow-hidden shadow-xl dark:shadow-cyan-500/5">
                             <div class="p-6 pl-8 relative">
                                 <div class="absolute left-0 top-4 bottom-4 w-1.5 rounded-r-full ${themeBg}"></div>
                                 <div class="flex justify-between items-start">
@@ -305,7 +305,7 @@
                         </div>`;
                 });
                 list.innerHTML = html;
-                hasInitialLoaded = true; // Mark as loaded
+                hasInitialLoaded = true;
             } catch (e) { 
                 console.error("Load error:", e);
                 list.innerHTML = `<div class="text-center py-10 uppercase font-black tracking-widest text-[10px]">Sync Error. Check Network.</div>`;
@@ -322,20 +322,56 @@
             pendingDeleteId = null;
         };
     
+        // SURGICAL UPGRADE: delete handler with state locking and shake rollback
         document.getElementById('final-confirm-btn').onclick = async () => {
             if(!pendingDeleteId || !user) return;
+            
             const btn = document.getElementById('final-confirm-btn');
-            btn.disabled = true; btn.innerText = "DELETING...";
+            if (btn.disabled) return; // Prevent double execution
+            
+            const row = document.getElementById(`row-${pendingDeleteId}`);
+            
+            btn.disabled = true; 
+            btn.innerText = "DELETING...";
+    
+            // OPTIMISTIC UI: Dim and disable row interactions
+            if (row) {
+                row.style.opacity = "0.3";
+                row.style.pointerEvents = "none";
+            }
+    
             try {
+                // Note: Using no-cors with Apps Script won't allow us to check res.ok, 
+                // but we catch network-level failures.
                 await fetch(SCRIPT_URL, {
                     method: 'POST', mode: 'no-cors',
                     body: JSON.stringify({ psk: PSK, action: 'delete', rowId: parseInt(pendingDeleteId), uid: user.uid })
                 });
+    
+                // Success Transition
+                if (row) {
+                    row.style.opacity = "0";
+                    setTimeout(() => row.remove(), 300);
+                }
+                
                 showToast("Prospect Deleted ✓");
                 closeDeleteModal();
-                loadFollowUps();
-            } catch (e) { showToast("Error deleting."); }
-            finally { btn.disabled = false; btn.innerText = "CONFIRM DELETE"; }
+                // Optional: loadFollowUps() call is here if you want to be sure of sync, 
+                // but the row is already gone from UI.
+            } catch (e) { 
+                console.error("Delete Error:", e);
+                // SURGICAL ROLLBACK: Bring row back and shake
+                if (row) {
+                    row.style.opacity = "1";
+                    row.style.pointerEvents = "auto";
+                    row.classList.add('animate-shake');
+                    setTimeout(() => row.classList.remove('animate-shake'), 500);
+                }
+                showToast("Error deleting. Try again."); 
+            } finally { 
+                btn.disabled = false; 
+                btn.innerText = "CONFIRM DELETE"; 
+            }
         };
     
         document.getElementById('prospect-form').addEventListener('submit', async (e) => {
@@ -362,7 +398,6 @@
                 document.getElementById('prospect-form').reset();
                 document.getElementById('p-date').valueAsDate = new Date();
                 
-                // FORCE UPDATE: Ensure list opens and refreshes with new data
                 const container = document.getElementById('followup-container');
                 const toggleBtn = document.getElementById('list-toggle-btn');
                 
@@ -371,25 +406,23 @@
                 }
                 if (toggleBtn) toggleBtn.innerText = 'Hide List';
                 
-                hasInitialLoaded = true; // Signal that we are performing a fresh pull
+                hasInitialLoaded = true; 
                 loadFollowUps();
             } catch (err) { showToast("Error saving."); }
             finally { btn.disabled = false; btn.innerText = "SAVE FOLLOW-UP"; }
         });
-
+    
         window.goHome = () => {
             try {
                 const cachedData = sessionStorage.getItem('userContext');
                 if (cachedData) {
                     const profile = JSON.parse(cachedData);
-                    // Route based on role
                     if (profile.role === 'pastor') {
                         window.location.href = 'pastor.html';
                     } else {
                         window.location.href = 'member.html';
                     }
                 } else {
-                    // Fallback if session is cleared
                     window.location.href = 'index.html';
                 }
             } catch (e) {
