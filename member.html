@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <script>tailwind.config = { darkMode: 'class' }</script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>        
         button, .preset-btn, .type-btn, [role="button"] {
@@ -58,7 +59,6 @@
             background: transparent !important;
         }
 
-        /* THEME LOGIC FOR ACTION ZONES */
         :root { --gear-bg: rgba(255, 255, 255, 0.06); }
         #main-html:not(.dark) { --gear-bg: rgba(0, 0, 0, 0.08); }
 
@@ -100,6 +100,20 @@
                 </button>
             </div>
             <div id="church-list-tags" class="flex flex-wrap justify-center gap-2 mt-2"></div>
+
+            <div class="w-full bg-white dark:bg-slate-900/40 backdrop-blur-md rounded-[1.25rem] p-5 mt-8 mb-6 border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-2xl transition-all duration-300">
+                <div class="flex flex-col items-center justify-center mb-8 gap-3">
+                    <p class="text-[10px] font-black text-slate-400 dark:text-emerald-400 uppercase tracking-[0.3em]">
+                        Weekly Personal Progress
+                    </p>
+                    <span id="weekly-total-badge" class="text-[10px] font-black px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 uppercase tracking-widest">
+                        WEEKLY TOTAL: 0
+                    </span>
+                </div>
+                <div class="h-40 w-full px-2">
+                    <canvas id="weeklyChart"></canvas>
+                </div>
+            </div>
         </header>
 
         <div class="mb-12">
@@ -172,8 +186,6 @@
                 </div>
                 <i class="bi bi-chevron-right text-slate-600 group-hover:text-slate-400 transition-all"></i>
             </button>
-            
-            
         </div>
     </main>
 
@@ -200,11 +212,10 @@
     <div id="guideSettingsModal" class="hidden fixed inset-0 z-[300] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white dark:bg-slate-900 border dark:border-slate-800 w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl text-center">
             <h2 class="text-xl font-bold dark:text-white mb-2">Guide Settings</h2>
-            <p class="text-[10px] text-slate-400 mb-6 uppercase tracking-widest text-center leading-relaxed">Paste your Google Sheets URL below.<br>Set access to "Anyone with the link can view".</p>
-            <textarea id="guideUrlInput" placeholder="https://docs.google.com/spreadsheets/d/..." rows="3" class="w-full p-4 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-2xl outline-none text-[10px] dark:text-white mb-4 text-center resize-none"></textarea>
-            <div class="flex gap-2">
-                <button onclick="closeGuideSettings()" class="flex-1 py-3 text-slate-500 font-bold text-xs uppercase tracking-widest">Cancel</button>
-                <button id="saveGuideBtn" onclick="saveGuideUrl()" class="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-indigo-500/20">Save URL</button>
+            <textarea id="guideUrlInput" placeholder="URL" rows="3" class="w-full p-4 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-2xl outline-none text-[10px] dark:text-white mb-4 text-center resize-none"></textarea>
+            <div class="flex gap-2 text-xs uppercase font-bold tracking-widest">
+                <button onclick="closeGuideSettings()" class="flex-1 py-3 text-slate-500">Cancel</button>
+                <button id="saveGuideBtn" onclick="saveGuideUrl()" class="flex-1 py-3 bg-indigo-600 text-white rounded-xl">Save</button>
             </div>
         </div>
     </div>
@@ -219,12 +230,12 @@
                 </select>
             </div>
             <div class="flex items-center justify-between mb-6 bg-slate-50 dark:bg-slate-800/50 p-3 rounded-3xl">
-                <button onclick="decrement()" class="w-14 h-14 flex-shrink-0 rounded-2xl bg-white dark:bg-slate-700 font-bold text-xl hover:bg-slate-100 dark:text-white transition-all flex items-center justify-center">-</button>
-                <input id="soulCount" type="number" value="1" min="1" max="999" class="w-full text-center text-5xl font-light bg-transparent text-indigo-600 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" oninput="limitInput(this)">
-                <button onclick="increment()" class="w-14 h-14 flex-shrink-0 rounded-2xl bg-indigo-600 text-white font-bold text-xl hover:bg-indigo-700 transition-all flex items-center justify-center">+</button>
+                <button onclick="decrement()" class="w-14 h-14 flex-shrink-0 rounded-2xl bg-white dark:bg-slate-700 font-bold text-xl">-</button>
+                <input id="soulCount" type="number" value="1" min="1" max="999" class="w-full text-center text-5xl font-light bg-transparent text-indigo-600 outline-none">
+                <button onclick="increment()" class="w-14 h-14 flex-shrink-0 rounded-2xl bg-indigo-600 text-white font-bold text-xl">+</button>
             </div>
-            <input id="soulDateTime" type="datetime-local" class="w-full p-4 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-2xl text-sm mb-4 outline-none dark:text-white text-center">
-            <textarea id="soulNote" placeholder="Notes..." rows="4" class="w-full p-4 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-2xl text-sm mb-8 outline-none dark:text-white text-center"></textarea>
+            <input id="soulDateTime" type="datetime-local" class="w-full p-4 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-2xl text-sm mb-4 outline-none text-center dark:text-white">
+            <textarea id="soulNote" placeholder="Notes..." rows="4" class="w-full p-4 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-2xl text-sm mb-8 outline-none text-center dark:text-white"></textarea>
             <div class="flex gap-3">
                 <button onclick="closeModal()" class="flex-1 py-4 text-slate-400 font-bold uppercase text-xs">Cancel</button>
                 <button id="submit-btn" onclick="handleDataSubmit()" class="flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-bold uppercase text-xs">Submit</button>
@@ -234,16 +245,15 @@
 
     <div id="pass-modal" class="hidden fixed inset-0 z-[300] bg-black/80 backdrop-blur-sm flex items-center justify-center p-6">
         <div class="bg-white dark:bg-slate-900 w-full max-w-sm rounded-[2.5rem] p-8 border dark:border-slate-800 text-center shadow-2xl">
-            <h3 class="text-xl font-bold mb-6 dark:text-white text-center">Update Password</h3>
-            <p class="text-[10px] text-slate-400 uppercase tracking-widest mb-6">Verification required</p>
+            <h3 class="text-xl font-bold mb-6 dark:text-white">Update Password</h3>
             <div class="space-y-4">
-                <input id="oldPass" type="password" placeholder="Current Password" class="w-full p-4 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-2xl text-sm outline-none dark:text-white text-center">
-                <input id="newPass" type="password" placeholder="New Password" class="w-full p-4 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-2xl text-sm outline-none dark:text-white text-center">
-                <input id="confirmPass" type="password" placeholder="Confirm New Password" class="w-full p-4 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-2xl text-sm outline-none dark:text-white text-center">
+                <input id="oldPass" type="password" placeholder="Current Password" class="w-full p-4 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-2xl text-sm outline-none text-center dark:text-white">
+                <input id="newPass" type="password" placeholder="New Password" class="w-full p-4 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-2xl text-sm outline-none text-center dark:text-white">
+                <input id="confirmPass" type="password" placeholder="Confirm New Password" class="w-full p-4 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-2xl text-sm outline-none text-center dark:text-white">
             </div>
-            <div class="flex gap-3 mt-8">
-                <button onclick="closePassModal()" class="flex-1 py-4 text-slate-400 font-bold uppercase text-xs">Cancel</button>
-                <button id="pass-btn" onclick="handlePassUpdate()" class="flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-bold uppercase text-xs shadow-lg shadow-indigo-500/30">Update</button>
+            <div class="flex gap-3 mt-8 font-bold uppercase text-xs">
+                <button onclick="closePassModal()" class="flex-1 py-4 text-slate-400">Cancel</button>
+                <button id="pass-btn" onclick="handlePassUpdate()" class="flex-1 py-4 bg-indigo-600 text-white rounded-2xl">Update</button>
             </div>
         </div>
     </div>
@@ -253,9 +263,97 @@
     <script type="module">
         import { auth, db } from './firebase-config.js';
         import { onAuthStateChanged, signOut, EmailAuthProvider, reauthenticateWithCredential, updatePassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { doc, getDoc, collection, setDoc, updateDoc, arrayUnion, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { doc, getDoc, collection, setDoc, updateDoc, arrayUnion, addDoc, serverTimestamp, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         let userProfile = null;
+
+        // --- HELPER: GET MONDAY DATE ---
+        const getMondayDate = (d = new Date()) => {
+            const date = new Date(d);
+            const day = date.getDay();
+            const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+            const monday = new Date(date.setDate(diff));
+            return monday.toISOString().split('T')[0];
+        };
+
+        // --- RENDER WEEKLY CHART (1 READ) ---
+        window.renderWeeklyChart = async (uid, churchId) => {
+            const canvas = document.getElementById('weeklyChart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const mondayDate = getMondayDate();
+
+            try {
+                const docRef = doc(db, `churches/${churchId}/users/${uid}/weekly_stats`, "current_week");
+                const snap = await getDoc(docRef);
+                const data = snap.exists() ? snap.data() : {};
+                const isCurrentWeek = data.startDate === mondayDate;
+
+                const weeklyData = [
+                    (isCurrentWeek ? data.mon : 0) || 0,
+                    (isCurrentWeek ? data.tue : 0) || 0,
+                    (isCurrentWeek ? data.wed : 0) || 0,
+                    (isCurrentWeek ? data.thu : 0) || 0,
+                    (isCurrentWeek ? data.fri : 0) || 0,
+                    (isCurrentWeek ? data.sat : 0) || 0,
+                    (isCurrentWeek ? data.sun : 0) || 0
+                ];
+
+                const totalSalvations = weeklyData.reduce((a, b) => a + b, 0);
+                const totalBadge = document.getElementById('weekly-total-badge');
+                if (totalBadge) totalBadge.innerText = `WEEKLY TOTAL: ${totalSalvations}`;
+
+                const isDarkMode = document.getElementById('main-html').classList.contains('dark');
+                const tickColor = isDarkMode ? '#64748b' : '#1e293b'; 
+
+                const gradient = ctx.createLinearGradient(0, 0, 0, 150);
+                gradient.addColorStop(0, 'rgba(16, 185, 129, 1)');   // Emerald
+                gradient.addColorStop(1, 'rgba(16, 185, 129, 0.1)'); 
+
+                if (window.myWeeklyChart) window.myWeeklyChart.destroy();
+
+                window.myWeeklyChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'],
+                        datasets: [{
+                            data: weeklyData,
+                            backgroundColor: gradient,
+                            hoverBackgroundColor: '#34d399',
+                            borderRadius: 8,
+                            borderSkipped: false,
+                            barThickness: 16,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        animation: { duration: 1200, easing: 'easeOutQuart' },
+                        plugins: { 
+                            legend: { display: false },
+                            tooltip: {
+                                enabled: true,
+                                backgroundColor: '#064e3b',
+                                titleFont: { size: 10, weight: 'bold' },
+                                bodyFont: { size: 13, weight: '900' },
+                                padding: 12,
+                                cornerRadius: 12,
+                                displayColors: false,
+                                callbacks: { label: (context) => ` ${context.raw} Salvations` }
+                            }
+                        },
+                        scales: {
+                            y: { display: false, beginAtZero: true, suggestedMax: Math.max(...weeklyData) + 2 },
+                            x: {
+                                grid: { display: false },
+                                border: { display: false },
+                                ticks: { color: tickColor, font: { size: 9, weight: '900' }, padding: 10 }
+                            }
+                        }
+                    }
+                });
+            } catch (e) { console.error("Chart Render Failure:", e); }
+        };
 
         const initTheme = () => {
             const isDark = localStorage.getItem('theme') === 'dark';
@@ -297,12 +395,16 @@
 
                 sessionStorage.setItem('userContext', JSON.stringify({ ...userProfile, churchNames }));
                 renderProfileUI(userProfile, churchNames);
+                
+                // SURGICAL TRIGGER: Render chart on load
+                if (userProfile.churchId && userProfile.churchId.length > 0) {
+                    renderWeeklyChart(user.uid, userProfile.churchId[0]);
+                }
             } catch (e) { console.error(e); window.location.replace("index.html"); }
         });
 
         function renderProfileUI(profile, namesMap = null) {
             document.getElementById('user-display-name').innerText = profile.displayName || "Soulwinner";
-            document.getElementById('role-display').innerText = profile.role.toUpperCase();
             const tagContainer = document.getElementById('church-list-tags');
             const dataToUse = namesMap || profile.churchNames;
             let tagsHtml = "";
@@ -315,6 +417,64 @@
             }
             tagContainer.innerHTML = tagsHtml;
         }
+
+        window.handleDataSubmit = async () => {
+            const type = document.getElementById('soulType').value;
+            if (!type) return showToast("Select a type.");
+            
+            const btn = document.getElementById('submit-btn'); 
+            btn.innerText = "Saving..."; btn.disabled = true;
+        
+            try {
+                const uid = auth.currentUser.uid;
+                const churchId = userProfile.churchId[0];
+                const eventDateStr = document.getElementById('soulDateTime').value;
+                const dateId = eventDateStr.split('T')[0];
+                const monthId = dateId.substring(0, 7);
+                const mondayDate = getMondayDate();
+                const dayKey = new Date(eventDateStr).toLocaleDateString('en-US', { weekday: 'short' }).toLowerCase();
+                const soulCount = Number(document.getElementById('soulCount').value) || 0;
+        
+                // 1. Log individual record
+                await addDoc(collection(db, "salvations"), {
+                    count: soulCount, type, note: document.getElementById('soulNote').value,
+                    eventDate: eventDateStr, userId: uid, churchId, timestamp: serverTimestamp()
+                });
+        
+                // 2. Global stats updates
+                const statsUpdate = { [`${type}_members`]: arrayUnion(uid) };
+                await setDoc(doc(db, `churches/${churchId}/daily_stats`, dateId), statsUpdate, { merge: true });
+                await setDoc(doc(db, `churches/${churchId}/monthly_stats`, monthId), statsUpdate, { merge: true });
+
+                // 3. SURGICAL BUCKET UPDATE (Reset logic included)
+                const statsRef = doc(db, `churches/${churchId}/users/${uid}/weekly_stats`, "current_week");
+                const statsSnap = await getDoc(statsRef);
+                const statsData = statsSnap.exists() ? statsSnap.data() : {};
+
+                if (statsData.startDate !== mondayDate) {
+                    await setDoc(statsRef, {
+                        startDate: mondayDate,
+                        mon: 0, tue: 0, wed: 0, thu: 0, fri: 0, sat: 0, sun: 0,
+                        [dayKey]: soulCount,
+                        timestamp: serverTimestamp()
+                    });
+                } else {
+                    await setDoc(statsRef, {
+                        [dayKey]: increment(soulCount),
+                        timestamp: serverTimestamp()
+                    }, { merge: true });
+                }
+        
+                closeModal(); 
+                showToast("Record Saved.");
+                renderWeeklyChart(uid, churchId); // Immediate refresh
+            } catch(e) { 
+                console.error("Submission Error:", e);
+                showToast("Error saving record."); 
+            } finally { 
+                btn.innerText = "Submit"; btn.disabled = false; 
+            }
+        };
 
         window.openNameModal = () => {
             document.getElementById('newNameInput').value = userProfile.displayName || "";
@@ -390,54 +550,6 @@
                 closePassModal();
             } catch(e) { showToast("Update failed."); } 
             finally { btn.innerText = "Update"; btn.disabled = false; }
-        };
-
-        window.handleDataSubmit = async () => {
-            const type = document.getElementById('soulType').value;
-            if (!type) return showToast("Select a type.");
-            
-            const btn = document.getElementById('submit-btn'); 
-            btn.innerText = "Saving..."; btn.disabled = true;
-        
-            try {
-                const uid = auth.currentUser.uid;
-                const churchId = userProfile.churchId[0];
-                const eventDateStr = document.getElementById('soulDateTime').value;
-                const dateId = eventDateStr.split('T')[0];
-                const monthId = dateId.substring(0, 7);
-        
-                // SURGICAL FIX: Allow 0 salvations. Default to 0 if input is empty.
-                const soulCount = Number(document.getElementById('soulCount').value) || 0;
-        
-                await addDoc(collection(db, "salvations"), {
-                    count: soulCount,
-                    type, 
-                    note: document.getElementById('soulNote').value,
-                    eventDate: eventDateStr, 
-                    userId: uid, 
-                    churchId,
-                    timestamp: serverTimestamp()
-                });
-        
-                // This part is critical: It still adds the user to the "Active" list 
-                // for the day/month even if they recorded 0 salvations.
-                const typeKey = `${type}_members`;
-                const statsUpdate = {};
-                statsUpdate[typeKey] = arrayUnion(uid);
-        
-                await setDoc(doc(db, `churches/${churchId}/daily_stats`, dateId), statsUpdate, { merge: true });
-                await setDoc(doc(db, `churches/${churchId}/monthly_stats`, monthId), statsUpdate, { merge: true });
-        
-                closeModal(); 
-                showToast("Record Saved.");
-            } catch(e) { 
-                console.error("Submission Error:", e);
-                showToast("Error saving record."); 
-            } 
-            finally { 
-                btn.innerText = "Submit"; 
-                btn.disabled = false; 
-            }
         };
 
         window.handleLogout = () => signOut(auth).then(() => { sessionStorage.clear(); window.location.replace("index.html"); });
