@@ -427,21 +427,18 @@
             return monday.toISOString().split('T')[0];
         };
 
-        // --- RENDER WEEKLY CHART (1 READ PER LOAD) ---
         window.renderWeeklyChart = async (uid, churchId) => {
             const canvas = document.getElementById('weeklyChart');
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
             const mondayDate = getMondayDate();
-
+        
             try {
                 const docRef = doc(db, `churches/${churchId}/users/${uid}/weekly_stats`, "current_week");
                 const snap = await getDoc(docRef);
                 const data = snap.exists() ? snap.data() : {};
-
-                // Stateless reset: Verify if stored data is from the current Monday-Sunday window
                 const isCurrentWeek = data.startDate === mondayDate;
-
+        
                 const weeklyData = [
                     (isCurrentWeek ? data.mon : 0) || 0,
                     (isCurrentWeek ? data.tue : 0) || 0,
@@ -451,30 +448,60 @@
                     (isCurrentWeek ? data.sat : 0) || 0,
                     (isCurrentWeek ? data.sun : 0) || 0
                 ];
-
+        
+                // --- SURGICAL ADD: GRADIENT GENERATOR ---
+                const gradient = ctx.createLinearGradient(0, 0, 0, 150);
+                gradient.addColorStop(0, 'rgba(99, 102, 241, 1)');   // Solid Indigo
+                gradient.addColorStop(1, 'rgba(99, 102, 241, 0.1)'); // Faded Glow
+        
                 if (window.myWeeklyChart) window.myWeeklyChart.destroy();
-
+        
                 window.myWeeklyChart = new Chart(ctx, {
                     type: 'bar',
                     data: {
                         labels: ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'],
                         datasets: [{
                             data: weeklyData,
-                            backgroundColor: 'rgba(99, 102, 241, 0.8)',
-                            borderRadius: 6,
-                            barThickness: 12
+                            backgroundColor: gradient,
+                            hoverBackgroundColor: '#818cf8', // Lighter indigo on hover
+                            borderRadius: 8,
+                            borderSkipped: false,
+                            barThickness: 16,
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        plugins: { legend: { display: false } },
+                        animation: { duration: 1500, easing: 'easeOutQuart' }, // Smooth slide-up
+                        plugins: { 
+                            legend: { display: false },
+                            tooltip: {
+                                enabled: true,
+                                backgroundColor: '#1e293b',
+                                titleFont: { size: 10, weight: 'bold' },
+                                bodyFont: { size: 13, weight: '900' },
+                                padding: 12,
+                                cornerRadius: 12,
+                                displayColors: false,
+                                callbacks: {
+                                    label: (context) => ` ${context.raw} Salvations`
+                                }
+                            }
+                        },
                         scales: {
-                            y: { display: false, beginAtZero: true },
+                            y: { 
+                                display: false, 
+                                beginAtZero: true,
+                                suggestedMax: Math.max(...weeklyData) + 2 // Space at the top
+                            },
                             x: {
                                 grid: { display: false },
                                 border: { display: false },
-                                ticks: { color: '#64748b', font: { size: 9, weight: '900' } }
+                                ticks: { 
+                                    color: '#64748b', 
+                                    font: { size: 9, weight: '900' },
+                                    padding: 10
+                                }
                             }
                         }
                     }
