@@ -307,6 +307,7 @@
         };
 
         // --- RENDER WEEKLY CHART (1 READ) ---
+        // --- RENDER WEEKLY CHART (1 READ + CONDITIONAL HEAL) ---
         window.renderWeeklyChart = async (uid, churchId) => {
             const canvas = document.getElementById('weeklyChart');
             if (!canvas) return;
@@ -318,43 +319,51 @@
                 const snap = await getDoc(docRef);
                 let data = snap.exists() ? snap.data() : null;
         
-                // --- SURGICAL TRIGGER: SELF-HEALING CHECK ---
-                // If no data exists OR data is from a previous week...
-                // We check if we need to "Heal" by looking for existing records from THIS week.
+                // --- SURGICAL TRIGGER: DATE MISMATCH & SELF-HEALING ---
+                // If data is missing OR from a previous week, we reset and heal.
                 if (!data || data.startDate !== mondayDate) {
-                    console.log("Self-healing: Aggregating existing records for this week...");
-                    
-                    const q = query(
-                        collection(db, "salvations"),
-                        where("userId", "==", uid),
-                        where("eventDate", ">=", mondayDate)
-                    );
-                    const salvationSnap = await getDocs(q);
-                    
-                    const healedTotals = { mon: 0, tue: 0, wed: 0, thu: 0, fri: 0, sat: 0, sun: 0 };
-                    salvationSnap.forEach(d => {
-                        const sData = d.data();
-                        const dayKey = new Date(sData.eventDate).toLocaleDateString('en-US', { weekday: 'short' }).toLowerCase();
-                        if (healedTotals.hasOwnProperty(dayKey)) {
-                            healedTotals[dayKey] += Number(sData.count || 0);
-                        }
-                    });
+                    console.log("New week detected or data missing. Resetting local view and healing...");
         
-                    // Save the healed data so we don't have to do this again
-                    data = {
-                        ...healedTotals,
-                        startDate: mondayDate,
-                        timestamp: serverTimestamp()
+                    // 1. IMMEDIATE UI RESET: Zero out local data variable for a fresh week
+                    data = { 
+                        mon: 0, tue: 0, wed: 0, thu: 0, fri: 0, sat: 0, sun: 0, 
+                        startDate: mondayDate 
                     };
-                    await setDoc(docRef, data, { merge: true });
+        
+                    try {
+                        // 2. HEAL: Aggregating any existing records for this new week (e.g. logged from another phone)
+                        const q = query(
+                            collection(db, "salvations"),
+                            where("userId", "==", uid),
+                            where("eventDate", ">=", mondayDate)
+                        );
+                        const salvationSnap = await getDocs(q);
+                        
+                        if (!salvationSnap.empty) {
+                            salvationSnap.forEach(d => {
+                                const sData = d.data();
+                                const dayKey = new Date(sData.eventDate).toLocaleDateString('en-US', { weekday: 'short' }).toLowerCase();
+                                if (data.hasOwnProperty(dayKey)) {
+                                    data[dayKey] += Number(sData.count || 0);
+                                }
+                            });
+                        }
+        
+                        // 3. PERSIST: Save the fresh/healed state to Firestore to stop healing on next refresh
+                        await setDoc(docRef, { ...data, timestamp: serverTimestamp() });
+        
+                    } catch (healError) {
+                        console.error("Healing process failed, proceeding with zeros:", healError);
+                    }
                 }
         
+                // --- PREPARE DATA FOR CHART ---
                 const weeklyData = [
                     data.mon || 0, data.tue || 0, data.wed || 0,
                     data.thu || 0, data.fri || 0, data.sat || 0, data.sun || 0
                 ];
         
-                // --- REMAINDER OF RENDERING LOGIC (STAYS IDENTICAL) ---
+                // --- UI UPDATES ---
                 const totalSalvations = weeklyData.reduce((a, b) => a + b, 0);
                 const totalBadge = document.getElementById('weekly-total-badge');
                 if (totalBadge) totalBadge.innerText = `TOTAL: ${totalSalvations}`;
@@ -407,7 +416,9 @@
                         }
                     }
                 });
-            } catch (e) { console.error("Chart Render/Heal Failure:", e); }
+            } catch (e) { 
+                console.error("Critical Chart Render Failure:", e); 
+            }
         };
 
         const initTheme = () => {
