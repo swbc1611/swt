@@ -312,32 +312,37 @@
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
             
-            // Standardize the current Monday string (YYYY-MM-DD)
             const currentMonday = getMondayDate(); 
+            console.log(`[Chart Debug] Starting Render. Expected Monday: ${currentMonday}`);
         
             try {
                 const docRef = doc(db, `churches/${churchId}/users/${uid}/weekly_stats`, "current_week");
                 const snap = await getDoc(docRef);
                 let data = snap.exists() ? snap.data() : null;
         
-                // --- SURGICAL TRIGGER: HARD RESET ON STALE DATE ---
-                // If data exists but the startDate is strictly OLDER than current Monday...
+                if (data) {
+                    console.log(`[Chart Debug] Found existing doc. StartDate: ${data.startDate}`);
+                } else {
+                    console.log(`[Chart Debug] No existing weekly_stats doc found.`);
+                }
+        
+                // --- SURGICAL TRIGGER: HARD RESET ---
                 if (data && data.startDate < currentMonday) {
-                    console.warn(`Stale week detected: ${data.startDate}. Wiping for ${currentMonday}`);
-                    data = null; // Force code into the initialization/healing block
+                    console.warn(`[Chart Debug] ALERT: Stale week detected (${data.startDate} < ${currentMonday}). Invalidating local data.`);
+                    data = null; 
                 }
         
                 if (!data || data.startDate !== currentMonday) {
-                    console.log("Initializing fresh week view...");
+                    console.log("[Chart Debug] Branching to FRESH WEEK / HEALING logic.");
         
-                    // 1. IMMEDIATE UI RESET: Zero out local data variable
+                    // 1. IMMEDIATE UI RESET
                     data = { 
                         mon: 0, tue: 0, wed: 0, thu: 0, fri: 0, sat: 0, sun: 0, 
                         startDate: currentMonday 
                     };
         
                     try {
-                        // 2. HEAL: Aggregating records for the actual current week
+                        console.log(`[Chart Debug] Querying 'salvations' for logs >= ${currentMonday}`);
                         const q = query(
                             collection(db, "salvations"),
                             where("userId", "==", uid),
@@ -346,9 +351,9 @@
                         const salvationSnap = await getDocs(q);
                         
                         if (!salvationSnap.empty) {
+                            console.log(`[Chart Debug] HEAL: Found ${salvationSnap.size} records to aggregate.`);
                             salvationSnap.forEach(d => {
                                 const sData = d.data();
-                                // Surgical Day Mapping: Explicit array to ensure keys match exactly
                                 const dObj = new Date(sData.eventDate);
                                 const days = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
                                 const dayKey = days[dObj.getDay()];
@@ -357,30 +362,32 @@
                                     data[dayKey] += Number(sData.count || 0);
                                 }
                             });
+                        } else {
+                            console.log("[Chart Debug] HEAL: No records found for this week yet.");
                         }
         
-                        // 3. PERSIST: Overwrite the document completely (no merge)
-                        await setDoc(docRef, { 
-                            ...data, 
-                            timestamp: serverTimestamp() 
-                        });
+                        console.log("[Chart Debug] Saving new week document to Firestore...");
+                        await setDoc(docRef, { ...data, timestamp: serverTimestamp() });
         
                     } catch (healError) {
-                        console.error("Healing failed, using empty view:", healError);
+                        console.error("[Chart Debug] Healing Error:", healError);
                     }
+                } else {
+                    console.log("[Chart Debug] Week matches current Monday. Proceeding to render data.");
                 }
         
-                // --- DATA PREPARATION ---
                 const weeklyData = [
                     data.mon || 0, data.tue || 0, data.wed || 0,
                     data.thu || 0, data.fri || 0, data.sat || 0, data.sun || 0
                 ];
         
-                // --- UI UPDATES ---
+                console.log(`[Chart Debug] Final Dataset for UI:`, weeklyData);
+        
                 const totalSalvations = weeklyData.reduce((a, b) => a + b, 0);
                 const totalBadge = document.getElementById('weekly-total-badge');
                 if (totalBadge) totalBadge.innerText = `TOTAL: ${totalSalvations}`;
         
+                // ... (Chart.js code remains identical)
                 const isDarkMode = document.getElementById('main-html').classList.contains('dark');
                 const tickColor = isDarkMode ? '#64748b' : '#1e293b'; 
         
@@ -430,7 +437,7 @@
                     }
                 });
             } catch (e) { 
-                console.error("Critical Chart Failure:", e); 
+                console.error("[Chart Debug] CRITICAL FAILURE:", e); 
             }
         };
 
