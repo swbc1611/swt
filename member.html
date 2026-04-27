@@ -312,7 +312,7 @@
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
             
-            // Standardize the current Monday string
+            // Standardize the current Monday string (YYYY-MM-DD)
             const currentMonday = getMondayDate(); 
         
             try {
@@ -320,24 +320,24 @@
                 const snap = await getDoc(docRef);
                 let data = snap.exists() ? snap.data() : null;
         
-                // --- SURGICAL TRIGGER: FORCE-RESET ON DATE MISMATCH ---
-                // If data exists but the startDate is OLDER than current Monday...
+                // --- SURGICAL TRIGGER: HARD RESET ON STALE DATE ---
+                // If data exists but the startDate is strictly OLDER than current Monday...
                 if (data && data.startDate < currentMonday) {
-                    console.log(`Stale week detected (${data.startDate}). Forcing reset to ${currentMonday}`);
-                    data = null; // Force code into the initialization/healing block below
+                    console.warn(`Stale week detected: ${data.startDate}. Wiping for ${currentMonday}`);
+                    data = null; // Force code into the initialization/healing block
                 }
         
                 if (!data || data.startDate !== currentMonday) {
-                    console.log("Initializing fresh week view and checking for existing records...");
+                    console.log("Initializing fresh week view...");
         
-                    // 1. IMMEDIATE UI RESET: Zero out local data variable for a fresh week
+                    // 1. IMMEDIATE UI RESET: Zero out local data variable
                     data = { 
                         mon: 0, tue: 0, wed: 0, thu: 0, fri: 0, sat: 0, sun: 0, 
                         startDate: currentMonday 
                     };
         
                     try {
-                        // 2. HEAL: Aggregating any existing records for this new week
+                        // 2. HEAL: Aggregating records for the actual current week
                         const q = query(
                             collection(db, "salvations"),
                             where("userId", "==", uid),
@@ -348,7 +348,7 @@
                         if (!salvationSnap.empty) {
                             salvationSnap.forEach(d => {
                                 const sData = d.data();
-                                // Surgical Day Mapping: Use explicit array to match Firestore keys
+                                // Surgical Day Mapping: Explicit array to ensure keys match exactly
                                 const dObj = new Date(sData.eventDate);
                                 const days = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
                                 const dayKey = days[dObj.getDay()];
@@ -359,16 +359,18 @@
                             });
                         }
         
-                        // 3. PERSIST: Overwrite the document to lock in the new week
-                        // Using merge: false to ensure we don't carry over old week's fields
-                        await setDoc(docRef, { ...data, timestamp: serverTimestamp() }, { merge: false });
+                        // 3. PERSIST: Overwrite the document completely (no merge)
+                        await setDoc(docRef, { 
+                            ...data, 
+                            timestamp: serverTimestamp() 
+                        });
         
                     } catch (healError) {
-                        console.error("Healing process failed, using zeros:", healError);
+                        console.error("Healing failed, using empty view:", healError);
                     }
                 }
         
-                // --- PREPARE DATA FOR CHART ---
+                // --- DATA PREPARATION ---
                 const weeklyData = [
                     data.mon || 0, data.tue || 0, data.wed || 0,
                     data.thu || 0, data.fri || 0, data.sat || 0, data.sun || 0
@@ -428,7 +430,7 @@
                     }
                 });
             } catch (e) { 
-                console.error("Critical Chart Render Failure:", e); 
+                console.error("Critical Chart Failure:", e); 
             }
         };
 
