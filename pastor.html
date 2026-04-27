@@ -454,67 +454,90 @@
         let currentPreset = 'month';
         let currentType = 'all';
 
-        // --- HELPER: GET MONDAY DATE OF CURRENT WEEK ---
-        const getMondayDate = (d = new Date()) => {
+         const getMondayDate = (d = new Date()) => {
             const date = new Date(d);
-            const day = date.getDay();
+            const day = date.getDay(); // 0 is Sun, 1 is Mon...
+            
+            // The logic: If today is Sunday (0), we go back 6 days. 
+            // If today is Mon-Sat (1-6), we go back (day - 1) days.
             const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+            
             const monday = new Date(date.setDate(diff));
-            return monday.toISOString().split('T')[0];
+            
+            // Format to YYYY-MM-DD using local time to avoid timezone shifts
+            return monday.getFullYear() + '-' + 
+                   String(monday.getMonth() + 1).padStart(2, '0') + '-' + 
+                   String(monday.getDate()).padStart(2, '0');
         };
 
+        // --- RENDER WEEKLY CHART (1 READ + CONDITIONAL HEAL) ---
         window.renderWeeklyChart = async (uid, churchId) => {
             const canvas = document.getElementById('weeklyChart');
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
-            const mondayDate = getMondayDate();
+            
+            // Standardize the current Monday string (YYYY-MM-DD)
+            const currentMonday = getMondayDate(); 
         
             try {
                 const docRef = doc(db, `churches/${churchId}/users/${uid}/weekly_stats`, "current_week");
                 const snap = await getDoc(docRef);
                 let data = snap.exists() ? snap.data() : null;
         
-                // --- SURGICAL TRIGGER: SELF-HEALING CHECK ---
-                // If no data exists OR data is from a previous week...
-                // We check if we need to "Heal" by looking for existing records from THIS week.
-                if (!data || data.startDate !== mondayDate) {
-                    console.log("Self-healing: Aggregating existing records for this week...");
-                    
-                    const q = query(
-                        collection(db, "salvations"),
-                        where("userId", "==", uid),
-                        where("eventDate", ">=", mondayDate)
-                    );
-                    const salvationSnap = await getDocs(q);
-                    
-                    const healedTotals = { mon: 0, tue: 0, wed: 0, thu: 0, fri: 0, sat: 0, sun: 0 };
-                    salvationSnap.forEach(d => {
-                        const sData = d.data();
-                        const dayKey = new Date(sData.eventDate).toLocaleDateString('en-US', { weekday: 'short' }).toLowerCase();
-                        if (healedTotals.hasOwnProperty(dayKey)) {
-                            healedTotals[dayKey] += Number(sData.count || 0);
-                        }
-                    });
-        
-                    // Save the healed data so we don't have to do this again
-                    data = {
-                        ...healedTotals,
-                        startDate: mondayDate,
-                        timestamp: serverTimestamp()
-                    };
-                    await setDoc(docRef, data, { merge: true });
+                // --- SURGICAL TRIGGER: HARD RESET ---
+                // If data is older than current Monday, treat it as null to trigger reset/heal
+                if (data && data.startDate < currentMonday) {
+                    data = null; 
                 }
         
+                if (!data || data.startDate !== currentMonday) {
+                    // 1. INITIALIZE EMPTY WEEK
+                    data = { 
+                        mon: 0, tue: 0, wed: 0, thu: 0, fri: 0, sat: 0, sun: 0, 
+                        startDate: currentMonday 
+                    };
+        
+                    try {
+                        // 2. HEAL: Fetch existing records for this week
+                        const q = query(
+                            collection(db, "salvations"),
+                            where("userId", "==", uid),
+                            where("eventDate", ">=", currentMonday)
+                        );
+                        const salvationSnap = await getDocs(q);
+                        
+                        if (!salvationSnap.empty) {
+                            salvationSnap.forEach(d => {
+                                const sData = d.data();
+                                const dObj = new Date(sData.eventDate);
+                                const days = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+                                const dayKey = days[dObj.getDay()];
+                                
+                                if (data.hasOwnProperty(dayKey)) {
+                                    data[dayKey] += Number(sData.count || 0);
+                                }
+                            });
+                        }
+        
+                        // 3. PERSIST RESET
+                        await setDoc(docRef, { ...data, timestamp: serverTimestamp() });
+        
+                    } catch (healError) {
+                        console.error("Healing process failed:", healError);
+                    }
+                }
+        
+                // --- PREPARE CHART DATA ---
                 const weeklyData = [
                     data.mon || 0, data.tue || 0, data.wed || 0,
                     data.thu || 0, data.fri || 0, data.sat || 0, data.sun || 0
                 ];
         
-                // --- REMAINDER OF RENDERING LOGIC (STAYS IDENTICAL) ---
                 const totalSalvations = weeklyData.reduce((a, b) => a + b, 0);
                 const totalBadge = document.getElementById('weekly-total-badge');
                 if (totalBadge) totalBadge.innerText = `TOTAL: ${totalSalvations}`;
         
+                // --- THEME & GRADIENTS ---
                 const isDarkMode = document.getElementById('main-html').classList.contains('dark');
                 const tickColor = isDarkMode ? '#64748b' : '#1e293b'; 
         
@@ -563,7 +586,9 @@
                         }
                     }
                 });
-            } catch (e) { console.error("Chart Render/Heal Failure:", e); }
+            } catch (e) { 
+                console.error("Critical Chart Failure:", e); 
+            }
         };
 
         const initYearSelector = () => {
