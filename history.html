@@ -206,7 +206,6 @@
 
     <script type="module">
         import { db, auth } from './firebase-config.js';
-        // SURGICAL ADD: query, where, increment, serverTimestamp
         import { collection, query, where, getDocs, orderBy, doc, deleteDoc, limit, startAfter, getAggregateFromServer, sum, count, getDoc, updateDoc, arrayRemove, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     
@@ -216,13 +215,15 @@
         let lastDoc = null;
         const PAGE_SIZE = 10;
     
-        // --- HELPER: GET MONDAY DATE (Sync with Dashboard) ---
+        // --- HELPER: UNIFIED LOCAL MONDAY LOGIC ---
         const getMondayDate = (d = new Date()) => {
             const date = new Date(d);
             const day = date.getDay();
             const diff = date.getDate() - day + (day === 0 ? -6 : 1);
             const monday = new Date(date.setDate(diff));
-            return monday.toISOString().split('T')[0];
+            return monday.getFullYear() + '-' + 
+                   String(monday.getMonth() + 1).padStart(2, '0') + '-' + 
+                   String(monday.getDate()).padStart(2, '0');
         };
     
         const initTheme = () => {
@@ -289,7 +290,7 @@
     
             if (type === 'date') {
                 dateInput.classList.add('border-indigo-500', 'ring-2', 'ring-indigo-500/50', 'bg-indigo-500/10');
-                monthInput.value = "";
+                monthId = "";
             } else {
                 monthInput.classList.add('border-indigo-500', 'ring-2', 'ring-indigo-500/50', 'bg-indigo-500/10');
                 dateInput.value = "";
@@ -433,8 +434,11 @@
                 const recordMonday = getMondayDate(eventDate);
                 const currentMonday = getMondayDate();
     
+                // SYNC CHECK: Use standardized day mapping for Firestore keys
                 if (recordMonday === currentMonday) {
-                    const dayKey = new Date(eventDate).toLocaleDateString('en-US', { weekday: 'short' }).toLowerCase();
+                    const dObj = new Date(eventDate);
+                    const days = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+                    const dayKey = days[dObj.getDay()]; 
                     const statsRef = doc(db, `churches/${churchId}/users/${uid}/weekly_stats`, "current_week");
                     
                     await updateDoc(statsRef, {
@@ -471,14 +475,8 @@
                 const cachedData = sessionStorage.getItem('userContext');
                 if (cachedData) {
                     const profile = JSON.parse(cachedData);
-                    // Route based on role
-                    if (profile.role === 'pastor') {
-                        window.location.href = 'pastor.html';
-                    } else {
-                        window.location.href = 'member.html';
-                    }
+                    window.location.href = (profile.role === 'pastor') ? 'pastor.html' : 'member.html';
                 } else {
-                    // Fallback if session is cleared
                     window.location.href = 'index.html';
                 }
             } catch (e) {
