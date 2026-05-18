@@ -74,14 +74,23 @@
         }
         .like-pop { animation: likePop 0.32s ease forwards; }
 
-        /* ── Subtle live indicator ── */
-        #likes-sync-dot {
-            transition: opacity 0.4s;
+        /* ── Sync pill — fixed, never affects layout ── */
+        #likes-sync-pill {
+            position: fixed;
+            bottom: 5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            z-index: 90;
         }
+        #likes-sync-pill.visible { opacity: 1; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 dark:bg-[#0f172a] dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-300">
 
+    <!-- Nav — unchanged from original, nothing extra added -->
     <nav class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b dark:border-slate-800 px-6 py-4 flex justify-between items-center sticky top-0 z-[100] w-full">
         <div class="flex items-center gap-2">
             <button onclick="goHome()" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 transition-all mr-2">
@@ -93,14 +102,19 @@
             <h1 class="text-lg brand-text"><span class="brand-word-1">Soulwinning</span><span class="brand-word-2">Tracker</span></h1>
         </div>
         <div class="flex items-center gap-2">
-            <!-- Subtle live sync indicator -->
-            <span id="likes-sync-dot" class="opacity-0 text-[9px] font-black text-violet-400 uppercase tracking-widest">syncing</span>
             <button onclick="toggleDarkMode()" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 transition-all">
                 <svg id="sun-icon" class="w-5 h-5 hidden text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M3 12h2.25m.386-6.364l1.591 1.591M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" /></svg>
                 <svg id="moon-icon" class="w-5 h-5 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" /></svg>
             </button>
         </div>
     </nav>
+
+    <!-- Sync pill: fixed position, zero layout impact -->
+    <div id="likes-sync-pill">
+        <span class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-900/80 dark:bg-violet-600/80 backdrop-blur text-[9px] font-black text-violet-300 dark:text-white uppercase tracking-widest border border-violet-500/30">
+            <i class="fas fa-hands-praying text-[9px] animate-pulse"></i> syncing
+        </span>
+    </div>
 
     <main class="flex-1 flex flex-col items-center px-6 py-10 relative w-full max-w-xl mx-auto">
 
@@ -178,8 +192,8 @@
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        const MAX_LEN      = 1000;
-        const POLL_MS      = 60000; // likes poll interval: 60 seconds
+        const MAX_LEN = 1000;
+        const POLL_MS = 60000;
 
         let API_URL = '';
         let PSK = '';
@@ -187,9 +201,8 @@
         let userProfile = JSON.parse(sessionStorage.getItem('userContext') || '{}');
         let currentPrayerFilter = 'all';
         let pendingDeleteId = null;
-        const pendingLikes = new Set(); // IDs currently being written — skip poll updates for these
-
-        let pollTimer = null; // holds setInterval reference so we can clear it
+        const pendingLikes = new Set();
+        let pollTimer = null;
 
         const getChurchId = () => userProfile.churchId?.length > 0 ? userProfile.churchId[0] : null;
 
@@ -209,9 +222,8 @@
             }).filter(Boolean);
         }
 
-        function showSyncDot(visible) {
-            const dot = document.getElementById('likes-sync-dot');
-            if (dot) dot.style.opacity = visible ? '1' : '0';
+        function showSyncPill(visible) {
+            document.getElementById('likes-sync-pill')?.classList.toggle('visible', visible);
         }
 
         window.showToast = (msg) => {
@@ -273,27 +285,21 @@
         // ── Likes polling ──────────────────────────────────────────────────────
 
         function startLikesPolling() {
-            // Clear any existing timer (e.g. after filter change)
             if (pollTimer) clearInterval(pollTimer);
             pollTimer = setInterval(refreshLikes, POLL_MS);
-
-            // Also refresh on tab focus — catches updates after user switches away
             document.addEventListener('visibilitychange', onVisibilityChange);
         }
 
         function onVisibilityChange() {
-            if (document.visibilityState === 'visible') {
-                refreshLikes();
-            }
+            if (document.visibilityState === 'visible') refreshLikes();
         }
 
         async function refreshLikes() {
             const churchId = getChurchId();
             if (!API_URL || !PSK || !churchId) return;
-            // Don't run if no prayer rows are rendered yet
             if (!document.querySelector('[id^="like-btn-"]')) return;
 
-            showSyncDot(true);
+            showSyncPill(true);
             try {
                 const res  = await fetch(API_URL, {
                     method: 'POST',
@@ -301,22 +307,17 @@
                 });
                 const data = await res.json();
                 if (!Array.isArray(data)) return;
-
-                // data = [ { ID: '...', Likes: 'Name|uid,...' }, ... ]
                 data.forEach(({ ID, Likes }) => {
-                    // Skip any prayer currently being liked by this user — avoids overwriting optimistic state
-                    if (pendingLikes.has(ID)) return;
+                    if (pendingLikes.has(ID)) return; // skip in-flight
                     applyLikesToBtn(ID, Likes || '');
                 });
             } catch (e) {
-                // Silent fail — polling is best-effort
                 console.warn('Likes poll failed:', e);
             } finally {
-                showSyncDot(false);
+                showSyncPill(false);
             }
         }
 
-        // Updates a single like button in-place with fresh data from server
         function applyLikesToBtn(prayerId, likesStr) {
             const btn = document.getElementById(`like-btn-${prayerId}`);
             if (!btn) return;
@@ -347,7 +348,6 @@
                 tooltip.innerHTML = `<p class="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Praying 🙏</p>${names}`;
             }
 
-            // Keep onclick in sync with latest server state
             btn.setAttribute('onclick', `toggleLike('${prayerId}', '${escapeHtml(likesStr)}')`);
         }
 
@@ -450,7 +450,6 @@
                                         ${pIndex % 2 !== 0 ? 'bg-black/5 dark:bg-white/5' : ''}
                                         ${pIndex !== group.prayers.length - 1 ? 'border-b border-white/5' : ''}">
                                         <div class="absolute left-0 top-4 bottom-4 w-1 rounded-r-full ${themeBg}"></div>
-                                        <!-- Request + delete -->
                                         <div class="flex justify-between items-start gap-4 mb-3">
                                             <p class="text-sm text-slate-700 dark:text-slate-100 leading-relaxed font-semibold italic">"${escapeHtml(p.Request)}"</p>
                                             ${p.UserID == user.uid
@@ -462,7 +461,6 @@
                                                    </button>`
                                                 : ''}
                                         </div>
-                                        <!-- Footer: timestamp + like -->
                                         <div class="flex items-center justify-between gap-2 mt-2">
                                             <div class="flex items-center gap-1.5 text-[9px] text-slate-400 font-extrabold uppercase tracking-widest opacity-80">
                                                 <i class="bi bi-clock-fill ${themeText} opacity-40"></i>
@@ -504,10 +502,8 @@
             }
             const newLikesStr = likes.map(l => `${l.name}|${l.uid}`).join(',');
 
-            // Instant DOM update
             applyLikesToBtn(prayerId, newLikesStr);
 
-            // Pop animation
             const btn = document.getElementById(`like-btn-${prayerId}`);
             if (btn) {
                 btn.classList.add('like-pop');
@@ -516,7 +512,6 @@
 
             pendingLikes.delete(prayerId);
 
-            // Background write
             fetch(API_URL, {
                 method: 'POST',
                 mode: 'no-cors',
@@ -549,7 +544,7 @@
                     btn.disabled = false;
                     btn.innerHTML = `<i class="bi bi-send-fill text-[10px] opacity-70 mr-2"></i> SHARE WITH THE BRETHREN`;
                     await loadPrayers();
-                    startLikesPolling(); // restart poll with fresh DOM
+                    startLikesPolling();
                 }, 1000);
             } catch (e) {
                 showToast('Network Error.');
