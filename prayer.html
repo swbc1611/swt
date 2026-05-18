@@ -285,13 +285,29 @@
         // ── Likes polling ──────────────────────────────────────────────────────
 
         function startLikesPolling() {
-            if (pollTimer) clearInterval(pollTimer);
-            pollTimer = setInterval(refreshLikes, POLL_MS);
+            if (pollTimer) clearTimeout(pollTimer);
+            // Remove first to avoid duplicate listeners on restart
+            document.removeEventListener('visibilitychange', onVisibilityChange);
             document.addEventListener('visibilitychange', onVisibilityChange);
+            scheduleNextPoll();
+        }
+
+        function scheduleNextPoll() {
+            if (pollTimer) clearTimeout(pollTimer);
+            // Jitter: base 60s + random 0–15s so all users never fire simultaneously
+            const jitter = Math.random() * 15000;
+            pollTimer = setTimeout(async () => {
+                await refreshLikes();
+                scheduleNextPoll(); // chain next poll after this one completes
+            }, POLL_MS + jitter);
         }
 
         function onVisibilityChange() {
-            if (document.visibilityState === 'visible') refreshLikes();
+            if (document.visibilityState === 'visible') {
+                // Reset the poll cycle on tab focus so we don't double-fire
+                scheduleNextPoll();
+                refreshLikes();
+            }
         }
 
         async function refreshLikes() {
@@ -602,7 +618,7 @@
         // ── Navigation ─────────────────────────────────────────────────────────
 
         window.goHome = () => {
-            if (pollTimer) clearInterval(pollTimer);
+            if (pollTimer) clearTimeout(pollTimer);
             document.removeEventListener('visibilitychange', onVisibilityChange);
             try {
                 const profile = JSON.parse(sessionStorage.getItem('userContext') || '{}');
