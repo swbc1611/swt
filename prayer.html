@@ -29,23 +29,23 @@
             outline: none !important;
         }
 
-        /* Like button */
-        .like-btn { position: relative; }
-        .like-btn.liked .like-icon { color: #a78bfa; }
+        /* ── Like button ── */
         .like-btn.liked { background: rgba(167,139,250,0.15) !important; border-color: rgba(167,139,250,0.4) !important; }
+        .like-btn.liked .like-icon,
+        .like-btn.liked .like-count { color: #a78bfa !important; }
 
-        /* Tooltip */
+        /* ── Tooltip ── */
         .like-tooltip {
             display: none;
             position: absolute;
             bottom: calc(100% + 8px);
             right: 0;
-            min-width: 160px;
-            max-width: 240px;
+            min-width: 150px;
+            max-width: 220px;
             background: #1e293b;
             border: 1px solid rgba(255,255,255,0.1);
             border-radius: 0.75rem;
-            padding: 0.6rem 0.85rem;
+            padding: 0.55rem 0.8rem;
             z-index: 50;
             pointer-events: none;
             box-shadow: 0 8px 24px rgba(0,0,0,0.4);
@@ -58,25 +58,21 @@
         .like-tooltip::after {
             content: '';
             position: absolute;
-            top: 100%;
-            right: 14px;
+            top: 100%; right: 12px;
             border: 5px solid transparent;
             border-top-color: #1e293b;
         }
         #main-html:not(.dark) .like-tooltip::after { border-top-color: #fff; }
-        .like-btn:hover .like-tooltip,
-        .like-btn:focus .like-tooltip { display: block; }
+        .like-btn:hover .like-tooltip { display: block; }
 
-        /* Char counter */
-        #charCount { transition: color 0.2s; }
-
-        @keyframes likePopIn {
+        /* ── Pop animation ── */
+        @keyframes likePop {
             0%   { transform: scale(1); }
-            40%  { transform: scale(1.35); }
-            70%  { transform: scale(0.9); }
+            40%  { transform: scale(1.4); }
+            70%  { transform: scale(0.88); }
             100% { transform: scale(1); }
         }
-        .like-pop { animation: likePopIn 0.35s ease forwards; }
+        .like-pop { animation: likePop 0.32s ease forwards; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 dark:bg-[#0f172a] dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-300">
@@ -115,10 +111,10 @@
                         How may we join you in prayer?
                     </label>
                     <textarea id="prayerInput" maxlength="1000" placeholder="Enter your petition..."
-                        class="w-full p-6 rounded-2xl dark:text-white h-36 resize-none transition-all focus:ring-4 focus:ring-indigo-500/10"
-                        oninput="updateCharCount()"></textarea>
+                        oninput="updateCharCount()"
+                        class="w-full p-6 rounded-2xl dark:text-white h-36 resize-none transition-all focus:ring-4 focus:ring-indigo-500/10"></textarea>
                     <div class="flex justify-end mt-1 pr-1">
-                        <span id="charCount" class="text-[10px] font-bold text-slate-400">0 / 1000</span>
+                        <span id="charCount" class="text-[10px] font-bold text-slate-400 transition-colors">0 / 1000</span>
                     </div>
                 </div>
                 <button id="postBtn" onclick="addPrayer()" class="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black uppercase text-[11px] tracking-[0.2em] transition-all hover:bg-indigo-700 active:scale-95 flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/50">
@@ -175,37 +171,51 @@
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        const MAX_REQUEST_LENGTH = 1000;
+        const MAX_LEN = 1000;
 
         let API_URL = '';
         let PSK = '';
         let user = null;
-        let userProfile = JSON.parse(sessionStorage.getItem('userContext') || "{}");
+        let userProfile = JSON.parse(sessionStorage.getItem('userContext') || '{}');
         let currentPrayerFilter = 'all';
         let pendingDeleteId = null;
-        // Track in-flight like requests to prevent double-taps
         const pendingLikes = new Set();
 
-        const getChurchId = () => (userProfile.churchId?.length > 0) ? userProfile.churchId[0] : null;
+        const getChurchId = () => userProfile.churchId?.length > 0 ? userProfile.churchId[0] : null;
 
-        // --- Helpers ---
+        // ── Utilities ──────────────────────────────────────────────────────────
+
+        function escapeHtml(str) {
+            return String(str ?? '')
+                .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+                .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+        }
+
+        function parseLikes(str) {
+            if (!str || !str.trim()) return [];
+            return str.split(',').map(e => {
+                const [name, uid] = e.trim().split('|');
+                return name && uid ? { name: name.trim(), uid: uid.trim() } : null;
+            }).filter(Boolean);
+        }
+
         window.showToast = (msg) => {
             const t = document.getElementById('toast');
             if (!t) return;
             t.innerText = msg;
-            t.classList.remove('opacity-0', 'translate-y-10');
-            t.classList.add('opacity-100', 'translate-y-0');
+            t.classList.remove('opacity-0','translate-y-10');
+            t.classList.add('opacity-100','translate-y-0');
             setTimeout(() => {
-                t.classList.remove('opacity-100', 'translate-y-0');
-                t.classList.add('opacity-0', 'translate-y-10');
+                t.classList.remove('opacity-100','translate-y-0');
+                t.classList.add('opacity-0','translate-y-10');
             }, 3000);
         };
 
         window.updateCharCount = () => {
-            const val = document.getElementById('prayerInput').value.length;
-            const el = document.getElementById('charCount');
-            el.textContent = `${val} / ${MAX_REQUEST_LENGTH}`;
-            el.style.color = val > 900 ? '#f87171' : val > 750 ? '#fb923c' : '';
+            const len = document.getElementById('prayerInput').value.length;
+            const el  = document.getElementById('charCount');
+            el.textContent = `${len} / ${MAX_LEN}`;
+            el.style.color = len > 900 ? '#f87171' : len > 750 ? '#fb923c' : '';
         };
 
         window.toggleDarkMode = () => {
@@ -216,112 +226,94 @@
         };
         if (localStorage.getItem('theme') === 'dark') toggleDarkMode();
 
-        // --- Auth ---
+        // ── Auth ───────────────────────────────────────────────────────────────
+
         onAuthStateChanged(auth, async (u) => {
-            if (!u) { window.location.replace("index.html"); return; }
+            if (!u) { window.location.replace('index.html'); return; }
             if (!u.emailVerified) {
-                document.getElementById('prayer-list').innerHTML = `<div class="text-center opacity-40 py-20 uppercase font-black tracking-widest text-[10px]">Please verify your email to access the Prayer Board.</div>`;
+                document.getElementById('prayer-list').innerHTML =
+                    `<div class="text-center opacity-40 py-20 uppercase font-black tracking-widest text-[10px]">Please verify your email to access the Prayer Board.</div>`;
                 return;
             }
             user = u;
             try {
-                const configSnap = await getDoc(doc(db, "system", "gatekeeper"));
-                if (configSnap.exists()) {
-                    const config = configSnap.data();
-                    API_URL = config.prayerScriptUrl;
-                    PSK = config.masterPsk;
+                const snap = await getDoc(doc(db, 'system', 'gatekeeper'));
+                if (snap.exists()) {
+                    API_URL = snap.data().prayerScriptUrl;
+                    PSK     = snap.data().masterPsk;
                     if (API_URL && PSK) {
                         loadPrayers();
                     } else {
-                        document.getElementById('prayer-list').innerHTML = `<div class="text-center opacity-40 py-20 uppercase font-black tracking-widest text-[10px]">System Config Missing. Contact Admin.</div>`;
+                        document.getElementById('prayer-list').innerHTML =
+                            `<div class="text-center opacity-40 py-20 uppercase font-black tracking-widest text-[10px]">System Config Missing. Contact Admin.</div>`;
                     }
                 }
             } catch (e) {
-                console.error("Gatekeeper failed:", e);
-                showToast("System offline. Check connection.");
+                console.error('Gatekeeper failed:', e);
+                showToast('System offline. Check connection.');
             }
         });
 
-        // --- Filter ---
+        // ── Filter ─────────────────────────────────────────────────────────────
+
         window.setPrayerFilter = (filter) => {
             if (currentPrayerFilter === filter) return;
             currentPrayerFilter = filter;
-            const active = "flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 bg-indigo-600 text-white shadow-lg shadow-indigo-500/20";
-            const inactive = "flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 text-slate-400 dark:text-slate-500 bg-transparent";
-            document.getElementById('filter-all').className = filter === 'all' ? active : inactive;
+            const active   = 'flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 bg-indigo-600 text-white shadow-lg shadow-indigo-500/20';
+            const inactive = 'flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 text-slate-400 dark:text-slate-500 bg-transparent';
+            document.getElementById('filter-all').className  = filter === 'all'  ? active : inactive;
             document.getElementById('filter-mine').className = filter === 'mine' ? active : inactive;
-            document.getElementById('prayer-list').innerHTML = `<div class="flex flex-col items-center justify-center py-20 animate-pulse"><i class="bi bi-arrow-repeat text-indigo-500 text-2xl mb-4 animate-spin"></i><p class="text-center text-slate-400 italic text-xs uppercase tracking-widest">Gathering requests...</p></div>`;
+            document.getElementById('prayer-list').innerHTML =
+                `<div class="flex flex-col items-center justify-center py-20 animate-pulse"><i class="bi bi-arrow-repeat text-indigo-500 text-2xl mb-4 animate-spin"></i><p class="text-center text-slate-400 italic text-xs uppercase tracking-widest">Gathering requests...</p></div>`;
             loadPrayers();
         };
 
-        // --- Like parser helpers ---
-        // Likes stored as: "Name1|uid1,Name2|uid2"
-        function parseLikes(likesStr) {
-            if (!likesStr || !likesStr.trim()) return [];
-            return likesStr.split(',')
-                .map(entry => {
-                    const [name, uid] = entry.trim().split('|');
-                    return (name && uid) ? { name: name.trim(), uid: uid.trim() } : null;
-                })
-                .filter(Boolean);
-        }
+        // ── Like button HTML builder ───────────────────────────────────────────
 
-        function buildLikeRow(prayer) {
-            const likes = parseLikes(prayer.Likes);
+        function buildLikeBtn(p) {
+            const likes     = parseLikes(p.Likes);
             const likedByMe = likes.some(l => l.uid === user.uid);
-            const count = likes.length;
-
-            // Tooltip names list
-            const tooltipNames = likes.length
-                ? likes.map(l => `<span class="block text-[10px] font-bold text-violet-400 dark:text-violet-300 leading-relaxed">${escapeHtml(l.name)}</span>`).join('')
+            const count     = likes.length;
+            const names     = likes.length
+                ? likes.map(l => `<span class="block text-[10px] font-bold text-violet-400 leading-relaxed">${escapeHtml(l.name)}</span>`).join('')
                 : `<span class="block text-[10px] text-slate-400 italic">Be the first to pray!</span>`;
 
             return `
                 <button
-                    id="like-btn-${prayer.ID}"
-                    onclick="toggleLike('${prayer.ID}', '${escapeHtml(prayer.Likes || '')}')"
-                    class="like-btn shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl border transition-all
-                           ${likedByMe
-                               ? 'bg-violet-500/15 border-violet-500/40 text-violet-400'
-                               : 'bg-slate-100/60 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-400 dark:text-slate-500'}
-                           hover:border-violet-400/50 active:scale-90"
+                    id="like-btn-${p.ID}"
+                    onclick="toggleLike('${p.ID}', '${escapeHtml(p.Likes || '')}')"
+                    class="like-btn ${likedByMe ? 'liked' : ''} relative shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl border
+                           bg-slate-100/60 dark:bg-white/5 border-slate-200 dark:border-white/10
+                           text-slate-400 dark:text-slate-500 hover:border-violet-400/50 active:scale-90 transition-all"
                     aria-label="Pray for this request"
                 >
-                    <i class="like-icon fas fa-hands-praying text-[11px] ${likedByMe ? 'text-violet-400' : ''}"></i>
-                    ${count > 0 ? `<span class="like-count text-[10px] font-black ${likedByMe ? 'text-violet-400' : ''}">${count}</span>` : ''}
+                    <i class="like-icon fas fa-hands-praying text-[11px]"></i>
+                    ${count > 0 ? `<span class="like-count text-[10px] font-black">${count}</span>` : ''}
                     <div class="like-tooltip">
-                        <p class="text-[9px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1.5">Praying 🙏</p>
-                        ${tooltipNames}
+                        <p class="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Praying 🙏</p>
+                        ${names}
                     </div>
                 </button>`;
         }
 
-        function escapeHtml(str) {
-            return String(str)
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#39;');
-        }
+        // ── Load Prayers ───────────────────────────────────────────────────────
 
-        // --- Load Prayers ---
         window.loadPrayers = async () => {
             if (!API_URL || !PSK) return;
-            const list = document.getElementById('prayer-list');
+            const list     = document.getElementById('prayer-list');
             const churchId = getChurchId();
             if (!churchId) {
                 list.innerHTML = `<div class="text-center opacity-40 py-20 uppercase font-black tracking-widest text-[10px]">No Church Assigned. Contact Admin.</div>`;
                 return;
             }
             try {
-                // PSK sent in body via POST to avoid query-param exposure
-                const res = await fetch(API_URL, {
+                // PSK in POST body — not in URL
+                const res   = await fetch(API_URL, {
                     method: 'POST',
                     body: JSON.stringify({ key: PSK, action: 'get', church: churchId })
                 });
                 let rawData = await res.json();
-                let data = currentPrayerFilter === 'mine'
+                let data    = currentPrayerFilter === 'mine'
                     ? rawData.filter(p => p.UserID == user.uid)
                     : rawData;
 
@@ -340,10 +332,10 @@
 
                 sortedGroups.forEach((group, index) => {
                     group.prayers.sort((a, b) => new Date(b.Date) - new Date(a.Date));
-                    const isAlt = index % 2 !== 0;
+                    const isAlt       = index % 2 !== 0;
                     const themeBorder = isAlt ? 'border-sky-500/30' : 'border-cyan-400/30';
-                    const themeBg    = isAlt ? 'bg-sky-500'        : 'bg-cyan-400';
-                    const themeText  = isAlt ? 'text-sky-400'      : 'text-cyan-400';
+                    const themeBg     = isAlt ? 'bg-sky-500'        : 'bg-cyan-400';
+                    const themeText   = isAlt ? 'text-sky-400'      : 'text-cyan-400';
 
                     html += `
                         <div class="bg-white dark:bg-[#111827] w-full rounded-3xl border-2 ${themeBorder} relative text-left mb-10 transition-all duration-300 overflow-hidden shadow-xl dark:shadow-cyan-500/5">
@@ -362,96 +354,118 @@
                                         ${pIndex % 2 !== 0 ? 'bg-black/5 dark:bg-white/5' : ''}
                                         ${pIndex !== group.prayers.length - 1 ? 'border-b border-white/5' : ''}">
                                         <div class="absolute left-0 top-4 bottom-4 w-1 rounded-r-full ${themeBg}"></div>
-
-                                        <!-- Request text + delete -->
-                                        <div class="flex justify-between items-start gap-4 mb-4">
+                                        <!-- Request + delete -->
+                                        <div class="flex justify-between items-start gap-4 mb-3">
                                             <p class="text-sm text-slate-700 dark:text-slate-100 leading-relaxed font-semibold italic">"${escapeHtml(p.Request)}"</p>
                                             ${p.UserID == user.uid
-                                                ? `<button onclick="deletePrayer('${p.ID}')" class="shrink-0 w-8 h-8 flex items-center justify-center rounded-xl bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white transition-all border border-rose-500/20 active:scale-90">
+                                                ? `<button onclick="deletePrayer('${p.ID}')"
+                                                       class="shrink-0 w-8 h-8 flex items-center justify-center rounded-xl bg-rose-500/10
+                                                              text-rose-500 hover:bg-rose-500 hover:text-white transition-all
+                                                              border border-rose-500/20 active:scale-90">
                                                        <i class="bi bi-trash3-fill text-[10px]"></i>
                                                    </button>`
                                                 : ''}
                                         </div>
-
                                         <!-- Footer: timestamp + like -->
                                         <div class="flex items-center justify-between gap-2 mt-2">
-                                            <div class="flex items-center gap-2 text-[9px] text-slate-400 font-extrabold uppercase tracking-widest opacity-80">
+                                            <div class="flex items-center gap-1.5 text-[9px] text-slate-400 font-extrabold uppercase tracking-widest opacity-80">
                                                 <i class="bi bi-clock-fill ${themeText} opacity-40"></i>
-                                                ${new Date(p.Date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                                ${new Date(p.Date).toLocaleDateString(undefined, { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' })}
                                             </div>
-                                            ${buildLikeRow(p)}
+                                            ${buildLikeBtn(p)}
                                         </div>
                                     </div>`).join('')}
                             </div>
                         </div>`;
                 });
 
-                list.innerHTML = html || `<div class="text-center opacity-40 py-20 uppercase font-black tracking-widest text-[10px]">${currentPrayerFilter === 'mine' ? 'You have no active requests' : 'No active requests'}</div>`;
+                list.innerHTML = html ||
+                    `<div class="text-center opacity-40 py-20 uppercase font-black tracking-widest text-[10px]">
+                        ${currentPrayerFilter === 'mine' ? 'You have no active requests' : 'No active requests'}
+                    </div>`;
+
             } catch (e) {
                 console.error(e);
                 list.innerHTML = `<div class="text-center opacity-40 py-20 uppercase font-black tracking-widest text-[10px]">Error loading requests. Check connection.</div>`;
             }
         };
 
-        // --- Toggle Like ---
-        window.toggleLike = async (prayerId, currentLikesRaw) => {
-            if (pendingLikes.has(prayerId)) return; // Prevent double-tap
-            pendingLikes.add(prayerId);
+        // ── Toggle Like — fire-and-forget, instant DOM update ──────────────────
 
-            const btn = document.getElementById(`like-btn-${prayerId}`);
-            if (btn) btn.style.opacity = '0.5';
+        window.toggleLike = (prayerId, currentLikesRaw) => {
+            if (pendingLikes.has(prayerId)) return;
+            pendingLikes.add(prayerId);
 
             const myName = userProfile.displayName || 'Brethren';
             const myUid  = user.uid;
 
-            // Parse existing likes
+            // Compute new state
             let likes = parseLikes(currentLikesRaw);
             const alreadyLiked = likes.some(l => l.uid === myUid);
-
-            // Optimistic update
             if (alreadyLiked) {
                 likes = likes.filter(l => l.uid !== myUid);
             } else {
                 likes.push({ name: myName, uid: myUid });
             }
             const newLikesStr = likes.map(l => `${l.name}|${l.uid}`).join(',');
+            const likedByMe   = likes.some(l => l.uid === myUid);
+            const count       = likes.length;
 
-            // Animate
+            // ── Update DOM instantly ──
+            const btn = document.getElementById(`like-btn-${prayerId}`);
             if (btn) {
+                // Liked state
+                btn.classList.toggle('liked', likedByMe);
+
+                // Count badge
+                let countEl = btn.querySelector('.like-count');
+                if (count > 0) {
+                    if (!countEl) {
+                        countEl = document.createElement('span');
+                        countEl.className = 'like-count text-[10px] font-black';
+                        btn.querySelector('.like-icon').insertAdjacentElement('afterend', countEl);
+                    }
+                    countEl.textContent = count;
+                } else if (countEl) {
+                    countEl.remove();
+                }
+
+                // Tooltip names
+                const tooltip = btn.querySelector('.like-tooltip');
+                if (tooltip) {
+                    const names = likes.length
+                        ? likes.map(l => `<span class="block text-[10px] font-bold text-violet-400 leading-relaxed">${escapeHtml(l.name)}</span>`).join('')
+                        : `<span class="block text-[10px] text-slate-400 italic">Be the first to pray!</span>`;
+                    tooltip.innerHTML = `<p class="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Praying 🙏</p>${names}`;
+                }
+
+                // Update onclick so next tap carries the updated string
+                btn.setAttribute('onclick', `toggleLike('${prayerId}', '${escapeHtml(newLikesStr)}')`);
+
+                // Pop
                 btn.classList.add('like-pop');
-                setTimeout(() => btn.classList.remove('like-pop'), 400);
+                setTimeout(() => btn.classList.remove('like-pop'), 350);
             }
 
-            try {
-                await fetch(API_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    body: JSON.stringify({
-                        key: PSK,
-                        action: 'like',
-                        id: prayerId,
-                        uid: myUid,
-                        likes: newLikesStr
-                    })
-                });
-                // Refresh to get authoritative state
-                await loadPrayers();
-            } catch (e) {
-                showToast("Couldn't update. Try again.");
-                if (btn) btn.style.opacity = '1';
-            } finally {
-                pendingLikes.delete(prayerId);
-            }
+            pendingLikes.delete(prayerId);
+
+            // ── Background write — no await, no refetch ──
+            fetch(API_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify({ key: PSK, action: 'like', id: prayerId, uid: myUid, likes: newLikesStr })
+            }).catch(() => showToast("Like may not have saved. Check connection."));
         };
 
-        // --- Add Prayer ---
+        // ── Add Prayer ─────────────────────────────────────────────────────────
+
         window.addPrayer = async () => {
-            const req = document.getElementById('prayerInput').value.trim();
+            const req      = document.getElementById('prayerInput').value.trim();
             const churchId = getChurchId();
-            if (!req) { showToast("Please enter a prayer request."); return; }
-            if (req.length > MAX_REQUEST_LENGTH) { showToast("Request too long."); return; }
-            if (!churchId) { showToast("No Church Assigned."); return; }
-            if (!API_URL) return;
+            if (!req)               { showToast('Please enter a prayer request.'); return; }
+            if (req.length > MAX_LEN) { showToast('Request too long.');            return; }
+            if (!churchId)          { showToast('No Church Assigned.');            return; }
+            if (!API_URL)           return;
 
             const btn = document.getElementById('postBtn');
             btn.disabled = true;
@@ -460,31 +474,25 @@
                 await fetch(API_URL, {
                     method: 'POST',
                     mode: 'no-cors',
-                    body: JSON.stringify({
-                        key: PSK,
-                        action: 'add',
-                        uid: user.uid,
-                        name: userProfile.displayName || "Brethren",
-                        request: req,
-                        church: churchId
-                    })
+                    body: JSON.stringify({ key: PSK, action: 'add', uid: user.uid, name: userProfile.displayName || 'Brethren', request: req, church: churchId })
                 });
-                document.getElementById('prayerInput').value = "";
+                document.getElementById('prayerInput').value = '';
                 updateCharCount();
-                showToast("Request Shared ✓");
+                showToast('Request Shared ✓');
                 setTimeout(() => {
                     btn.disabled = false;
                     btn.innerHTML = `<i class="bi bi-send-fill text-[10px] opacity-70 mr-2"></i> SHARE WITH THE BRETHREN`;
                     loadPrayers();
                 }, 1000);
             } catch (e) {
-                showToast("Network Error.");
+                showToast('Network Error.');
                 btn.disabled = false;
                 btn.innerHTML = `<i class="bi bi-send-fill text-[10px] opacity-70 mr-2"></i> SHARE WITH THE BRETHREN`;
             }
         };
 
-        // --- Delete ---
+        // ── Delete ─────────────────────────────────────────────────────────────
+
         window.deletePrayer = (id) => {
             pendingDeleteId = id;
             document.getElementById('delete-modal').classList.remove('hidden');
@@ -497,45 +505,40 @@
 
         document.getElementById('final-confirm-btn').onclick = async () => {
             if (!pendingDeleteId || !API_URL) return;
-            const btn = document.getElementById('final-confirm-btn');
+            const btn       = document.getElementById('final-confirm-btn');
             const cancelBtn = document.getElementById('cancel-delete-btn');
             if (btn.disabled) return;
 
             const targetId = pendingDeleteId;
-            const row = document.getElementById(`row-${targetId}`);
+            const row      = document.getElementById(`row-${targetId}`);
 
-            btn.disabled = true;
-            btn.innerText = "REMOVING...";
-            if (cancelBtn) { cancelBtn.disabled = true; cancelBtn.style.opacity = "0.5"; }
-            if (row) { row.style.opacity = "0.3"; row.style.pointerEvents = "none"; }
+            btn.disabled = true; btn.innerText = 'REMOVING...';
+            if (cancelBtn) { cancelBtn.disabled = true; cancelBtn.style.opacity = '0.5'; }
+            if (row)       { row.style.opacity = '0.3'; row.style.pointerEvents = 'none'; }
 
             try {
                 await fetch(API_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
+                    method: 'POST', mode: 'no-cors',
                     body: JSON.stringify({ key: PSK, action: 'delete', id: targetId, uid: user.uid })
                 });
-                showToast("Request Removed ✓");
+                showToast('Request Removed ✓');
                 closeDeleteModal();
-                if (row) { row.style.opacity = "0"; }
+                if (row) row.style.opacity = '0';
                 setTimeout(() => loadPrayers(), 400);
             } catch (e) {
-                showToast("Error deleting.");
-                if (row) {
-                    row.style.opacity = "1";
-                    row.style.pointerEvents = "auto";
-                }
-                if (cancelBtn) { cancelBtn.disabled = false; cancelBtn.style.opacity = "1"; }
+                showToast('Error deleting.');
+                if (row) { row.style.opacity = '1'; row.style.pointerEvents = 'auto'; }
+                if (cancelBtn) { cancelBtn.disabled = false; cancelBtn.style.opacity = '1'; }
             } finally {
-                btn.disabled = false;
-                btn.innerText = "DELETE REQUEST";
+                btn.disabled = false; btn.innerText = 'DELETE REQUEST';
             }
         };
 
-        // --- Navigation ---
+        // ── Navigation ─────────────────────────────────────────────────────────
+
         window.goHome = () => {
             try {
-                const profile = JSON.parse(sessionStorage.getItem('userContext') || "{}");
+                const profile = JSON.parse(sessionStorage.getItem('userContext') || '{}');
                 window.location.href = profile.role === 'pastor' ? 'pastor.html' : 'member.html';
             } catch (e) {
                 window.location.href = 'index.html';
