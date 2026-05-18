@@ -73,6 +73,11 @@
             100% { transform: scale(1); }
         }
         .like-pop { animation: likePop 0.32s ease forwards; }
+
+        /* ── Subtle live indicator ── */
+        #likes-sync-dot {
+            transition: opacity 0.4s;
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 dark:bg-[#0f172a] dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-300">
@@ -88,6 +93,8 @@
             <h1 class="text-lg brand-text"><span class="brand-word-1">Soulwinning</span><span class="brand-word-2">Tracker</span></h1>
         </div>
         <div class="flex items-center gap-2">
+            <!-- Subtle live sync indicator -->
+            <span id="likes-sync-dot" class="opacity-0 text-[9px] font-black text-violet-400 uppercase tracking-widest">syncing</span>
             <button onclick="toggleDarkMode()" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 transition-all">
                 <svg id="sun-icon" class="w-5 h-5 hidden text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M3 12h2.25m.386-6.364l1.591 1.591M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" /></svg>
                 <svg id="moon-icon" class="w-5 h-5 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" /></svg>
@@ -171,7 +178,8 @@
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        const MAX_LEN = 1000;
+        const MAX_LEN      = 1000;
+        const POLL_MS      = 60000; // likes poll interval: 60 seconds
 
         let API_URL = '';
         let PSK = '';
@@ -179,7 +187,9 @@
         let userProfile = JSON.parse(sessionStorage.getItem('userContext') || '{}');
         let currentPrayerFilter = 'all';
         let pendingDeleteId = null;
-        const pendingLikes = new Set();
+        const pendingLikes = new Set(); // IDs currently being written — skip poll updates for these
+
+        let pollTimer = null; // holds setInterval reference so we can clear it
 
         const getChurchId = () => userProfile.churchId?.length > 0 ? userProfile.churchId[0] : null;
 
@@ -197,6 +207,11 @@
                 const [name, uid] = e.trim().split('|');
                 return name && uid ? { name: name.trim(), uid: uid.trim() } : null;
             }).filter(Boolean);
+        }
+
+        function showSyncDot(visible) {
+            const dot = document.getElementById('likes-sync-dot');
+            if (dot) dot.style.opacity = visible ? '1' : '0';
         }
 
         window.showToast = (msg) => {
@@ -242,7 +257,8 @@
                     API_URL = snap.data().prayerScriptUrl;
                     PSK     = snap.data().masterPsk;
                     if (API_URL && PSK) {
-                        loadPrayers();
+                        await loadPrayers();
+                        startLikesPolling();
                     } else {
                         document.getElementById('prayer-list').innerHTML =
                             `<div class="text-center opacity-40 py-20 uppercase font-black tracking-widest text-[10px]">System Config Missing. Contact Admin.</div>`;
@@ -253,6 +269,87 @@
                 showToast('System offline. Check connection.');
             }
         });
+
+        // ── Likes polling ──────────────────────────────────────────────────────
+
+        function startLikesPolling() {
+            // Clear any existing timer (e.g. after filter change)
+            if (pollTimer) clearInterval(pollTimer);
+            pollTimer = setInterval(refreshLikes, POLL_MS);
+
+            // Also refresh on tab focus — catches updates after user switches away
+            document.addEventListener('visibilitychange', onVisibilityChange);
+        }
+
+        function onVisibilityChange() {
+            if (document.visibilityState === 'visible') {
+                refreshLikes();
+            }
+        }
+
+        async function refreshLikes() {
+            const churchId = getChurchId();
+            if (!API_URL || !PSK || !churchId) return;
+            // Don't run if no prayer rows are rendered yet
+            if (!document.querySelector('[id^="like-btn-"]')) return;
+
+            showSyncDot(true);
+            try {
+                const res  = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ key: PSK, action: 'getLikes', church: churchId })
+                });
+                const data = await res.json();
+                if (!Array.isArray(data)) return;
+
+                // data = [ { ID: '...', Likes: 'Name|uid,...' }, ... ]
+                data.forEach(({ ID, Likes }) => {
+                    // Skip any prayer currently being liked by this user — avoids overwriting optimistic state
+                    if (pendingLikes.has(ID)) return;
+                    applyLikesToBtn(ID, Likes || '');
+                });
+            } catch (e) {
+                // Silent fail — polling is best-effort
+                console.warn('Likes poll failed:', e);
+            } finally {
+                showSyncDot(false);
+            }
+        }
+
+        // Updates a single like button in-place with fresh data from server
+        function applyLikesToBtn(prayerId, likesStr) {
+            const btn = document.getElementById(`like-btn-${prayerId}`);
+            if (!btn) return;
+
+            const likes     = parseLikes(likesStr);
+            const likedByMe = likes.some(l => l.uid === user.uid);
+            const count     = likes.length;
+
+            btn.classList.toggle('liked', likedByMe);
+
+            let countEl = btn.querySelector('.like-count');
+            if (count > 0) {
+                if (!countEl) {
+                    countEl = document.createElement('span');
+                    countEl.className = 'like-count text-[10px] font-black';
+                    btn.querySelector('.like-icon').insertAdjacentElement('afterend', countEl);
+                }
+                countEl.textContent = count;
+            } else if (countEl) {
+                countEl.remove();
+            }
+
+            const tooltip = btn.querySelector('.like-tooltip');
+            if (tooltip) {
+                const names = likes.length
+                    ? likes.map(l => `<span class="block text-[10px] font-bold text-violet-400 leading-relaxed">${escapeHtml(l.name)}</span>`).join('')
+                    : `<span class="block text-[10px] text-slate-400 italic">Be the first to pray!</span>`;
+                tooltip.innerHTML = `<p class="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Praying 🙏</p>${names}`;
+            }
+
+            // Keep onclick in sync with latest server state
+            btn.setAttribute('onclick', `toggleLike('${prayerId}', '${escapeHtml(likesStr)}')`);
+        }
 
         // ── Filter ─────────────────────────────────────────────────────────────
 
@@ -307,7 +404,6 @@
                 return;
             }
             try {
-                // PSK in POST body — not in URL
                 const res   = await fetch(API_URL, {
                     method: 'POST',
                     body: JSON.stringify({ key: PSK, action: 'get', church: churchId })
@@ -390,7 +486,7 @@
             }
         };
 
-        // ── Toggle Like — fire-and-forget, instant DOM update ──────────────────
+        // ── Toggle Like — instant DOM, fire-and-forget write ───────────────────
 
         window.toggleLike = (prayerId, currentLikesRaw) => {
             if (pendingLikes.has(prayerId)) return;
@@ -399,7 +495,6 @@
             const myName = userProfile.displayName || 'Brethren';
             const myUid  = user.uid;
 
-            // Compute new state
             let likes = parseLikes(currentLikesRaw);
             const alreadyLiked = likes.some(l => l.uid === myUid);
             if (alreadyLiked) {
@@ -408,48 +503,20 @@
                 likes.push({ name: myName, uid: myUid });
             }
             const newLikesStr = likes.map(l => `${l.name}|${l.uid}`).join(',');
-            const likedByMe   = likes.some(l => l.uid === myUid);
-            const count       = likes.length;
 
-            // ── Update DOM instantly ──
+            // Instant DOM update
+            applyLikesToBtn(prayerId, newLikesStr);
+
+            // Pop animation
             const btn = document.getElementById(`like-btn-${prayerId}`);
             if (btn) {
-                // Liked state
-                btn.classList.toggle('liked', likedByMe);
-
-                // Count badge
-                let countEl = btn.querySelector('.like-count');
-                if (count > 0) {
-                    if (!countEl) {
-                        countEl = document.createElement('span');
-                        countEl.className = 'like-count text-[10px] font-black';
-                        btn.querySelector('.like-icon').insertAdjacentElement('afterend', countEl);
-                    }
-                    countEl.textContent = count;
-                } else if (countEl) {
-                    countEl.remove();
-                }
-
-                // Tooltip names
-                const tooltip = btn.querySelector('.like-tooltip');
-                if (tooltip) {
-                    const names = likes.length
-                        ? likes.map(l => `<span class="block text-[10px] font-bold text-violet-400 leading-relaxed">${escapeHtml(l.name)}</span>`).join('')
-                        : `<span class="block text-[10px] text-slate-400 italic">Be the first to pray!</span>`;
-                    tooltip.innerHTML = `<p class="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Praying 🙏</p>${names}`;
-                }
-
-                // Update onclick so next tap carries the updated string
-                btn.setAttribute('onclick', `toggleLike('${prayerId}', '${escapeHtml(newLikesStr)}')`);
-
-                // Pop
                 btn.classList.add('like-pop');
                 setTimeout(() => btn.classList.remove('like-pop'), 350);
             }
 
             pendingLikes.delete(prayerId);
 
-            // ── Background write — no await, no refetch ──
+            // Background write
             fetch(API_URL, {
                 method: 'POST',
                 mode: 'no-cors',
@@ -462,27 +529,27 @@
         window.addPrayer = async () => {
             const req      = document.getElementById('prayerInput').value.trim();
             const churchId = getChurchId();
-            if (!req)               { showToast('Please enter a prayer request.'); return; }
-            if (req.length > MAX_LEN) { showToast('Request too long.');            return; }
-            if (!churchId)          { showToast('No Church Assigned.');            return; }
-            if (!API_URL)           return;
+            if (!req)                 { showToast('Please enter a prayer request.'); return; }
+            if (req.length > MAX_LEN) { showToast('Request too long.');              return; }
+            if (!churchId)            { showToast('No Church Assigned.');            return; }
+            if (!API_URL)             return;
 
             const btn = document.getElementById('postBtn');
             btn.disabled = true;
             btn.innerHTML = `<i class="bi bi-arrow-repeat animate-spin text-[10px] opacity-70 mr-2"></i> POSTING...`;
             try {
                 await fetch(API_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
+                    method: 'POST', mode: 'no-cors',
                     body: JSON.stringify({ key: PSK, action: 'add', uid: user.uid, name: userProfile.displayName || 'Brethren', request: req, church: churchId })
                 });
                 document.getElementById('prayerInput').value = '';
                 updateCharCount();
                 showToast('Request Shared ✓');
-                setTimeout(() => {
+                setTimeout(async () => {
                     btn.disabled = false;
                     btn.innerHTML = `<i class="bi bi-send-fill text-[10px] opacity-70 mr-2"></i> SHARE WITH THE BRETHREN`;
-                    loadPrayers();
+                    await loadPrayers();
+                    startLikesPolling(); // restart poll with fresh DOM
                 }, 1000);
             } catch (e) {
                 showToast('Network Error.');
@@ -524,7 +591,10 @@
                 showToast('Request Removed ✓');
                 closeDeleteModal();
                 if (row) row.style.opacity = '0';
-                setTimeout(() => loadPrayers(), 400);
+                setTimeout(async () => {
+                    await loadPrayers();
+                    startLikesPolling();
+                }, 400);
             } catch (e) {
                 showToast('Error deleting.');
                 if (row) { row.style.opacity = '1'; row.style.pointerEvents = 'auto'; }
@@ -537,6 +607,8 @@
         // ── Navigation ─────────────────────────────────────────────────────────
 
         window.goHome = () => {
+            if (pollTimer) clearInterval(pollTimer);
+            document.removeEventListener('visibilitychange', onVisibilityChange);
             try {
                 const profile = JSON.parse(sessionStorage.getItem('userContext') || '{}');
                 window.location.href = profile.role === 'pastor' ? 'pastor.html' : 'member.html';
