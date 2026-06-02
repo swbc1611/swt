@@ -467,7 +467,7 @@
                                         ${pIndex !== group.prayers.length - 1 ? 'border-b border-white/5' : ''}">
                                         <div class="absolute left-0 top-4 bottom-4 w-1 rounded-r-full ${themeBg}"></div>
                                         <div class="flex justify-between items-start gap-4 mb-3">
-                                            <p class="text-sm text-slate-700 dark:text-slate-100 leading-relaxed font-semibold italic">"${escapeHtml(p.Request)}"</p>
+                                            <p class="text-sm text-slate-700 dark:text-slate-100 leading-relaxed font-semibold italic whitespace-pre-line">"${escapeHtml(p.Request)}"</p>
                                             ${p.UserID == user.uid
                                                 ? `<button onclick="deletePrayer('${p.ID}')"
                                                        class="shrink-0 w-8 h-8 flex items-center justify-center rounded-xl bg-rose-500/10
